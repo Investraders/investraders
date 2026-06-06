@@ -1,228 +1,165 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { UserPlus, Mail, Lock, Loader2 } from "lucide-react";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import AuthLayout from "@/components/AuthLayout";
-import GoogleIcon from "@/components/GoogleIcon";
-import { toast } from "@/components/ui/use-toast";
+import React, { useState } from 'react';
+import { base44 } from '@/api/base44Client';
+import { Link } from 'react-router-dom';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ArrowRight, TrendingUp } from 'lucide-react';
 
 export default function Register() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
+  const [step, setStep] = useState('register'); // register | otp
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [otpCode, setOtpCode] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showOtp, setShowOtp] = useState(false);
-  const [otpCode, setOtpCode] = useState("");
+  const [error, setError] = useState('');
+  const [agreed, setAgreed] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    setError("");
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
+    if (!agreed) { setError('Please agree to the Terms of Use and Privacy Policy'); return; }
     setLoading(true);
+    setError('');
     try {
       await base44.auth.register({ email, password });
-      setShowOtp(true);
+      setStep('otp');
     } catch (err) {
-      setError(err.message || "Registration failed");
+      setError(err.message || 'Registration failed');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleVerify = async () => {
-    setError("");
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
     setLoading(true);
+    setError('');
     try {
-      const result = await base44.auth.verifyOtp({ email, otpCode });
-      if (result?.access_token) {
-        base44.auth.setToken(result.access_token);
-      }
-      window.location.href = "/";
+      const res = await base44.auth.verifyOtp({ email, otpCode });
+      base44.auth.setToken(res.access_token);
+      window.location.href = '/';
     } catch (err) {
-      setError(err.message || "Invalid verification code");
+      setError(err.message || 'Verification failed');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleResend = async () => {
-    setError("");
+  const handleResendOtp = async () => {
     try {
       await base44.auth.resendOtp(email);
-      toast({
-        title: "Code sent",
-        description: "Check your email for the new code.",
-      });
     } catch (err) {
-      setError(err.message || "Failed to resend code");
+      // silent
     }
   };
 
-  const handleGoogle = () => {
-    base44.auth.loginWithProvider("google", "/");
-  };
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-400 flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="absolute top-[-100px] right-[-50px] w-[300px] h-[300px] rounded-full bg-white/10" />
+      <div className="absolute bottom-[-80px] left-[-60px] w-[250px] h-[250px] rounded-full bg-white/10" />
 
-  if (showOtp) {
-    return (
-      <AuthLayout
-        icon={Mail}
-        title="Verify your email"
-        subtitle={`We sent a code to ${email}`}
-      >
-        {error && (
-          <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
-            {error}
+      <div className="w-full max-w-[960px] bg-white rounded-2xl shadow-2xl overflow-hidden flex min-h-[620px] relative z-10">
+        {/* Left - Branding */}
+        <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-blue-50 via-cyan-50 to-blue-100 flex-col items-center justify-center p-12 relative overflow-hidden">
+          <div className="absolute top-[-40px] left-[-40px] w-[150px] h-[150px] rounded-full bg-blue-200/30" />
+
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center">
+              <TrendingUp className="w-6 h-6 text-white" />
+            </div>
+            <span className="text-2xl font-bold text-blue-700">Investraders</span>
           </div>
-        )}
-        <div className="flex justify-center mb-6">
-          <InputOTP
-            maxLength={6}
-            value={otpCode}
-            onChange={setOtpCode}
-            autoFocus
-            autoComplete="one-time-code"
+          <p className="text-blue-500 font-medium mb-12">Trade Smarter Together</p>
+
+          <h2 className="text-5xl font-bold text-foreground mb-4">Hello!</h2>
+          <p className="text-muted-foreground text-center mb-8">
+            To get access to your account<br />just continue with sign in
+          </p>
+
+          <Link
+            to="/login"
+            className="flex items-center gap-2 px-8 py-3 border-2 border-blue-400 rounded-full text-blue-600 font-semibold hover:bg-blue-50 transition-colors"
           >
-            <InputOTPGroup>
-              <InputOTPSlot index={0} />
-              <InputOTPSlot index={1} />
-              <InputOTPSlot index={2} />
-              <InputOTPSlot index={3} />
-              <InputOTPSlot index={4} />
-              <InputOTPSlot index={5} />
-            </InputOTPGroup>
-          </InputOTP>
+            Sign in <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
-        <Button
-          className="w-full h-12 font-medium"
-          onClick={handleVerify}
-          disabled={loading || otpCode.length < 6}
-        >
-          {loading ? (
+
+        {/* Right - Form */}
+        <div className="w-full lg:w-1/2 p-8 md:p-12 flex flex-col justify-center">
+          {step === 'register' ? (
             <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Verifying...
+              <h1 className="text-3xl font-bold text-foreground mb-2">Create New Account</h1>
+              <p className="text-primary mb-6">
+                You're just one step away to<br />
+                <span className="text-foreground font-medium">join Investraders</span>
+              </p>
+
+              {error && <div className="bg-destructive/10 text-destructive text-sm rounded-lg p-3 mb-4">{error}</div>}
+
+              <form onSubmit={handleRegister} className="space-y-4">
+                <div>
+                  <label className="text-sm text-muted-foreground mb-1.5 block">Full Name</label>
+                  <Input placeholder="Enter Full Name" value={fullName} onChange={(e) => setFullName(e.target.value)} className="h-12" />
+                </div>
+                <div>
+                  <label className="text-sm text-muted-foreground mb-1.5 block">Email Address</label>
+                  <Input type="email" placeholder="Enter Email Address" value={email} onChange={(e) => setEmail(e.target.value)} className="h-12" />
+                </div>
+                <div>
+                  <label className="text-sm text-muted-foreground mb-1.5 block">Create Password</label>
+                  <Input type="password" placeholder="Enter Password to Create" value={password} onChange={(e) => setPassword(e.target.value)} className="h-12" />
+                </div>
+
+                <div className="flex items-start gap-2">
+                  <Checkbox id="terms" checked={agreed} onCheckedChange={setAgreed} className="mt-0.5" />
+                  <label htmlFor="terms" className="text-sm text-muted-foreground cursor-pointer">
+                    By Signing up, you agree to the <span className="text-primary">Terms of use</span> and <span className="text-primary">Privacy Policy</span>
+                  </label>
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full h-12 rounded-full bg-gradient-to-r from-blue-700 to-blue-500 hover:from-blue-800 hover:to-blue-600 text-white font-semibold text-base shadow-lg"
+                >
+                  {loading ? 'Creating...' : 'Submit'}
+                </Button>
+              </form>
+
+              <p className="text-sm text-center mt-4 text-muted-foreground lg:hidden">
+                Already have an account? <Link to="/login" className="text-primary font-medium">Sign in</Link>
+              </p>
             </>
           ) : (
-            "Verify"
+            <>
+              <h1 className="text-3xl font-bold text-foreground mb-2">Verify Email</h1>
+              <p className="text-muted-foreground mb-6">We've sent a verification code to {email}</p>
+
+              {error && <div className="bg-destructive/10 text-destructive text-sm rounded-lg p-3 mb-4">{error}</div>}
+
+              <form onSubmit={handleVerifyOtp} className="space-y-4">
+                <div>
+                  <label className="text-sm text-muted-foreground mb-1.5 block">Verification Code</label>
+                  <Input placeholder="Enter OTP Code" value={otpCode} onChange={(e) => setOtpCode(e.target.value)} className="h-12" />
+                </div>
+                <Button type="submit" disabled={loading} className="w-full h-12 rounded-full bg-gradient-to-r from-blue-700 to-blue-500 text-white font-semibold shadow-lg">
+                  {loading ? 'Verifying...' : 'Verify'}
+                </Button>
+                <button type="button" onClick={handleResendOtp} className="text-sm text-primary hover:underline w-full text-center">
+                  Resend code
+                </button>
+              </form>
+            </>
           )}
-        </Button>
-        <p className="text-center text-sm text-muted-foreground mt-4">
-          Didn't receive the code?{" "}
-          <button onClick={handleResend} className="text-primary font-medium hover:underline">
-            Resend
-          </button>
-        </p>
-      </AuthLayout>
-    );
-  }
-
-  return (
-    <AuthLayout
-      icon={UserPlus}
-      title="Create your account"
-      subtitle="Sign up to get started"
-      footer={
-        <>
-          Already have an account?{" "}
-          <Link to="/login" className="text-primary font-medium hover:underline">
-            Log in
-          </Link>
-        </>
-      }
-    >
-      <Button
-        variant="outline"
-        className="w-full h-12 text-sm font-medium mb-6"
-        onClick={handleGoogle}
-      >
-        <GoogleIcon className="w-5 h-5 mr-2" />
-        Continue with Google
-      </Button>
-
-      <div className="relative mb-6">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-border" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-card px-3 text-muted-foreground">or</span>
         </div>
       </div>
 
-      {error && (
-        <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
-          {error}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
-            <Input
-              id="email"
-              type="email"
-              autoComplete="email"
-              autoFocus
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="pl-10 h-12"
-              required
-            />
-          </div>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
-            <Input
-              id="password"
-              type="password"
-              autoComplete="new-password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="pl-10 h-12"
-              required
-            />
-          </div>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="confirm">Confirm Password</Label>
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
-            <Input
-              id="confirm"
-              type="password"
-              autoComplete="new-password"
-              placeholder="••••••••"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="pl-10 h-12"
-              required
-            />
-          </div>
-        </div>
-        <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
-          {loading ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Creating account...
-            </>
-          ) : (
-            "Create account"
-          )}
-        </Button>
-      </form>
-    </AuthLayout>
+      <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-8 text-white/80 text-sm">
+        <span className="hover:text-white cursor-pointer">About us</span>
+        <span className="hover:text-white cursor-pointer">Contact us</span>
+        <span className="hover:text-white cursor-pointer">Support</span>
+      </div>
+    </div>
   );
 }

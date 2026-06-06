@@ -1,0 +1,60 @@
+{
+  "name": "Post",
+  "type": "object",
+  "properties": {
+    "content": {
+      "type": "string",
+      "description": "Post text content"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Attached image URL"
+    },
+    "video_url": {
+      "type": "string",
+      "description": "Attached video URL"
+    },
+    "circle_id": {
+      "type": "string",
+      "description": "ID of the circle this post belongs to"
+    },
+    "visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "circle",
+        "private"
+      ],
+      "default": "public"
+    },
+    "likes": {
+      "type": "number",
+      "default": 0
+    },
+    "liked_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "post_type": {
+      "type": "string",
+      "enum": [
+        "text",
+        "photo",
+        "video",
+        "poll"
+      ],
+      "default": "text"
+    },
+    "author_name": {
+      "type": "string"
+    },
+    "author_avatar": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "content"
+  ]
+}

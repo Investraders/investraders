@@ -1,0 +1,49 @@
+{
+  "name": "Circle",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of the circle"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description of the circle"
+    },
+    "cover_image": {
+      "type": "string",
+      "description": "Cover image URL"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "investing",
+        "crypto",
+        "stocks",
+        "real_estate",
+        "business",
+        "personal_finance",
+        "general"
+      ],
+      "default": "general"
+    },
+    "member_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "User IDs of circle members"
+    },
+    "privacy": {
+      "type": "string",
+      "enum": [
+        "public",
+        "private"
+      ],
+      "default": "public"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}
