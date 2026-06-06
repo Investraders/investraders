@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import CircleVisual from '@/components/circles/CircleVisual';
+import CircleLeaderboard from '@/components/circles/CircleLeaderboard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -196,6 +197,9 @@ export default function CircleDetail() {
             </form>
           </div>
         )}
+
+        {/* Leaderboard */}
+        <CircleLeaderboard circleId={id} />
 
         {/* New Question */}
         {isMember && (
