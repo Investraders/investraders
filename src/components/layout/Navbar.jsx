@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
-import { Search, Bell, LayoutGrid, TrendingUp, LogOut } from 'lucide-react';
+import { Search, Bell, LayoutGrid, TrendingUp, LogOut, User } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import {
   DropdownMenu,
@@ -49,6 +49,9 @@ export default function Navbar({ user }) {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <DropdownMenuItem asChild>
+              <Link to="/profile"><User className="w-4 h-4 mr-2" /> My Profile</Link>
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => base44.auth.logout()}>
               <LogOut className="w-4 h-4 mr-2" /> Sign Out
             </DropdownMenuItem>

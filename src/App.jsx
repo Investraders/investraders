@@ -16,6 +16,7 @@ import CreateCircle from '@/pages/CreateCircle';
 import MyCircles from '@/pages/MyCircles';
 import CircleDetail from '@/pages/CircleDetail';
 import CreatePoll from '@/pages/CreatePoll';
+import UserProfile from '@/pages/UserProfile';
 import AppLayout from '@/components/layout/AppLayout';
 
 const AuthenticatedApp = () => {
@@ -52,6 +53,7 @@ const AuthenticatedApp = () => {
           <Route path="/my-circles" element={<MyCircles />} />
           <Route path="/circle/:id" element={<CircleDetail />} />
           <Route path="/create-poll" element={<CreatePoll />} />
+          <Route path="/profile" element={<UserProfile />} />
         </Route>
       </Route>
 
