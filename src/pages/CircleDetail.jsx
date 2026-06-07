@@ -5,6 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import CircleVisual from '@/components/circles/CircleVisual';
 import CircleLeaderboard from '@/components/circles/CircleLeaderboard';
+import CircleEventCalendar from '@/components/circles/CircleEventCalendar';
 import { useCircleNotifications } from '@/hooks/useCircleNotifications';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -200,6 +201,9 @@ export default function CircleDetail() {
             </form>
           </div>
         )}
+
+        {/* Event Calendar */}
+        <CircleEventCalendar circleId={id} isMember={isMember} />
 
         {/* Leaderboard */}
         <CircleLeaderboard circleId={id} />
