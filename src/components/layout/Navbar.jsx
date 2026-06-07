@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
-import { Search, Bell, LayoutGrid, TrendingUp, LogOut, User } from 'lucide-react';
+import { Search, LayoutGrid, TrendingUp, LogOut, User } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import {
   DropdownMenu,
@@ -9,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import NotificationBell from '@/components/layout/NotificationBell';
 
 export default function Navbar({ user }) {
   const displayName = user?.full_name || user?.email?.split('@')[0] || 'User';
@@ -34,10 +35,7 @@ export default function Navbar({ user }) {
         <button className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center hover:bg-secondary transition-colors">
           <LayoutGrid className="w-4 h-4 text-muted-foreground" />
         </button>
-        <button className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center hover:bg-secondary transition-colors relative">
-          <Bell className="w-4 h-4 text-muted-foreground" />
-          <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center">3</span>
-        </button>
+        <NotificationBell />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

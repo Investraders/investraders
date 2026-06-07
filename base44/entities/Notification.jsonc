@@ -1,0 +1,40 @@
+{
+  "name": "Notification",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "The user this notification is for"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "new_post",
+        "new_comment",
+        "new_response"
+      ],
+      "description": "Type of notification"
+    },
+    "message": {
+      "type": "string",
+      "description": "Notification message text"
+    },
+    "circle_id": {
+      "type": "string",
+      "description": "Related circle ID"
+    },
+    "circle_name": {
+      "type": "string",
+      "description": "Related circle name"
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "user_id",
+    "type",
+    "message"
+  ]
+}

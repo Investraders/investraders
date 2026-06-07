@@ -5,6 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import CircleVisual from '@/components/circles/CircleVisual';
 import CircleLeaderboard from '@/components/circles/CircleLeaderboard';
+import { useCircleNotifications } from '@/hooks/useCircleNotifications';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -85,6 +86,8 @@ export default function CircleDetail() {
   });
 
   const isMember = circle?.member_ids?.includes(user?.id) || circle?.created_by_id === user?.id;
+
+  useCircleNotifications({ circle, user });
 
   // Build member list for visual
   const memberNames = (circle?.member_ids || []).map((_, i) => ({ name: `Member ${i + 1}` }));
