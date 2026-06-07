@@ -34,6 +34,13 @@
       },
       "description": "User IDs of circle members"
     },
+    "moderator_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "User IDs of circle moderators"
+    },
     "privacy": {
       "type": "string",
       "enum": [

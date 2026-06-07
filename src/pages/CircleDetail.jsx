@@ -7,6 +7,7 @@ import CircleVisual from '@/components/circles/CircleVisual';
 import CircleLeaderboard from '@/components/circles/CircleLeaderboard';
 import CircleEventCalendar from '@/components/circles/CircleEventCalendar';
 import CircleAdminDashboard from '@/components/circles/CircleAdminDashboard';
+import CircleMemberRoles from '@/components/circles/CircleMemberRoles';
 import { useCircleNotifications } from '@/hooks/useCircleNotifications';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -89,6 +90,7 @@ export default function CircleDetail() {
 
   const isMember = circle?.member_ids?.includes(user?.id) || circle?.created_by_id === user?.id;
   const isAdmin = circle?.created_by_id === user?.id;
+  const isModerator = (circle?.moderator_ids || []).includes(user?.id);
 
   useCircleNotifications({ circle, user });
 
@@ -209,6 +211,9 @@ export default function CircleDetail() {
 
         {/* Event Calendar */}
         <CircleEventCalendar circleId={id} isMember={isMember} />
+
+        {/* Member Roles */}
+        <CircleMemberRoles circle={circle} currentUserId={user?.id} />
 
         {/* Leaderboard */}
         <CircleLeaderboard circleId={id} />
