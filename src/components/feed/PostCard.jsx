@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal } from 'lucide-react';
 import EmojiReactions from '@/components/feed/EmojiReactions';
+import CommentSection from '@/components/feed/CommentSection';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -11,7 +11,7 @@ import { format } from 'date-fns';
 export default function PostCard({ post }) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const [comment, setComment] = useState('');
+  const [showComments, setShowComments] = useState(false);
   const liked = post.liked_by?.includes(user?.id);
 
   const toggleLike = useMutation({
@@ -27,25 +27,6 @@ export default function PostCard({ post }) {
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['posts'] }),
   });
-
-  const addComment = useMutation({
-    mutationFn: (content) =>
-      base44.entities.Comment.create({
-        post_id: post.id,
-        content,
-        author_name: user?.full_name || user?.email?.split('@')[0] || 'User',
-      }),
-    onSuccess: () => {
-      setComment('');
-      queryClient.invalidateQueries({ queryKey: ['comments', post.id] });
-    },
-  });
-
-  const handleComment = (e) => {
-    e.preventDefault();
-    if (!comment.trim()) return;
-    addComment.mutate(comment);
-  };
 
   return (
     <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
@@ -84,7 +65,7 @@ export default function PostCard({ post }) {
       {/* Post date */}
       <div className="px-4 pb-2">
         <p className="text-xs text-muted-foreground">
-          Post on : {post.created_date ? format(new Date(post.created_date), 'dd MMM yyyy') : ''}
+          {post.created_date ? format(new Date(post.created_date), 'dd MMM yyyy') : ''}
         </p>
       </div>
 
@@ -103,9 +84,12 @@ export default function PostCard({ post }) {
             <Heart className={`w-5 h-5 ${liked ? 'fill-current' : ''}`} />
             <span>{post.likes || 0}</span>
           </button>
-          <button className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors">
+          <button
+            onClick={() => setShowComments(!showComments)}
+            className={`flex items-center gap-1.5 text-sm transition-colors ${showComments ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
+          >
             <MessageCircle className="w-5 h-5" />
-            <span>0</span>
+            <span>Comment</span>
           </button>
         </div>
         <div className="flex items-center gap-3">
@@ -118,17 +102,12 @@ export default function PostCard({ post }) {
         </div>
       </div>
 
-      {/* Comment box */}
-      <form onSubmit={handleComment} className="px-4 pb-4">
-        <div className="flex gap-2">
-          <Input
-            placeholder="Write your comments..."
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            className="h-9 text-sm rounded-full"
-          />
+      {/* Comment Section */}
+      {showComments && (
+        <div className="px-4 pb-4 border-t pt-3">
+          <CommentSection postId={post.id} />
         </div>
-      </form>
+      )}
     </div>
   );
 }

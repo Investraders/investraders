@@ -1,0 +1,27 @@
+{
+  "name": "Connection",
+  "type": "object",
+  "properties": {
+    "requester_id": {
+      "type": "string",
+      "description": "ID of user who sent the connection request"
+    },
+    "recipient_id": {
+      "type": "string",
+      "description": "ID of user who received the request"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "rejected"
+      ],
+      "default": "pending"
+    }
+  },
+  "required": [
+    "requester_id",
+    "recipient_id"
+  ]
+}

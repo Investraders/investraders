@@ -1,17 +1,34 @@
 {
+  "name": "User",
+  "type": "object",
   "properties": {
     "role": {
       "type": "string",
-      "description": "The role of the user in the app",
       "enum": [
         "admin",
         "user"
-      ]
+      ],
+      "default": "user"
+    },
+    "bio": {
+      "type": "string",
+      "description": "User bio / about text"
+    },
+    "headline": {
+      "type": "string",
+      "description": "Professional headline"
+    },
+    "location": {
+      "type": "string",
+      "description": "User location"
+    },
+    "avatar_url": {
+      "type": "string",
+      "description": "Profile picture URL"
+    },
+    "cover_image_url": {
+      "type": "string",
+      "description": "Cover/banner image URL"
     }
-  },
-  "required": [
-    "role"
-  ],
-  "name": "User",
-  "type": "object"
+  }
 }

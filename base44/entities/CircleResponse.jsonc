@@ -19,6 +19,22 @@
     },
     "author_avatar": {
       "type": "string"
+    },
+    "upvoted_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "User IDs who upvoted",
+      "default": []
+    },
+    "downvoted_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "User IDs who downvoted",
+      "default": []
     }
   },
   "required": [

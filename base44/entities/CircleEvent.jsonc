@@ -25,13 +25,26 @@
         "discussion",
         "meeting",
         "webinar",
-        "analysis",
-        "other"
+        "analysis"
       ],
       "default": "discussion"
     },
     "author_name": {
       "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved"
+      ],
+      "default": "approved",
+      "description": "pending = awaiting admin approval, approved = visible to all members"
+    },
+    "session_active": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the live video session is currently active"
     }
   },
   "required": [

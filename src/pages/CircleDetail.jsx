@@ -12,10 +12,55 @@ import { useCircleNotifications } from '@/hooks/useCircleNotifications';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Plus, Send, Users, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Plus, Send, Users, MessageCircle, ChevronUp, ChevronDown } from 'lucide-react';
 import { TagBadge } from '@/components/circles/TagPicker';
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
+
+function ResponseVotes({ response, userId }) {
+  const queryClient = useQueryClient();
+  const upvoted = (response.upvoted_by || []).includes(userId);
+  const downvoted = (response.downvoted_by || []).includes(userId);
+  const score = (response.upvoted_by?.length || 0) - (response.downvoted_by?.length || 0);
+
+  const vote = useMutation({
+    mutationFn: async (type) => {
+      let upvoted_by = [...(response.upvoted_by || [])];
+      let downvoted_by = [...(response.downvoted_by || [])];
+      if (type === 'up') {
+        upvoted_by = upvoted_by.includes(userId)
+          ? upvoted_by.filter((id) => id !== userId)
+          : [...upvoted_by.filter((id) => id !== userId), userId];
+        downvoted_by = downvoted_by.filter((id) => id !== userId);
+      } else {
+        downvoted_by = downvoted_by.includes(userId)
+          ? downvoted_by.filter((id) => id !== userId)
+          : [...downvoted_by.filter((id) => id !== userId), userId];
+        upvoted_by = upvoted_by.filter((id) => id !== userId);
+      }
+      await base44.entities.CircleResponse.update(response.id, { upvoted_by, downvoted_by });
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['circle-responses'] }),
+  });
+
+  return (
+    <div className="flex items-center gap-1.5 ml-9 mt-1.5">
+      <button
+        onClick={(e) => { e.stopPropagation(); vote.mutate('up'); }}
+        className={`flex items-center gap-0.5 text-xs px-2 py-0.5 rounded-full border transition-all ${upvoted ? 'bg-green-100 text-green-700 border-green-300' : 'bg-muted text-muted-foreground hover:bg-green-50 hover:text-green-600 border-border'}`}
+      >
+        <ChevronUp className="w-3.5 h-3.5" /> {response.upvoted_by?.length || 0}
+      </button>
+      <span className={`text-xs font-bold ${score > 0 ? 'text-green-600' : score < 0 ? 'text-red-500' : 'text-muted-foreground'}`}>{score}</span>
+      <button
+        onClick={(e) => { e.stopPropagation(); vote.mutate('down'); }}
+        className={`flex items-center gap-0.5 text-xs px-2 py-0.5 rounded-full border transition-all ${downvoted ? 'bg-red-100 text-red-700 border-red-300' : 'bg-muted text-muted-foreground hover:bg-red-50 hover:text-red-600 border-border'}`}
+      >
+        <ChevronDown className="w-3.5 h-3.5" /> {response.downvoted_by?.length || 0}
+      </button>
+    </div>
+  );
+}
 
 export default function CircleDetail() {
   const { id } = useParams();
@@ -182,6 +227,7 @@ export default function CircleDetail() {
                       <span className="text-sm font-medium">{r.author_name}</span>
                     </div>
                     <p className="text-sm text-muted-foreground ml-9">{r.response_text}</p>
+                    <ResponseVotes response={r} userId={user?.id} />
                   </motion.div>
                 ))}
               </AnimatePresence>
@@ -216,7 +262,13 @@ export default function CircleDetail() {
         {isAdmin && <CircleAdminDashboard circleId={id} circle={circle} />}
 
         {/* Event Calendar */}
-        <CircleEventCalendar circleId={id} isMember={isMember} />
+        <CircleEventCalendar
+          circleId={id}
+          isMember={isMember}
+          isAdmin={isAdmin}
+          isModerator={isModerator}
+          currentUserId={user?.id}
+        />
 
         {/* Member Roles */}
         <CircleMemberRoles circle={circle} currentUserId={user?.id} />

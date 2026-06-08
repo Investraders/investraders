@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Shield, Crown, User, ChevronDown } from 'lucide-react';
 import {
@@ -26,9 +26,9 @@ function RoleBadge({ role }) {
   );
 }
 
-function MemberRow({ userId, role, isOwner, circle, canManage }) {
+function MemberRow({ userId, role, isCurrentUser, circle, canManage, displayName }) {
   const queryClient = useQueryClient();
-  const displayName = `Member ${userId.slice(-4)}`;
+  const label = isCurrentUser ? `${displayName} (You)` : displayName;
 
   const changeRole = useMutation({
     mutationFn: async (newRole) => {
@@ -59,16 +59,13 @@ function MemberRow({ userId, role, isOwner, circle, canManage }) {
     <div className="flex items-center justify-between py-2.5 px-3 rounded-xl hover:bg-muted/40 transition-colors">
       <div className="flex items-center gap-3">
         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-300 flex items-center justify-center text-white text-xs font-bold shrink-0">
-          {userId.slice(-1).toUpperCase()}
+          {(displayName || 'U').charAt(0).toUpperCase()}
         </div>
-        <div>
-          <p className="text-sm font-medium">{isOwner ? 'You (Owner)' : displayName}</p>
-        </div>
+        <p className="text-sm font-medium">{label}</p>
       </div>
-
       <div className="flex items-center gap-2">
         <RoleBadge role={role} />
-        {canManage && !isOwner && (
+        {canManage && !isCurrentUser && role !== 'owner' && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="w-6 h-6 flex items-center justify-center rounded hover:bg-muted text-muted-foreground">
@@ -109,13 +106,24 @@ export default function CircleMemberRoles({ circle, currentUserId }) {
   const memberIds = circle?.member_ids || [];
   const moderatorIds = circle?.moderator_ids || [];
 
+  const allIds = [...new Set([...memberIds, ...(circle?.created_by_id ? [circle.created_by_id] : [])])];
+
+  const { data: nameData = {} } = useQuery({
+    queryKey: ['user-names', allIds.sort().join(',')],
+    queryFn: async () => {
+      if (allIds.length === 0) return {};
+      const res = await base44.functions.invoke('getUserNames', { user_ids: allIds });
+      return res.data?.names || {};
+    },
+    enabled: allIds.length > 0,
+  });
+
   const getRole = (userId) => {
     if (userId === circle?.created_by_id) return 'owner';
     if (moderatorIds.includes(userId)) return 'moderator';
     return 'member';
   };
 
-  // Sort: owner first, then mods, then members
   const sorted = [...memberIds].sort((a, b) => {
     const order = { owner: 0, moderator: 1, member: 2 };
     return order[getRole(a)] - order[getRole(b)];
@@ -133,9 +141,8 @@ export default function CircleMemberRoles({ circle, currentUserId }) {
           <span className="text-xs text-muted-foreground">{memberIds.length} total</span>
         </div>
 
-        {/* Role legend */}
         <div className="px-4 py-2 flex gap-3 border-b bg-muted/20">
-          {Object.entries(ROLE_CONFIG).map(([key, cfg]) => (
+          {Object.keys(ROLE_CONFIG).map((key) => (
             <div key={key} className="flex items-center gap-1">
               <RoleBadge role={key} />
             </div>
@@ -147,15 +154,15 @@ export default function CircleMemberRoles({ circle, currentUserId }) {
             <p className="text-sm text-muted-foreground text-center py-4">No members yet</p>
           ) : (
             <>
-              {/* Always show owner if not in member_ids */}
               {circle?.created_by_id && !memberIds.includes(circle.created_by_id) && (
                 <MemberRow
                   key={circle.created_by_id}
                   userId={circle.created_by_id}
                   role="owner"
-                  isOwner={circle.created_by_id === currentUserId}
+                  isCurrentUser={circle.created_by_id === currentUserId}
                   circle={circle}
                   canManage={canManage}
+                  displayName={nameData[circle.created_by_id] || 'User'}
                 />
               )}
               {displayed.map((uid) => (
@@ -163,9 +170,10 @@ export default function CircleMemberRoles({ circle, currentUserId }) {
                   key={uid}
                   userId={uid}
                   role={getRole(uid)}
-                  isOwner={uid === circle?.created_by_id && uid === currentUserId}
+                  isCurrentUser={uid === currentUserId}
                   circle={circle}
                   canManage={canManage}
+                  displayName={nameData[uid] || 'Member'}
                 />
               ))}
               {sorted.length > 4 && (

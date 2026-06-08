@@ -54,6 +54,7 @@ const AuthenticatedApp = () => {
           <Route path="/circle/:id" element={<CircleDetail />} />
           <Route path="/create-poll" element={<CreatePoll />} />
           <Route path="/profile" element={<UserProfile />} />
+          <Route path="/profile/:userId" element={<UserProfile />} />
         </Route>
       </Route>
 

@@ -21,15 +21,16 @@ export default function CircleLeaderboard({ circleId }) {
     queryFn: () => base44.entities.Post.filter({ circle_id: circleId }),
   });
 
-  // Tally scores per author
+  // Tally scores: posts=3pts, responses=2pts, +1 per upvote net on responses
   const scores = {};
   responses.forEach((r) => {
     const name = r.author_name || 'Unknown';
-    scores[name] = (scores[name] || 0) + 2; // responses worth 2pts
+    const voteScore = (r.upvoted_by?.length || 0) - (r.downvoted_by?.length || 0);
+    scores[name] = (scores[name] || 0) + 2 + Math.max(0, voteScore);
   });
   posts.forEach((p) => {
     const name = p.author_name || 'Unknown';
-    scores[name] = (scores[name] || 0) + 3; // posts worth 3pts
+    scores[name] = (scores[name] || 0) + 3;
   });
 
   const leaderboard = Object.entries(scores)
@@ -78,7 +79,7 @@ export default function CircleLeaderboard({ circleId }) {
         </div>
 
         <p className="text-[10px] text-muted-foreground mt-3 text-center">
-          Posts = 3pts · Responses = 2pts
+          Posts = 3pts · Responses = 2pts + votes
         </p>
       </div>
     </div>
