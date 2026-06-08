@@ -8,7 +8,6 @@ import { Badge } from '@/components/ui/badge';
 import { TagBadge } from '@/components/circles/TagPicker';
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion } from 'framer-motion';
-import CircleBuzz from '@/components/circles/CircleBuzz';
 
 const CATEGORY_COLORS = {
   investing: 'bg-green-100 text-green-700',
@@ -93,7 +92,6 @@ export default function MyCircles() {
                       <span className="text-xs text-muted-foreground flex items-center gap-1">
                         <Users className="w-3 h-3" /> {circle.member_ids?.length || 0} members
                       </span>
-                      <CircleBuzz memberCount={circle.member_ids?.length || 0} compact />
                     </div>
                   </div>
                   <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors mt-1 shrink-0" />
