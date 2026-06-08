@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Users, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import TagPicker from '@/components/circles/TagPicker';
 
 const CATEGORIES = [
   { value: 'investing', label: 'Investing' },
@@ -26,6 +27,7 @@ export default function CreateCircle() {
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('general');
   const [privacy, setPrivacy] = useState('public');
+  const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -37,6 +39,7 @@ export default function CreateCircle() {
       description,
       category,
       privacy,
+      tags,
       member_ids: [],
     });
     setLoading(false);
@@ -83,6 +86,11 @@ export default function CreateCircle() {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div>
+            <Label className="mb-1.5 block">Topics <span className="text-muted-foreground font-normal">(up to 5)</span></Label>
+            <TagPicker selected={tags} onChange={setTags} />
           </div>
 
           <div>

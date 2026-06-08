@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, Plus, Send, Users, MessageCircle } from 'lucide-react';
+import { TagBadge } from '@/components/circles/TagPicker';
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -128,6 +129,11 @@ export default function CircleDetail() {
                 <Users className="w-3.5 h-3.5" />
                 {circle?.member_ids?.length || 0} members · {circle?.privacy}
               </p>
+              {(circle?.tags || []).length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {circle.tags.map((tag) => <TagBadge key={tag} tag={tag} />)}
+                </div>
+              )}
             </div>
           </div>
           {!isMember && (

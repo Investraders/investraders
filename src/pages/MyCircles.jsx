@@ -5,6 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { ArrowLeft, Users, ArrowRight, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { TagBadge } from '@/components/circles/TagPicker';
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion } from 'framer-motion';
 
@@ -81,10 +82,13 @@ export default function MyCircles() {
                     <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
                       {circle.description || 'No description'}
                     </p>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <Badge className={CATEGORY_COLORS[circle.category] || CATEGORY_COLORS.general}>
                         {circle.category?.replace(/_/g, ' ') || 'General'}
                       </Badge>
+                      {(circle.tags || []).map((tag) => (
+                        <TagBadge key={tag} tag={tag} />
+                      ))}
                       <span className="text-xs text-muted-foreground flex items-center gap-1">
                         <Users className="w-3 h-3" /> {circle.member_ids?.length || 0} members
                       </span>
