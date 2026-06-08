@@ -37,6 +37,11 @@
         "type": "string"
       }
     },
+    "reactions": {
+      "type": "object",
+      "description": "Map of emoji -> array of user IDs who reacted",
+      "default": {}
+    },
     "post_type": {
       "type": "string",
       "enum": [

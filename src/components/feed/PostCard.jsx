@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal } from 'lucide-react';
+import EmojiReactions from '@/components/feed/EmojiReactions';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { base44 } from '@/api/base44Client';
@@ -85,6 +86,11 @@ export default function PostCard({ post }) {
         <p className="text-xs text-muted-foreground">
           Post on : {post.created_date ? format(new Date(post.created_date), 'dd MMM yyyy') : ''}
         </p>
+      </div>
+
+      {/* Emoji Reactions */}
+      <div className="px-4 pb-3">
+        <EmojiReactions post={post} />
       </div>
 
       {/* Actions */}
