@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import PostCard from '@/components/feed/PostCard';
 import ConnectionButton from '@/components/profile/ConnectionButton';
 import CirclesGrid from '@/components/profile/CirclesGrid';
+import ReputationBadges from '@/components/profile/ReputationBadges';
 import { Camera, MapPin, Edit2, Check, X, Users, Loader2 } from 'lucide-react';
 
 export default function UserProfile() {
@@ -261,6 +262,11 @@ export default function UserProfile() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Reputation Badges */}
+      <div className="bg-card rounded-2xl border shadow-sm p-6">
+        <ReputationBadges userId={profileId} />
       </div>
 
       {/* About */}
