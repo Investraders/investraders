@@ -5,6 +5,7 @@ import StoryBar from '@/components/feed/StoryBar';
 import CreatePostBox from '@/components/feed/CreatePostBox';
 import PostCard from '@/components/feed/PostCard';
 import CircleDiscovery from '@/components/feed/CircleDiscovery';
+import PendingInvites from '@/components/circles/PendingInvites';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Home() {
@@ -17,6 +18,7 @@ export default function Home() {
     <div className="max-w-2xl mx-auto">
       <StoryBar />
       <CreatePostBox />
+      <PendingInvites />
       <CircleDiscovery />
 
       <div className="space-y-5">
