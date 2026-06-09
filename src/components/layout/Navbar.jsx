@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Search, LayoutGrid, TrendingUp, LogOut, User } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +15,14 @@ import NotificationBell from '@/components/layout/NotificationBell';
 export default function Navbar({ user }) {
   const displayName = user?.full_name || user?.email?.split('@')[0] || 'User';
   const initials = displayName.charAt(0).toUpperCase();
+
+  const { data: userProfile } = useQuery({
+    queryKey: ['my-profile', user?.id],
+    queryFn: () => base44.entities.User.filter({ id: user?.id }),
+    enabled: !!user?.id,
+    select: (data) => data?.[0],
+  });
+  const avatarUrl = userProfile?.avatar_url || null;
 
   return (
     <nav className="sticky top-0 z-50 bg-white border-b border-border px-4 md:px-6 h-16 flex items-center justify-between">
@@ -40,8 +49,8 @@ export default function Navbar({ user }) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-2 ml-2">
-              {user?.avatar_url ? (
-                <img src={user.avatar_url} alt={displayName} className="w-9 h-9 rounded-full object-cover" />
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={displayName} className="w-9 h-9 rounded-full object-cover" />
               ) : (
                 <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-white font-semibold text-sm">
                   {initials}

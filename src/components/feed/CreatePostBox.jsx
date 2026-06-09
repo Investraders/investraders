@@ -27,6 +27,16 @@ export default function CreatePostBox() {
 
   const displayName = user?.full_name || user?.email?.split('@')[0] || 'User';
 
+  // Fetch full user profile to get avatar_url
+  const { data: userProfile } = useQuery({
+    queryKey: ['my-profile', user?.id],
+    queryFn: () => base44.entities.User.filter({ id: user?.id }),
+    enabled: !!user?.id,
+    select: (data) => data?.[0],
+  });
+
+  const avatarUrl = userProfile?.avatar_url || null;
+
   // Fetch user's circles
   const { data: circles = [] } = useQuery({
     queryKey: ['my-circles-post'],
@@ -104,7 +114,7 @@ export default function CreatePostBox() {
     createPost.mutate({
       content,
       author_name: displayName,
-      author_avatar: user?.avatar_url || null,
+      author_avatar: avatarUrl,
       post_type: postType,
       visibility: selectedCircle ? 'circle' : 'public',
       circle_id: selectedCircle?.id || undefined,
@@ -123,8 +133,8 @@ export default function CreatePostBox() {
   return (
     <div className="bg-card rounded-2xl border border-border p-4 mb-5 shadow-sm relative">
       <div className="flex items-start gap-3 mb-3">
-        {user?.avatar_url ? (
-          <img src={user.avatar_url} alt={displayName} className="w-10 h-10 rounded-full object-cover shrink-0" />
+        {avatarUrl ? (
+          <img src={avatarUrl} alt={displayName} className="w-10 h-10 rounded-full object-cover shrink-0" />
         ) : (
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-white font-bold text-sm shrink-0">
             {displayName.charAt(0)}

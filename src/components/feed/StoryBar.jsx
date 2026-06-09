@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 
 const STORY_USERS = [
   { name: 'Moham...', color: 'from-orange-400 to-pink-500' },
@@ -18,6 +19,14 @@ export default function StoryBar() {
     base44.auth.me().then(setUser);
   }, []);
 
+  const { data: userProfile } = useQuery({
+    queryKey: ['my-profile', user?.id],
+    queryFn: () => base44.entities.User.filter({ id: user?.id }),
+    enabled: !!user?.id,
+    select: (data) => data?.[0],
+  });
+  const avatarUrl = userProfile?.avatar_url || null;
+
   return (
     <div className="mb-6">
       <p className="text-sm text-muted-foreground mb-3">Watch stories before they disappear</p>
@@ -25,8 +34,8 @@ export default function StoryBar() {
         {/* My Profile */}
         <Link to="/profile" className="flex flex-col items-center gap-1 cursor-pointer shrink-0">
           <div className="w-16 h-16 rounded-full border-2 border-blue-400 overflow-hidden bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center">
-            {user?.avatar_url ? (
-              <img src={user.avatar_url} alt="My Profile" className="w-full h-full object-cover" />
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="My Profile" className="w-full h-full object-cover" />
             ) : (
               <span className="text-white font-bold text-lg">
                 {user?.full_name?.charAt(0) || user?.email?.charAt(0) || 'U'}
