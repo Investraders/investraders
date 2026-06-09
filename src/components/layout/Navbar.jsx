@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
-import { Search, LayoutGrid, TrendingUp, LogOut, User, MessageCircle } from 'lucide-react';
+import { Search, LayoutGrid, TrendingUp, LogOut, User, MessageCircle, Bookmark } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -68,6 +68,9 @@ export default function Navbar({ user }) {
           <DropdownMenuContent align="end">
             <DropdownMenuItem asChild>
               <Link to="/profile"><User className="w-4 h-4 mr-2" /> My Profile</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/saved"><Bookmark className="w-4 h-4 mr-2" /> Saved Posts</Link>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => base44.auth.logout()}>
               <LogOut className="w-4 h-4 mr-2" /> Sign Out

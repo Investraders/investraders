@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, FileText, Download, FileSpreadsheet, File } from 'lucide-react';
 import EmojiReactions from '@/components/feed/EmojiReactions';
 import CommentSection from '@/components/feed/CommentSection';
+import SharePostModal from '@/components/feed/SharePostModal';
 import { Badge } from '@/components/ui/badge';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
@@ -12,20 +13,29 @@ export default function PostCard({ post }) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [showComments, setShowComments] = useState(false);
+  const [showShare, setShowShare] = useState(false);
   const liked = post.liked_by?.includes(user?.id);
+  const saved = post.saved_by?.includes(user?.id);
 
   const toggleLike = useMutation({
     mutationFn: async () => {
       const likedBy = post.liked_by || [];
-      const newLikedBy = liked
-        ? likedBy.filter((id) => id !== user?.id)
-        : [...likedBy, user?.id];
-      await base44.entities.Post.update(post.id, {
-        liked_by: newLikedBy,
-        likes: newLikedBy.length,
-      });
+      const newLikedBy = liked ? likedBy.filter((id) => id !== user?.id) : [...likedBy, user?.id];
+      await base44.entities.Post.update(post.id, { liked_by: newLikedBy, likes: newLikedBy.length });
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['posts'] }),
+  });
+
+  const toggleSave = useMutation({
+    mutationFn: async () => {
+      const savedBy = post.saved_by || [];
+      const newSavedBy = saved ? savedBy.filter((id) => id !== user?.id) : [...savedBy, user?.id];
+      await base44.entities.Post.update(post.id, { saved_by: newSavedBy });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      queryClient.invalidateQueries({ queryKey: ['saved-posts', user?.id] });
+    },
   });
 
   return (
@@ -59,25 +69,18 @@ export default function PostCard({ post }) {
         <p className="text-sm text-foreground leading-relaxed">{post.content}</p>
       </div>
 
-      {/* Image */}
       {post.image_url && (
         <div className="px-4 pb-3">
           <img src={post.image_url} alt="" className="w-full rounded-xl object-cover max-h-96" />
         </div>
       )}
 
-      {/* Video */}
       {post.video_url && (
         <div className="px-4 pb-3">
-          <video
-            src={post.video_url}
-            controls
-            className="w-full rounded-xl max-h-96 bg-black"
-          />
+          <video src={post.video_url} controls className="w-full rounded-xl max-h-96 bg-black" />
         </div>
       )}
 
-      {/* Attached Document */}
       {post.file_url && (
         <div className="px-4 pb-3">
           <a
@@ -101,14 +104,12 @@ export default function PostCard({ post }) {
         </div>
       )}
 
-      {/* Post date */}
       <div className="px-4 pb-2">
         <p className="text-xs text-muted-foreground">
           {post.created_date ? format(new Date(post.created_date), 'dd MMM yyyy') : ''}
         </p>
       </div>
 
-      {/* Emoji Reactions */}
       <div className="px-4 pb-3">
         <EmojiReactions post={post} />
       </div>
@@ -132,21 +133,28 @@ export default function PostCard({ post }) {
           </button>
         </div>
         <div className="flex items-center gap-3">
-          <button className="text-muted-foreground hover:text-primary transition-colors">
+          <button
+            onClick={() => setShowShare(true)}
+            className="text-muted-foreground hover:text-primary transition-colors"
+          >
             <Share2 className="w-5 h-5" />
           </button>
-          <button className="text-muted-foreground hover:text-primary transition-colors">
-            <Bookmark className="w-5 h-5" />
+          <button
+            onClick={() => toggleSave.mutate()}
+            className={`transition-colors ${saved ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
+          >
+            <Bookmark className={`w-5 h-5 ${saved ? 'fill-current' : ''}`} />
           </button>
         </div>
       </div>
 
-      {/* Comment Section */}
       {showComments && (
         <div className="px-4 pb-4 border-t pt-3">
           <CommentSection postId={post.id} />
         </div>
       )}
+
+      {showShare && <SharePostModal post={post} onClose={() => setShowShare(false)} />}
     </div>
   );
 }

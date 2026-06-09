@@ -20,6 +20,7 @@ import UserProfile from '@/pages/UserProfile';
 import AppLayout from '@/components/layout/AppLayout';
 import Messages from '@/pages/Messages';
 import JoinCircle from '@/pages/JoinCircle';
+import SavedPosts from '@/pages/SavedPosts';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -59,6 +60,7 @@ const AuthenticatedApp = () => {
           <Route path="/profile/:userId" element={<UserProfile />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/join-circle" element={<JoinCircle />} />
+          <Route path="/saved" element={<SavedPosts />} />
         </Route>
       </Route>
 

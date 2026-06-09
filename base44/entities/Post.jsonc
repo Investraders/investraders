@@ -49,6 +49,14 @@
         "type": "string"
       }
     },
+    "saved_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "User IDs who bookmarked this post",
+      "default": []
+    },
     "reactions": {
       "type": "object",
       "description": "Map of emoji -> array of user IDs who reacted",

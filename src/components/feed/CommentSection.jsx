@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { Input } from '@/components/ui/input';
-import { Send } from 'lucide-react';
+import { Send, Smile } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 const REACTION_EMOJIS = ['👍', '❤️', '😂', '🔥', '💡'];
+const COMMENT_EMOJIS = ['😀','😂','❤️','🔥','👍','🎉','💰','📈','💡','🚀','😎','🤔','💪','🙏','✅','⚡','🌟','😮','👏','🤑'];
 
 export default function CommentSection({ postId }) {
   const { user } = useAuth();
@@ -14,6 +15,8 @@ export default function CommentSection({ postId }) {
   const [comment, setComment] = useState('');
   const [sort, setSort] = useState('newest');
   const [pickerFor, setPickerFor] = useState(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const inputRef = useRef();
 
   const { data: comments = [] } = useQuery({
     queryKey: ['comments', postId],
@@ -149,17 +152,47 @@ export default function CommentSection({ postId }) {
           e.preventDefault();
           if (comment.trim()) addComment.mutate(comment);
         }}
-        className="flex gap-2 items-center"
+        className="flex gap-2 items-center relative"
       >
         <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-400 to-cyan-300 flex items-center justify-center text-white text-[10px] font-bold shrink-0">
           {(user?.full_name || 'U').charAt(0).toUpperCase()}
         </div>
-        <Input
-          placeholder="Write a comment..."
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          className="h-8 text-sm rounded-full flex-1"
-        />
+        <div className="flex-1 relative">
+          <Input
+            ref={inputRef}
+            placeholder="Write a comment..."
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            className="h-8 text-sm rounded-full pr-8"
+          />
+          <button
+            type="button"
+            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
+          >
+            <Smile className="w-4 h-4" />
+          </button>
+          {showEmojiPicker && (
+            <div className="absolute bottom-10 left-0 bg-white rounded-2xl border shadow-xl p-3 z-30 w-64">
+              <div className="grid grid-cols-10 gap-1">
+                {COMMENT_EMOJIS.map((emoji) => (
+                  <button
+                    key={emoji}
+                    type="button"
+                    onClick={() => {
+                      setComment((prev) => prev + emoji);
+                      setShowEmojiPicker(false);
+                      inputRef.current?.focus();
+                    }}
+                    className="text-lg hover:scale-125 transition-transform p-0.5"
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
         <button
           type="submit"
           disabled={!comment.trim()}
