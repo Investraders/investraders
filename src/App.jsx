@@ -18,6 +18,7 @@ import CircleDetail from '@/pages/CircleDetail';
 import CreatePoll from '@/pages/CreatePoll';
 import UserProfile from '@/pages/UserProfile';
 import AppLayout from '@/components/layout/AppLayout';
+import Messages from '@/pages/Messages';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -55,6 +56,7 @@ const AuthenticatedApp = () => {
           <Route path="/create-poll" element={<CreatePoll />} />
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/profile/:userId" element={<UserProfile />} />
+          <Route path="/messages" element={<Messages />} />
         </Route>
       </Route>
 

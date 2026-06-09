@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import PostCard from '@/components/feed/PostCard';
 import ConnectionButton from '@/components/profile/ConnectionButton';
+import MessageButton from '@/components/messaging/MessageButton';
 import CirclesGrid from '@/components/profile/CirclesGrid';
 import ReputationBadges from '@/components/profile/ReputationBadges';
 import { Camera, MapPin, Edit2, Check, X, Users, Loader2 } from 'lucide-react';
@@ -258,7 +259,10 @@ export default function UserProfile() {
                 </Button>
               )
             ) : (
-              <ConnectionButton currentUserId={currentUser?.id} targetUserId={profileId} />
+              <div className="flex items-center gap-2">
+                <ConnectionButton currentUserId={currentUser?.id} targetUserId={profileId} />
+                <MessageButton targetUserId={profileId} targetUserName={displayName} />
+              </div>
             )}
           </div>
         </div>
