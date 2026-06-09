@@ -24,12 +24,14 @@ export default function StoryBar() {
       <div className="flex gap-3 overflow-x-auto pb-2">
         {/* My Profile */}
         <Link to="/profile" className="flex flex-col items-center gap-1 cursor-pointer shrink-0">
-          <div className="w-16 h-16 rounded-full border-2 border-blue-400 overflow-hidden">
-            <img 
-              src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email || 'user'}`}
-              alt="My Profile"
-              className="w-full h-full object-cover"
-            />
+          <div className="w-16 h-16 rounded-full border-2 border-blue-400 overflow-hidden bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center">
+            {user?.avatar_url ? (
+              <img src={user.avatar_url} alt="My Profile" className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-white font-bold text-lg">
+                {user?.full_name?.charAt(0) || user?.email?.charAt(0) || 'U'}
+              </span>
+            )}
           </div>
           <span className="text-xs text-muted-foreground font-medium">My Profile</span>
         </Link>

@@ -40,9 +40,13 @@ export default function Navbar({ user }) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-2 ml-2">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-white font-semibold text-sm">
-                {initials}
-              </div>
+              {user?.avatar_url ? (
+                <img src={user.avatar_url} alt={displayName} className="w-9 h-9 rounded-full object-cover" />
+              ) : (
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-white font-semibold text-sm">
+                  {initials}
+                </div>
+              )}
               <span className="text-sm font-medium hidden md:block">{displayName}</span>
             </button>
           </DropdownMenuTrigger>
