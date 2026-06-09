@@ -1,0 +1,140 @@
+import React, { useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
+import { Link } from 'react-router-dom';
+import { Users, Plus, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+
+const CATEGORY_COLORS = {
+  investing: 'bg-blue-100 text-blue-700',
+  crypto: 'bg-orange-100 text-orange-700',
+  stocks: 'bg-green-100 text-green-700',
+  real_estate: 'bg-purple-100 text-purple-700',
+  business: 'bg-cyan-100 text-cyan-700',
+  personal_finance: 'bg-rose-100 text-rose-700',
+  general: 'bg-gray-100 text-gray-700',
+};
+
+export default function CircleDiscovery() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  const { data: allCircles = [] } = useQuery({
+    queryKey: ['all-circles-discovery'],
+    queryFn: () => base44.entities.Circle.list('-created_date', 50),
+  });
+
+  const { data: userProfile } = useQuery({
+    queryKey: ['my-profile', user?.id],
+    queryFn: () => base44.entities.User.filter({ id: user?.id }),
+    enabled: !!user?.id,
+    select: (data) => data?.[0],
+  });
+
+  const joinMutation = useMutation({
+    mutationFn: async (circle) => {
+      const newMembers = [...(circle.member_ids || []), user.id];
+      await base44.entities.Circle.update(circle.id, { member_ids: newMembers });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['all-circles-discovery'] });
+      queryClient.invalidateQueries({ queryKey: ['my-circles-sidebar'] });
+    },
+  });
+
+  // Filter out circles user is already in, then score by relevance
+  const suggestions = useMemo(() => {
+    if (!user) return [];
+
+    const notMember = allCircles.filter(
+      (c) => !(c.member_ids || []).includes(user.id)
+    );
+
+    const userTags = userProfile?.tags || [];
+    const userType = userProfile?.user_type;
+
+    // Score: +2 for matching tag, +1 for matching category to user_type
+    const typeCategories = {
+      investor: ['investing', 'stocks', 'crypto', 'real_estate'],
+      innovator: ['business', 'general', 'personal_finance'],
+    };
+    const preferredCategories = typeCategories[userType] || [];
+
+    const scored = notMember.map((c) => {
+      let score = 0;
+      (c.tags || []).forEach((tag) => { if (userTags.includes(tag)) score += 2; });
+      if (preferredCategories.includes(c.category)) score += 1;
+      return { ...c, score };
+    });
+
+    scored.sort((a, b) => b.score - a.score);
+    return scored.slice(0, 4);
+  }, [allCircles, userProfile, user]);
+
+
+
+  if (suggestions.length === 0) return null;
+
+  return (
+    <div className="bg-card rounded-2xl border border-border shadow-sm p-4 mb-5">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+            <Users className="w-4 h-4 text-primary" />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold">Circles For You</h3>
+            <p className="text-xs text-muted-foreground">Based on your interests</p>
+          </div>
+        </div>
+        <Link to="/my-circles" className="flex items-center gap-1 text-xs text-primary font-medium hover:underline">
+          See all <ChevronRight className="w-3 h-3" />
+        </Link>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        {suggestions.map((circle) => (
+          <div
+            key={circle.id}
+            className="flex flex-col gap-2 p-3 rounded-xl border border-border hover:bg-muted/50 transition-colors"
+          >
+            {/* Circle avatar */}
+            <div className="flex items-center gap-2">
+              {circle.cover_image ? (
+                <img src={circle.cover_image} alt={circle.name} className="w-10 h-10 rounded-full object-cover shrink-0" />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-cyan-300 flex items-center justify-center text-white font-bold text-sm shrink-0">
+                  {circle.name?.charAt(0)}
+                </div>
+              )}
+              <div className="min-w-0">
+                <p className="text-xs font-semibold truncate">{circle.name}</p>
+                <p className="text-[10px] text-muted-foreground">
+                  {(circle.member_ids || []).length} members
+                </p>
+              </div>
+            </div>
+
+            {circle.category && (
+              <Badge className={`text-[10px] px-2 py-0 w-fit ${CATEGORY_COLORS[circle.category] || CATEGORY_COLORS.general}`}>
+                {circle.category.replace('_', ' ')}
+              </Badge>
+            )}
+
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-xs rounded-full w-full mt-auto"
+              disabled={joinMutation.isPending}
+              onClick={() => joinMutation.mutate(circle)}
+            >
+              <Plus className="w-3 h-3 mr-1" /> Join
+            </Button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
