@@ -21,8 +21,8 @@ import AppLayout from '@/components/layout/AppLayout';
 import Messages from '@/pages/Messages';
 import JoinCircle from '@/pages/JoinCircle';
 import SavedPosts from '@/pages/SavedPosts';
-import PostDetail from '@/pages/PostDetail.jsx';
-import AdminDashboard from '@/pages/AdminDashboard.jsx';
+import PostDetail from '@/pages/PostDetail';
+import AdminDashboard from '@/pages/AdminDashboard';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
