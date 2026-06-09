@@ -29,6 +29,28 @@
     "cover_image_url": {
       "type": "string",
       "description": "Cover/banner image URL"
+    },
+    "user_type": {
+      "type": "string",
+      "enum": [
+        "innovator",
+        "investor"
+      ],
+      "description": "Whether the user is an Innovator or an Investor"
+    },
+    "business_type": {
+      "type": "string",
+      "enum": [
+        "startup",
+        "small_business",
+        "enterprise",
+        "freelancer",
+        "venture_capital",
+        "angel_investor",
+        "fund_manager",
+        "other"
+      ],
+      "description": "Type of business or activity"
     }
   }
 }

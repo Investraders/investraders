@@ -12,6 +12,8 @@ export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [otpCode, setOtpCode] = useState('');
+  const [userType, setUserType] = useState('');
+  const [businessType, setBusinessType] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [agreed, setAgreed] = useState(false);
@@ -38,6 +40,9 @@ export default function Register() {
     try {
       const res = await base44.auth.verifyOtp({ email, otpCode });
       base44.auth.setToken(res.access_token);
+      if (userType || businessType) {
+        await base44.auth.updateMe({ user_type: userType, business_type: businessType });
+      }
       window.location.href = '/';
     } catch (err) {
       setError(err.message || 'Verification failed');
@@ -109,6 +114,38 @@ export default function Register() {
                 <div>
                   <label className="text-sm text-muted-foreground mb-1.5 block">Create Password</label>
                   <Input type="password" placeholder="Enter Password to Create" value={password} onChange={(e) => setPassword(e.target.value)} className="h-12" />
+                </div>
+
+                <div>
+                  <label className="text-sm text-muted-foreground mb-1.5 block">I am an...</label>
+                  <select
+                    value={userType}
+                    onChange={(e) => setUserType(e.target.value)}
+                    className="w-full h-12 border border-input rounded-md px-3 bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                  >
+                    <option value="">Select your role</option>
+                    <option value="innovator">🚀 Innovator</option>
+                    <option value="investor">💼 Investor</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-sm text-muted-foreground mb-1.5 block">Business type</label>
+                  <select
+                    value={businessType}
+                    onChange={(e) => setBusinessType(e.target.value)}
+                    className="w-full h-12 border border-input rounded-md px-3 bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                  >
+                    <option value="">Select business type</option>
+                    <option value="startup">Startup</option>
+                    <option value="small_business">Small Business</option>
+                    <option value="enterprise">Enterprise</option>
+                    <option value="freelancer">Freelancer / Solo</option>
+                    <option value="venture_capital">Venture Capital</option>
+                    <option value="angel_investor">Angel Investor</option>
+                    <option value="fund_manager">Fund Manager</option>
+                    <option value="other">Other</option>
+                  </select>
                 </div>
 
                 <div className="flex items-start gap-2">

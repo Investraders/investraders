@@ -20,6 +20,8 @@ Deno.serve(async (req) => {
       location: profile.location || '',
       avatar_url: profile.avatar_url || '',
       cover_image_url: profile.cover_image_url || '',
+      user_type: profile.user_type || '',
+      business_type: profile.business_type || '',
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

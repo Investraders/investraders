@@ -19,6 +19,13 @@ export default function UserProfile() {
   const isOwnProfile = !userId || userId === currentUser?.id;
   const profileId = isOwnProfile ? currentUser?.id : userId;
 
+  const USER_TYPE_LABELS = { innovator: '🚀 Innovator', investor: '💼 Investor' };
+  const BUSINESS_TYPE_LABELS = {
+    startup: 'Startup', small_business: 'Small Business', enterprise: 'Enterprise',
+    freelancer: 'Freelancer / Solo', venture_capital: 'Venture Capital',
+    angel_investor: 'Angel Investor', fund_manager: 'Fund Manager', other: 'Other',
+  };
+
   const [isEditing, setIsEditing] = useState(false);
   const [uploading, setUploading] = useState(null); // 'avatar' | 'cover' | null
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -174,6 +181,22 @@ export default function UserProfile() {
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <h1 className="text-xl font-bold text-foreground">{displayName}</h1>
+
+            {/* User type + business type badges */}
+            {((isOwnProfile ? currentUser?.user_type : otherProfile?.user_type) || (isOwnProfile ? currentUser?.business_type : otherProfile?.business_type)) && (
+              <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                {(isOwnProfile ? currentUser?.user_type : otherProfile?.user_type) && (
+                  <span className="text-xs font-semibold px-3 py-1 rounded-full bg-blue-100 text-blue-700 border border-blue-200">
+                    {USER_TYPE_LABELS[isOwnProfile ? currentUser.user_type : otherProfile.user_type]}
+                  </span>
+                )}
+                {(isOwnProfile ? currentUser?.business_type : otherProfile?.business_type) && (
+                  <span className="text-xs font-semibold px-3 py-1 rounded-full bg-cyan-100 text-cyan-700 border border-cyan-200">
+                    {BUSINESS_TYPE_LABELS[isOwnProfile ? currentUser.business_type : otherProfile.business_type]}
+                  </span>
+                )}
+              </div>
+            )}
 
             {isOwnProfile && isEditing ? (
               <Input
