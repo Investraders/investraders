@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Shield, Crown, User, ChevronDown } from 'lucide-react';
+import { Shield, Crown, User, ChevronDown, Search, UserPlus } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Link } from 'react-router-dom';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,7 +28,7 @@ function RoleBadge({ role }) {
   );
 }
 
-function MemberRow({ userId, role, isCurrentUser, circle, canManage, displayName }) {
+function MemberRow({ userId, role, isCurrentUser, circle, canManage, displayName, currentUserId }) {
   const queryClient = useQueryClient();
   const label = isCurrentUser ? `${displayName} (You)` : displayName;
 
@@ -65,6 +67,15 @@ function MemberRow({ userId, role, isCurrentUser, circle, canManage, displayName
       </div>
       <div className="flex items-center gap-2">
         <RoleBadge role={role} />
+        {!isCurrentUser && (
+          <Link
+            to={`/profile/${userId}`}
+            className="w-6 h-6 flex items-center justify-center rounded hover:bg-primary/10 text-primary/60 hover:text-primary transition-colors"
+            title="View profile & connect"
+          >
+            <UserPlus className="w-3.5 h-3.5" />
+          </Link>
+        )}
         {canManage && !isCurrentUser && role !== 'owner' && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -99,6 +110,8 @@ function MemberRow({ userId, role, isCurrentUser, circle, canManage, displayName
 
 export default function CircleMemberRoles({ circle, currentUserId }) {
   const [expanded, setExpanded] = useState(false);
+  const [search, setSearch] = useState('');
+
   const isOwner = circle?.created_by_id === currentUserId;
   const isModerator = (circle?.moderator_ids || []).includes(currentUserId);
   const canManage = isOwner || isModerator;
@@ -129,17 +142,43 @@ export default function CircleMemberRoles({ circle, currentUserId }) {
     return order[getRole(a)] - order[getRole(b)];
   });
 
-  const displayed = expanded ? sorted : sorted.slice(0, 4);
+  // Filter by search
+  const filtered = search.trim()
+    ? sorted.filter((uid) =>
+        (nameData[uid] || '').toLowerCase().includes(search.toLowerCase())
+      )
+    : sorted;
+
+  const isSearching = search.trim().length > 0;
+  const displayed = isSearching || expanded ? filtered : filtered.slice(0, 4);
 
   return (
     <div className="px-6 pb-6">
       <div className="border rounded-2xl overflow-hidden">
         <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-slate-50 to-blue-50 border-b">
           <h3 className="text-sm font-semibold flex items-center gap-2">
-            <Shield className="w-4 h-4 text-primary" /> Members & Roles
+            <Shield className="w-4 h-4 text-primary" /> Members &amp; Roles
           </h3>
           <span className="text-xs text-muted-foreground">{memberIds.length} total</span>
         </div>
+
+        {/* Search bar */}
+        {memberIds.length > 0 && (
+          <div className="px-3 py-2.5 border-b bg-white">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+              <Input
+                placeholder="Search members..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="h-8 pl-8 text-sm rounded-full bg-muted/40 border-0 focus-visible:ring-1"
+              />
+            </div>
+            {isSearching && filtered.length === 0 && (
+              <p className="text-xs text-muted-foreground text-center mt-2">No members found</p>
+            )}
+          </div>
+        )}
 
         <div className="px-4 py-2 flex gap-3 border-b bg-muted/20">
           {Object.keys(ROLE_CONFIG).map((key) => (
@@ -154,15 +193,15 @@ export default function CircleMemberRoles({ circle, currentUserId }) {
             <p className="text-sm text-muted-foreground text-center py-4">No members yet</p>
           ) : (
             <>
-              {circle?.created_by_id && !memberIds.includes(circle.created_by_id) && (
+              {!isSearching && circle?.created_by_id && !memberIds.includes(circle.created_by_id) && (
                 <MemberRow
-                  key={circle.created_by_id}
                   userId={circle.created_by_id}
                   role="owner"
                   isCurrentUser={circle.created_by_id === currentUserId}
                   circle={circle}
                   canManage={canManage}
                   displayName={nameData[circle.created_by_id] || 'User'}
+                  currentUserId={currentUserId}
                 />
               )}
               {displayed.map((uid) => (
@@ -174,14 +213,15 @@ export default function CircleMemberRoles({ circle, currentUserId }) {
                   circle={circle}
                   canManage={canManage}
                   displayName={nameData[uid] || 'Member'}
+                  currentUserId={currentUserId}
                 />
               ))}
-              {sorted.length > 4 && (
+              {!isSearching && filtered.length > 4 && (
                 <button
                   onClick={() => setExpanded(!expanded)}
                   className="w-full text-xs text-primary hover:underline py-2 text-center"
                 >
-                  {expanded ? 'Show less' : `Show ${sorted.length - 4} more`}
+                  {expanded ? 'Show less' : `Show ${filtered.length - 4} more`}
                 </button>
               )}
             </>
