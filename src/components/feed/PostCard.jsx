@@ -62,6 +62,17 @@ export default function PostCard({ post }) {
         </div>
       )}
 
+      {/* Video */}
+      {post.video_url && (
+        <div className="px-4 pb-3">
+          <video
+            src={post.video_url}
+            controls
+            className="w-full rounded-xl max-h-96 bg-black"
+          />
+        </div>
+      )}
+
       {/* Attached Document */}
       {post.file_url && (
         <div className="px-4 pb-3">

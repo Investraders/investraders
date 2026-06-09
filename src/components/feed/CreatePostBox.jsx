@@ -1,30 +1,86 @@
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Image, Video, CircleDot, FileText, X, Loader2 } from 'lucide-react';
+import { Image, Video, CircleDot, FileText, X, Loader2, Check, ChevronDown } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-const ACCEPTED = '.pdf,.xls,.xlsx,.csv,.doc,.docx';
+const ACCEPTED_FILE = '.pdf,.xls,.xlsx,.csv,.doc,.docx';
 
 export default function CreatePostBox() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+
   const [content, setContent] = useState('');
   const [attachedFile, setAttachedFile] = useState(null); // { url, name, type }
+  const [attachedImage, setAttachedImage] = useState(null); // { url, previewUrl }
+  const [attachedVideo, setAttachedVideo] = useState(null); // { url, name }
   const [uploading, setUploading] = useState(false);
+  const [uploadingType, setUploadingType] = useState(null); // 'photo' | 'video' | 'file'
+  const [showCirclePicker, setShowCirclePicker] = useState(false);
+  const [selectedCircle, setSelectedCircle] = useState(null);
+
   const fileInputRef = useRef(null);
-  const queryClient = useQueryClient();
+  const photoInputRef = useRef(null);
+  const videoInputRef = useRef(null);
+
   const displayName = user?.full_name || user?.email?.split('@')[0] || 'User';
+
+  // Fetch user's circles
+  const { data: circles = [] } = useQuery({
+    queryKey: ['my-circles-post'],
+    queryFn: () => base44.entities.Circle.filter({ member_ids: { $elemMatch: user?.id } }),
+    enabled: !!user?.id,
+  });
+
+  const handlePhotoSelect = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    setUploadingType('photo');
+    const previewUrl = URL.createObjectURL(file);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    setAttachedImage({ url: file_url, previewUrl });
+    setAttachedFile(null);
+    setAttachedVideo(null);
+    setUploading(false);
+    setUploadingType(null);
+    e.target.value = '';
+  };
+
+  const handleVideoSelect = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    setUploadingType('video');
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    setAttachedVideo({ url: file_url, name: file.name });
+    setAttachedFile(null);
+    setAttachedImage(null);
+    setUploading(false);
+    setUploadingType(null);
+    e.target.value = '';
+  };
 
   const handleFileSelect = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     setUploading(true);
+    setUploadingType('file');
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
     setAttachedFile({ url: file_url, name: file.name, type: file.type });
+    setAttachedImage(null);
+    setAttachedVideo(null);
     setUploading(false);
+    setUploadingType(null);
     e.target.value = '';
+  };
+
+  const clearAttachments = () => {
+    setAttachedFile(null);
+    setAttachedImage(null);
+    setAttachedVideo(null);
   };
 
   const createPost = useMutation({
@@ -32,29 +88,39 @@ export default function CreatePostBox() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts'] });
       setContent('');
+      clearAttachments();
+      setSelectedCircle(null);
     },
   });
 
   const handlePost = () => {
     if (!content.trim()) return;
+
+    let postType = 'text';
+    if (attachedImage) postType = 'photo';
+    else if (attachedVideo) postType = 'video';
+    else if (attachedFile) postType = 'document';
+
     createPost.mutate({
       content,
       author_name: displayName,
-      post_type: attachedFile ? 'document' : 'text',
-      visibility: 'public',
+      post_type: postType,
+      visibility: selectedCircle ? 'circle' : 'public',
+      circle_id: selectedCircle?.id || undefined,
       likes: 0,
       liked_by: [],
+      ...(attachedImage && { image_url: attachedImage.url }),
+      ...(attachedVideo && { video_url: attachedVideo.url }),
       ...(attachedFile && {
         file_url: attachedFile.url,
         file_name: attachedFile.name,
         file_type: attachedFile.type,
       }),
     });
-    setAttachedFile(null);
   };
 
   return (
-    <div className="bg-card rounded-2xl border border-border p-4 mb-5 shadow-sm">
+    <div className="bg-card rounded-2xl border border-border p-4 mb-5 shadow-sm relative">
       <div className="flex items-start gap-3 mb-3">
         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-white font-bold text-sm shrink-0">
           {displayName.charAt(0)}
@@ -65,6 +131,19 @@ export default function CreatePostBox() {
         </div>
       </div>
 
+      {/* Circle badge if selected */}
+      {selectedCircle && (
+        <div className="flex items-center gap-1.5 mb-2">
+          <span className="text-xs text-muted-foreground">Posting to:</span>
+          <span className="flex items-center gap-1 text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+            <CircleDot className="w-3 h-3" /> {selectedCircle.name}
+            <button onClick={() => setSelectedCircle(null)} className="ml-1 hover:text-red-500">
+              <X className="w-3 h-3" />
+            </button>
+          </span>
+        </div>
+      )}
+
       <Textarea
         placeholder="Write something what you want post..."
         value={content}
@@ -72,49 +151,135 @@ export default function CreatePostBox() {
         className="min-h-[80px] border-border resize-none mb-3"
       />
 
-      {/* File attachment preview */}
-      {attachedFile && (
-        <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-xl bg-amber-50 border border-amber-200">
-          <FileText className="w-4 h-4 text-amber-600 shrink-0" />
-          <span className="text-xs text-amber-700 font-medium flex-1 truncate">{attachedFile.name}</span>
-          <button onClick={() => setAttachedFile(null)} className="text-amber-400 hover:text-amber-600">
+      {/* Image preview */}
+      {attachedImage && (
+        <div className="relative mb-3">
+          <img src={attachedImage.previewUrl} alt="Preview" className="w-full rounded-xl object-cover max-h-64" />
+          <button
+            onClick={clearAttachments}
+            className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1 hover:bg-black/70"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Video preview */}
+      {attachedVideo && (
+        <div className="relative mb-3 flex items-center gap-2 px-3 py-2 rounded-xl bg-purple-50 border border-purple-200">
+          <Video className="w-4 h-4 text-purple-600 shrink-0" />
+          <span className="text-xs text-purple-700 font-medium flex-1 truncate">{attachedVideo.name}</span>
+          <button onClick={clearAttachments} className="text-purple-400 hover:text-purple-600">
             <X className="w-3.5 h-3.5" />
           </button>
         </div>
       )}
 
-      <input ref={fileInputRef} type="file" accept={ACCEPTED} className="hidden" onChange={handleFileSelect} />
+      {/* File preview */}
+      {attachedFile && (
+        <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-xl bg-amber-50 border border-amber-200">
+          <FileText className="w-4 h-4 text-amber-600 shrink-0" />
+          <span className="text-xs text-amber-700 font-medium flex-1 truncate">{attachedFile.name}</span>
+          <button onClick={clearAttachments} className="text-amber-400 hover:text-amber-600">
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
+      {/* Hidden inputs */}
+      <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoSelect} />
+      <input ref={videoInputRef} type="file" accept="video/*" className="hidden" onChange={handleVideoSelect} />
+      <input ref={fileInputRef} type="file" accept={ACCEPTED_FILE} className="hidden" onChange={handleFileSelect} />
 
       <div className="flex items-center justify-between">
         <div className="flex gap-2 flex-wrap">
-          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors">
-            <CircleDot className="w-3.5 h-3.5" /> Circle
+          {/* Circle button */}
+          <div className="relative">
+            <button
+              onClick={() => setShowCirclePicker((p) => !p)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors"
+            >
+              <CircleDot className="w-3.5 h-3.5" />
+              Circle
+              <ChevronDown className="w-3 h-3" />
+            </button>
+
+            {/* Circle dropdown */}
+            {showCirclePicker && (
+              <div className="absolute left-0 top-9 z-50 w-52 bg-card border border-border rounded-xl shadow-lg overflow-hidden">
+                <div className="p-1">
+                  <button
+                    onClick={() => { setSelectedCircle(null); setShowCirclePicker(false); }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-xs rounded-lg hover:bg-secondary text-left"
+                  >
+                    <span className="flex-1">Public (no circle)</span>
+                    {!selectedCircle && <Check className="w-3.5 h-3.5 text-primary" />}
+                  </button>
+                  {circles.length === 0 && (
+                    <p className="px-3 py-2 text-xs text-muted-foreground">You haven't joined any circles yet.</p>
+                  )}
+                  {circles.map((c) => (
+                    <button
+                      key={c.id}
+                      onClick={() => { setSelectedCircle(c); setShowCirclePicker(false); }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-xs rounded-lg hover:bg-secondary text-left"
+                    >
+                      <CircleDot className="w-3 h-3 text-primary shrink-0" />
+                      <span className="flex-1 truncate">{c.name}</span>
+                      {selectedCircle?.id === c.id && <Check className="w-3.5 h-3.5 text-primary" />}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Photo button */}
+          <button
+            onClick={() => photoInputRef.current?.click()}
+            disabled={uploading}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-500/10 text-green-600 text-xs font-medium hover:bg-green-500/20 transition-colors disabled:opacity-50"
+          >
+            {uploading && uploadingType === 'photo' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Image className="w-3.5 h-3.5" />}
+            Photo
           </button>
-          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-500/10 text-green-600 text-xs font-medium hover:bg-green-500/20 transition-colors">
-            <Image className="w-3.5 h-3.5" /> Photo
+
+          {/* Video button */}
+          <button
+            onClick={() => videoInputRef.current?.click()}
+            disabled={uploading}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-purple-500/10 text-purple-600 text-xs font-medium hover:bg-purple-500/20 transition-colors disabled:opacity-50"
+          >
+            {uploading && uploadingType === 'video' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Video className="w-3.5 h-3.5" />}
+            Video
           </button>
-          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-purple-500/10 text-purple-600 text-xs font-medium hover:bg-purple-500/20 transition-colors">
-            <Video className="w-3.5 h-3.5" /> Video
-          </button>
+
+          {/* File button */}
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 text-amber-600 text-xs font-medium hover:bg-amber-500/20 transition-colors disabled:opacity-50"
           >
-            {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileText className="w-3.5 h-3.5" />}
-            {uploading ? 'Uploading...' : 'File'}
+            {uploading && uploadingType === 'file' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileText className="w-3.5 h-3.5" />}
+            {uploading && uploadingType === 'file' ? 'Uploading...' : 'File'}
           </button>
         </div>
+
         <Button
           onClick={handlePost}
           disabled={!content.trim() || createPost.isPending}
           size="sm"
           className="rounded-full bg-primary hover:bg-primary/90 px-5"
         >
-          Post
+          {createPost.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Post'}
         </Button>
       </div>
+
+      {/* Close circle picker on outside click */}
+      {showCirclePicker && (
+        <div className="fixed inset-0 z-40" onClick={() => setShowCirclePicker(false)} />
+      )}
     </div>
   );
 }
