@@ -33,9 +33,13 @@ export default function PostCard({ post }) {
       {/* Header */}
       <div className="p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-full bg-gradient-to-br from-blue-400 to-cyan-300 flex items-center justify-center text-white font-bold text-sm">
-            {post.author_name?.charAt(0) || 'U'}
-          </div>
+          {post.author_avatar ? (
+            <img src={post.author_avatar} alt={post.author_name} className="w-11 h-11 rounded-full object-cover" />
+          ) : (
+            <div className="w-11 h-11 rounded-full bg-gradient-to-br from-blue-400 to-cyan-300 flex items-center justify-center text-white font-bold text-sm">
+              {post.author_name?.charAt(0) || 'U'}
+            </div>
+          )}
           <div>
             <p className="text-sm font-semibold">{post.author_name || 'Unknown'}</p>
             <div className="flex items-center gap-2">

@@ -104,6 +104,7 @@ export default function CreatePostBox() {
     createPost.mutate({
       content,
       author_name: displayName,
+      author_avatar: user?.avatar_url || null,
       post_type: postType,
       visibility: selectedCircle ? 'circle' : 'public',
       circle_id: selectedCircle?.id || undefined,
@@ -122,9 +123,13 @@ export default function CreatePostBox() {
   return (
     <div className="bg-card rounded-2xl border border-border p-4 mb-5 shadow-sm relative">
       <div className="flex items-start gap-3 mb-3">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-white font-bold text-sm shrink-0">
-          {displayName.charAt(0)}
-        </div>
+        {user?.avatar_url ? (
+          <img src={user.avatar_url} alt={displayName} className="w-10 h-10 rounded-full object-cover shrink-0" />
+        ) : (
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-white font-bold text-sm shrink-0">
+            {displayName.charAt(0)}
+          </div>
+        )}
         <div className="flex-1">
           <p className="text-sm font-semibold">Hello! {displayName}</p>
           <p className="text-xs text-muted-foreground">What's in your mind to post today..</p>
