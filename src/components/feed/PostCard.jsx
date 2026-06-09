@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, FileText, Download, FileSpreadsheet, File } from 'lucide-react';
 import EmojiReactions from '@/components/feed/EmojiReactions';
 import CommentSection from '@/components/feed/CommentSection';
 import { Badge } from '@/components/ui/badge';
@@ -59,6 +59,30 @@ export default function PostCard({ post }) {
       {post.image_url && (
         <div className="px-4 pb-3">
           <img src={post.image_url} alt="" className="w-full rounded-xl object-cover max-h-96" />
+        </div>
+      )}
+
+      {/* Attached Document */}
+      {post.file_url && (
+        <div className="px-4 pb-3">
+          <a
+            href={post.file_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 p-3 rounded-xl border border-amber-200 bg-amber-50 hover:bg-amber-100 transition-colors group"
+          >
+            {post.file_type?.includes('spreadsheet') || post.file_name?.match(/\.(xls|xlsx|csv)$/i)
+              ? <FileSpreadsheet className="w-8 h-8 text-green-600 shrink-0" />
+              : post.file_type?.includes('pdf') || post.file_name?.match(/\.pdf$/i)
+              ? <FileText className="w-8 h-8 text-red-500 shrink-0" />
+              : <File className="w-8 h-8 text-amber-600 shrink-0" />
+            }
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-amber-800 truncate">{post.file_name || 'Attached Document'}</p>
+              <p className="text-xs text-amber-600">Click to open</p>
+            </div>
+            <Download className="w-4 h-4 text-amber-500 group-hover:text-amber-700 shrink-0" />
+          </a>
         </div>
       )}
 

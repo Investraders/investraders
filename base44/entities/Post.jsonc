@@ -14,6 +14,18 @@
       "type": "string",
       "description": "Attached video URL"
     },
+    "file_url": {
+      "type": "string",
+      "description": "Attached document URL (PDF, spreadsheet)"
+    },
+    "file_name": {
+      "type": "string",
+      "description": "Original file name"
+    },
+    "file_type": {
+      "type": "string",
+      "description": "MIME type of the attached file"
+    },
     "circle_id": {
       "type": "string",
       "description": "ID of the circle this post belongs to"
@@ -48,7 +60,8 @@
         "text",
         "photo",
         "video",
-        "poll"
+        "poll",
+        "document"
       ],
       "default": "text"
     },
