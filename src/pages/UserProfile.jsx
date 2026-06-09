@@ -76,10 +76,15 @@ export default function UserProfile() {
       headline: localProfile.headline,
       location: localProfile.location,
       bio: localProfile.bio,
+      avatar_url: localProfile.avatar_url,
+      cover_image_url: localProfile.cover_image_url,
     }),
     onSuccess: () => {
       setIsEditing(false);
       queryClient.invalidateQueries({ queryKey: ['user'] });
+      queryClient.invalidateQueries({ queryKey: ['public-profile', profileId] });
+      queryClient.invalidateQueries({ queryKey: ['my-profile', profileId] });
+      queryClient.invalidateQueries({ queryKey: ['my-profile-story', profileId] });
     },
   });
 

@@ -9,11 +9,12 @@ import CircleEventCalendar from '@/components/circles/CircleEventCalendar';
 import CircleAdminDashboard from '@/components/circles/CircleAdminDashboard';
 import CircleMemberRoles from '@/components/circles/CircleMemberRoles';
 import InviteToCircleModal from '@/components/circles/InviteToCircleModal';
+import ShareCircleModal from '@/components/circles/ShareCircleModal';
 import { useCircleNotifications } from '@/hooks/useCircleNotifications';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Plus, Send, Users, MessageCircle, ChevronUp, ChevronDown, UserPlus } from 'lucide-react';
+import { ArrowLeft, Plus, Send, Users, MessageCircle, ChevronUp, ChevronDown, UserPlus, Share2 } from 'lucide-react';
 import { TagBadge } from '@/components/circles/TagPicker';
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -72,6 +73,7 @@ export default function CircleDetail() {
   const [showQuestionForm, setShowQuestionForm] = useState(false);
   const [selectedResponseData, setSelectedResponseData] = useState(null);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const { data: circle, isLoading: loadingCircle } = useQuery({
     queryKey: ['circle', id],
@@ -162,6 +164,9 @@ export default function CircleDetail() {
       {showInviteModal && circle && (
         <InviteToCircleModal circle={circle} onClose={() => setShowInviteModal(false)} />
       )}
+      {showShareModal && circle && (
+        <ShareCircleModal circle={circle} onClose={() => setShowShareModal(false)} onPostAsStory={() => queryClient.invalidateQueries({ queryKey: ['stories'] })} />
+      )}
       <Link to="/" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
         <ArrowLeft className="w-4 h-4" /> Back to Home
       </Link>
@@ -187,6 +192,14 @@ export default function CircleDetail() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-full gap-1.5"
+              onClick={() => setShowShareModal(true)}
+            >
+              <Share2 className="w-4 h-4" /> Share
+            </Button>
             {isMember && (
               <Button
                 variant="outline"
