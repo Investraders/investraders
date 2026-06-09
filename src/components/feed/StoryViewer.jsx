@@ -81,13 +81,15 @@ export default function StoryViewer({ stories, startIndex = 0, onClose, onReact 
         </div>
 
         {/* Content */}
-        {story.image_url
+        {story.video_url
+          ? <video src={story.video_url} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+          : story.image_url
           ? <img src={story.image_url} alt="" className="w-full h-full object-cover" />
-          : <div className="w-full h-full bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center p-8">
+          : <div className={`w-full h-full ${story.bg_gradient || 'bg-gradient-to-br from-blue-600 to-cyan-500'} flex items-center justify-center p-8`}>
               <p className="text-white text-2xl font-bold text-center">{story.text}</p>
             </div>
         }
-        {story.text && story.image_url && (
+        {story.text && (story.image_url || story.video_url) && (
           <div className="absolute bottom-20 left-0 right-0 px-4">
             <p className="text-white text-lg font-semibold text-center drop-shadow-lg">{story.text}</p>
           </div>

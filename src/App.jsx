@@ -21,6 +21,8 @@ import AppLayout from '@/components/layout/AppLayout';
 import Messages from '@/pages/Messages';
 import JoinCircle from '@/pages/JoinCircle';
 import SavedPosts from '@/pages/SavedPosts';
+import PostDetail from '@/pages/PostDetail.jsx';
+import AdminDashboard from '@/pages/AdminDashboard.jsx';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -61,6 +63,8 @@ const AuthenticatedApp = () => {
           <Route path="/messages" element={<Messages />} />
           <Route path="/join-circle" element={<JoinCircle />} />
           <Route path="/saved" element={<SavedPosts />} />
+          <Route path="/post/:id" element={<PostDetail />} />
+          <Route path="/admin" element={<AdminDashboard />} />
         </Route>
       </Route>
 

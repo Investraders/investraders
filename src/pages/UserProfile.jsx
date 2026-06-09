@@ -11,6 +11,7 @@ import ConnectionButton from '@/components/profile/ConnectionButton';
 import MessageButton from '@/components/messaging/MessageButton';
 import CirclesGrid from '@/components/profile/CirclesGrid';
 import ReputationBadges from '@/components/profile/ReputationBadges';
+import PhotosCard from '@/components/profile/PhotosCard';
 import { Camera, MapPin, Edit2, Check, X, Users, Loader2 } from 'lucide-react';
 
 export default function UserProfile() {
@@ -302,6 +303,9 @@ export default function UserProfile() {
         <h2 className="text-base font-semibold mb-4">Circles</h2>
         <CirclesGrid userId={profileId} />
       </div>
+
+      {/* Photos */}
+      <PhotosCard userId={profileId} />
 
       {/* Recent Activity */}
       {posts.length > 0 && (

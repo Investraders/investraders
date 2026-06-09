@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Input } from '@/components/ui/input';
-import { Search, LayoutGrid, TrendingUp, LogOut, User, MessageCircle, Bookmark } from 'lucide-react';
+import { LayoutGrid, TrendingUp, LogOut, User, MessageCircle, Bookmark, Shield } from 'lucide-react';
+import SearchBar from '@/components/layout/SearchBar';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -34,10 +34,7 @@ export default function Navbar({ user }) {
       </Link>
 
       <div className="flex-1 max-w-md mx-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Search" className="pl-10 h-10 bg-muted border-0 rounded-full" />
-        </div>
+        <SearchBar />
       </div>
 
       <div className="flex items-center gap-3">
@@ -72,6 +69,11 @@ export default function Navbar({ user }) {
             <DropdownMenuItem asChild>
               <Link to="/saved"><Bookmark className="w-4 h-4 mr-2" /> Saved Posts</Link>
             </DropdownMenuItem>
+            {user?.role === 'admin' && (
+              <DropdownMenuItem asChild>
+                <Link to="/admin"><Shield className="w-4 h-4 mr-2" /> Admin Dashboard</Link>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem onClick={() => base44.auth.logout()}>
               <LogOut className="w-4 h-4 mr-2" /> Sign Out
             </DropdownMenuItem>

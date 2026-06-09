@@ -48,8 +48,7 @@ export default function NotificationBell() {
   const handleOpen = (isOpen) => {
     setOpen(isOpen);
     if (isOpen && unreadCount > 0) {
-      // Auto-mark all as read when panel opens
-      setTimeout(() => markAllRead.mutate(), 1500);
+      markAllRead.mutate();
     }
   };
 

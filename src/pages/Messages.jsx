@@ -28,15 +28,27 @@ export default function Messages() {
     queryKey: ['dms', user?.id],
     queryFn: () => base44.entities.DirectMessage.filter({ sender_id: user?.id }),
     enabled: !!user?.id,
-    refetchInterval: 3000,
+    refetchInterval: 1500,
   });
 
   const { data: receivedMessages = [] } = useQuery({
     queryKey: ['dms-received', user?.id],
     queryFn: () => base44.entities.DirectMessage.filter({ recipient_id: user?.id }),
     enabled: !!user?.id,
-    refetchInterval: 3000,
+    refetchInterval: 1500,
   });
+
+  // Real-time subscriptions
+  useEffect(() => {
+    if (!user?.id) return;
+    const unsub1 = base44.entities.DirectMessage.subscribe((event) => {
+      if (event.data?.sender_id === user.id || event.data?.recipient_id === user.id) {
+        queryClient.invalidateQueries({ queryKey: ['dms', user.id] });
+        queryClient.invalidateQueries({ queryKey: ['dms-received', user.id] });
+      }
+    });
+    return () => unsub1();
+  }, [user?.id]);
 
   // All users for display names
   const { data: allUsers = [] } = useQuery({
