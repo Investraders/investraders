@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Image, Video, CircleDot, FileText, X, Loader2, Check, ChevronDown, Plus } from 'lucide-react';
+import ImageCropModal from '@/components/ui/ImageCropModal';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
@@ -25,6 +26,8 @@ export default function CreatePostBox() {
   const [uploadingType, setUploadingType] = useState(null); // 'photo' | 'video' | 'file'
   const [showCirclePicker, setShowCirclePicker] = useState(false);
   const [selectedCircle, setSelectedCircle] = useState(null);
+  const [cropSrc, setCropSrc] = useState(null); // raw object URL for crop modal
+  const pendingPhotoFileRef = useRef(null);
 
   const fileInputRef = useRef(null);
   const photoInputRef = useRef(null);
@@ -54,19 +57,33 @@ export default function CreatePostBox() {
     staleTime: CACHE.medium,
   });
 
-  const handlePhotoSelect = async (e) => {
+  const handlePhotoSelect = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    // Open crop modal first
+    const objectUrl = URL.createObjectURL(file);
+    pendingPhotoFileRef.current = file;
+    setCropSrc(objectUrl);
+    e.target.value = '';
+  };
+
+  const handleCropConfirm = async (blob) => {
+    setCropSrc(null);
     setUploading(true);
     setUploadingType('photo');
-    const previewUrl = URL.createObjectURL(file);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    const previewUrl = URL.createObjectURL(blob);
+    const croppedFile = new File([blob], pendingPhotoFileRef.current?.name || 'photo.jpg', { type: 'image/jpeg' });
+    const { file_url } = await base44.integrations.Core.UploadFile({ file: croppedFile });
     setAttachedImage({ url: file_url, previewUrl });
     setAttachedFile(null);
     setAttachedVideo(null);
     setUploading(false);
     setUploadingType(null);
-    e.target.value = '';
+  };
+
+  const handleCropCancel = () => {
+    setCropSrc(null);
+    pendingPhotoFileRef.current = null;
   };
 
   const handleVideoSelect = async (e) => {
@@ -336,6 +353,16 @@ export default function CreatePostBox() {
       {/* Close circle picker on outside click */}
       {showCirclePicker && (
         <div className="fixed inset-0 z-40" onClick={() => setShowCirclePicker(false)} />
+      )}
+
+      {/* Crop modal */}
+      {cropSrc && (
+        <ImageCropModal
+          src={cropSrc}
+          aspect={undefined}
+          onConfirm={handleCropConfirm}
+          onCancel={handleCropCancel}
+        />
       )}
     </div>
   );

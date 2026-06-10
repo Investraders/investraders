@@ -3,6 +3,7 @@ import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, FileText, Downl
 import EmojiReactions from '@/components/feed/EmojiReactions';
 import CommentSection from '@/components/feed/CommentSection';
 import SharePostModal from '@/components/feed/SharePostModal';
+import ImageLightbox from '@/components/ui/ImageLightbox';
 import { Badge } from '@/components/ui/badge';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
@@ -14,6 +15,7 @@ export default function PostCard({ post }) {
   const queryClient = useQueryClient();
   const [showComments, setShowComments] = useState(false);
   const [showShare, setShowShare] = useState(false);
+  const [lightboxSrc, setLightboxSrc] = useState(null);
   const liked = post.liked_by?.includes(user?.id);
   const saved = post.saved_by?.includes(user?.id);
 
@@ -53,7 +55,12 @@ export default function PostCard({ post }) {
       <div className="p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           {resolvedAvatar ? (
-            <img src={resolvedAvatar} alt={post.author_name} className="w-11 h-11 rounded-full object-cover" />
+            <img
+              src={resolvedAvatar}
+              alt={post.author_name}
+              className="w-11 h-11 rounded-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+              onClick={() => setLightboxSrc(resolvedAvatar)}
+            />
           ) : (
             <div className="w-11 h-11 rounded-full bg-gradient-to-br from-blue-400 to-cyan-300 flex items-center justify-center text-white font-bold text-sm">
               {post.author_name?.charAt(0) || 'U'}
@@ -80,7 +87,12 @@ export default function PostCard({ post }) {
 
       {post.image_url && (
         <div className="px-4 pb-3">
-          <img src={post.image_url} alt="" className="w-full rounded-xl object-cover max-h-96" />
+          <img
+            src={post.image_url}
+            alt=""
+            className="w-full rounded-xl object-cover max-h-96 cursor-zoom-in hover:brightness-95 transition-all"
+            onClick={() => setLightboxSrc(post.image_url)}
+          />
         </div>
       )}
 
@@ -164,6 +176,7 @@ export default function PostCard({ post }) {
       )}
 
       {showShare && <SharePostModal post={post} onClose={() => setShowShare(false)} />}
+      {lightboxSrc && <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />}
     </div>
   );
 }

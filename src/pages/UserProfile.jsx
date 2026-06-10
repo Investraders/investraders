@@ -13,6 +13,8 @@ import CirclesGrid from '@/components/profile/CirclesGrid';
 import ReputationBadges from '@/components/profile/ReputationBadges';
 import PhotosCard from '@/components/profile/PhotosCard';
 import { Camera, MapPin, Edit2, Check, X, Users, Loader2 } from 'lucide-react';
+import ImageLightbox from '@/components/ui/ImageLightbox';
+import ImageCropModal from '@/components/ui/ImageCropModal';
 
 export default function UserProfile() {
   const { userId } = useParams();
@@ -32,6 +34,10 @@ export default function UserProfile() {
   const [isEditing, setIsEditing] = useState(false);
   const [uploading, setUploading] = useState(null); // 'avatar' | 'cover' | null
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxCoverOpen, setLightboxCoverOpen] = useState(false);
+  const [cropSrc, setCropSrc] = useState(null);
+  const pendingUploadTypeRef = React.useRef(null);
+  const pendingFileRef = React.useRef(null);
   const [localProfile, setLocalProfile] = useState({
     headline: '',
     location: '',
@@ -90,12 +96,29 @@ export default function UserProfile() {
   });
 
   const handleImageUpload = async (file, type) => {
+    // Open crop modal instead of uploading directly
+    pendingUploadTypeRef.current = type;
+    pendingFileRef.current = file;
+    const objectUrl = URL.createObjectURL(file);
+    setCropSrc(objectUrl);
+  };
+
+  const handleCropConfirm = async (blob) => {
+    const type = pendingUploadTypeRef.current;
+    setCropSrc(null);
     setUploading(type);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    const croppedFile = new File([blob], pendingFileRef.current?.name || 'image.jpg', { type: 'image/jpeg' });
+    const { file_url } = await base44.integrations.Core.UploadFile({ file: croppedFile });
     const update = type === 'avatar' ? { avatar_url: file_url } : { cover_image_url: file_url };
     await base44.auth.updateMe(update);
     setLocalProfile((p) => ({ ...p, ...update }));
     setUploading(null);
+  };
+
+  const handleCropCancel = () => {
+    setCropSrc(null);
+    pendingUploadTypeRef.current = null;
+    pendingFileRef.current = null;
   };
 
   // Connections count
@@ -136,7 +159,12 @@ export default function UserProfile() {
         {/* Cover Photo */}
         <div className="h-48 bg-gradient-to-br from-blue-500 via-blue-400 to-cyan-400 rounded-2xl overflow-hidden relative">
           {coverUrl && (
-            <img src={coverUrl} alt="cover" className="w-full h-full object-cover" />
+            <img
+              src={coverUrl}
+              alt="cover"
+              className="w-full h-full object-cover cursor-zoom-in hover:brightness-95 transition-all"
+              onClick={() => setLightboxCoverOpen(true)}
+            />
           )}
           {isOwnProfile && (
             <label className="absolute bottom-3 right-3 cursor-pointer bg-black/40 hover:bg-black/60 text-white p-2 rounded-xl transition-colors flex items-center gap-1.5 text-xs font-medium">
@@ -157,8 +185,8 @@ export default function UserProfile() {
         <div className="absolute -bottom-12 left-6">
           <div className="relative">
             <div
-              className={`w-24 h-24 rounded-full border-4 border-white overflow-hidden bg-gradient-to-br from-blue-400 to-cyan-300 shadow-lg ${!isOwnProfile ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''}`}
-              onClick={() => !isOwnProfile && setLightboxOpen(true)}
+              className="w-24 h-24 rounded-full border-4 border-white overflow-hidden bg-gradient-to-br from-blue-400 to-cyan-300 shadow-lg cursor-pointer hover:opacity-90 transition-opacity"
+              onClick={() => avatarUrl && setLightboxOpen(true)}
             >
               {avatarUrl ? (
                 <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
@@ -319,31 +347,24 @@ export default function UserProfile() {
         </div>
       )}
 
-      {/* Lightbox — other user's profile picture */}
-      {lightboxOpen && !isOwnProfile && (
-        <div
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
-          onClick={() => setLightboxOpen(false)}
-        >
-          <button className="absolute top-4 right-4 text-white p-2 hover:text-gray-300">
-            <X className="w-6 h-6" />
-          </button>
-          <div className="text-center" onClick={(e) => e.stopPropagation()}>
-            <div className="w-64 h-64 rounded-full overflow-hidden mx-auto border-4 border-white shadow-2xl">
-              {avatarUrl ? (
-                <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-400 to-cyan-300 text-white text-8xl font-bold">
-                  {displayName.charAt(0).toUpperCase()}
-                </div>
-              )}
-            </div>
-            <p className="text-white text-center font-semibold text-xl mt-4">{displayName}</p>
-            {otherProfile?.headline && (
-              <p className="text-gray-300 text-sm mt-1">{otherProfile.headline}</p>
-            )}
-          </div>
-        </div>
+      {/* Lightbox — profile picture */}
+      {lightboxOpen && avatarUrl && (
+        <ImageLightbox src={avatarUrl} alt={displayName} onClose={() => setLightboxOpen(false)} />
+      )}
+
+      {/* Lightbox — cover photo */}
+      {lightboxCoverOpen && coverUrl && (
+        <ImageLightbox src={coverUrl} alt="Cover photo" onClose={() => setLightboxCoverOpen(false)} />
+      )}
+
+      {/* Crop modal */}
+      {cropSrc && (
+        <ImageCropModal
+          src={cropSrc}
+          aspect={pendingUploadTypeRef.current === 'avatar' ? 1 : 16 / 9}
+          onConfirm={handleCropConfirm}
+          onCancel={handleCropCancel}
+        />
       )}
     </div>
   );
