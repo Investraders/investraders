@@ -27,8 +27,53 @@ export default function Navbar({ user }) {
   return (
     <nav className="bg-blue-600 px-4 md:px-6 h-16 flex items-center justify-between shrink-0">
       <Link to="/" className="flex items-center gap-2 shrink-0">
-        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center">
-          <TrendingUp className="w-5 h-5 text-white" />
+        {/* Logo: stylized "i" inside light blue circle */}
+        <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+          style={{ background: 'radial-gradient(circle at 38% 38%, #a8dff7, #3ab5e8 60%, #1a8cc7)' }}>
+          <svg width="22" height="26" viewBox="0 0 22 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+            {/* Tall rounded-bottom stem */}
+            <path d="M8 8 Q8 22 11 24 Q14 26 14 22 L14 8 Z" fill="url(#stemGrad)" rx="3"/>
+            <defs>
+              <linearGradient id="stemGrad" x1="8" y1="8" x2="14" y2="24" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stopColor="#e8f8ff"/>
+                <stop offset="50%" stopColor="#7dd4f5"/>
+                <stop offset="100%" stopColor="#2196c8"/>
+              </linearGradient>
+            </defs>
+            {/* Main stem */}
+            <rect x="8.5" y="8" width="5" height="15" rx="2.5" fill="url(#stemGrad2)"/>
+            <defs>
+              <linearGradient id="stemGrad2" x1="8.5" y1="8" x2="13.5" y2="23" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stopColor="#d0f0ff"/>
+                <stop offset="40%" stopColor="#6fcbf0"/>
+                <stop offset="100%" stopColor="#1e7fb5"/>
+              </linearGradient>
+            </defs>
+            {/* Large bubble (dot) */}
+            <circle cx="13" cy="4" r="3.2" fill="url(#b1)"/>
+            <defs>
+              <radialGradient id="b1" cx="35%" cy="35%">
+                <stop offset="0%" stopColor="#e8f8ff"/>
+                <stop offset="100%" stopColor="#4abde8"/>
+              </radialGradient>
+            </defs>
+            {/* Small bubble */}
+            <circle cx="17.5" cy="2" r="1.8" fill="url(#b2)" opacity="0.9"/>
+            <defs>
+              <radialGradient id="b2" cx="35%" cy="35%">
+                <stop offset="0%" stopColor="#e8f8ff"/>
+                <stop offset="100%" stopColor="#4abde8"/>
+              </radialGradient>
+            </defs>
+            {/* Tiny bubble */}
+            <circle cx="19.5" cy="4.5" r="1.1" fill="url(#b3)" opacity="0.8"/>
+            <defs>
+              <radialGradient id="b3" cx="35%" cy="35%">
+                <stop offset="0%" stopColor="#e8f8ff"/>
+                <stop offset="100%" stopColor="#4abde8"/>
+              </radialGradient>
+            </defs>
+          </svg>
         </div>
         <span className="text-xl font-bold text-white hidden sm:block">Investraders</span>
       </Link>
