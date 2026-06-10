@@ -29,7 +29,7 @@ export default function Navbar({ user }) {
       <Link to="/" className="flex items-center gap-2 shrink-0">
         {/* Logo: stylized "i" inside light blue circle */}
         <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-          style={{ background: 'radial-gradient(circle at 38% 38%, #a8dff7, #3ab5e8 60%, #1a8cc7)' }}>
+          style={{ background: 'white' }}>
           <svg width="22" height="26" viewBox="0 0 22 26" fill="none" xmlns="http://www.w3.org/2000/svg">
             {/* Tall rounded-bottom stem */}
             <path d="M8 8 Q8 22 11 24 Q14 26 14 22 L14 8 Z" fill="url(#stemGrad)" rx="3"/>
