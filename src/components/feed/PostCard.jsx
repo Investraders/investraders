@@ -19,14 +19,15 @@ export default function PostCard({ post }) {
   const liked = post.liked_by?.includes(user?.id);
   const saved = post.saved_by?.includes(user?.id);
 
-  // If post has no saved avatar, look up the author's current profile avatar
+  // Always look up the author's current profile avatar to stay fresh
   const { data: authorProfile } = useQuery({
     queryKey: ['author-profile', post.created_by_id],
     queryFn: () => base44.entities.User.filter({ id: post.created_by_id }),
-    enabled: !post.author_avatar && !!post.created_by_id,
+    enabled: !!post.created_by_id,
     select: (data) => data?.[0],
+    staleTime: 5 * 60 * 1000,
   });
-  const resolvedAvatar = post.author_avatar || authorProfile?.avatar_url || null;
+  const resolvedAvatar = authorProfile?.avatar_url || post.author_avatar || null;
 
   const toggleLike = useMutation({
     mutationFn: async () => {
@@ -58,12 +59,12 @@ export default function PostCard({ post }) {
             <img
               src={resolvedAvatar}
               alt={post.author_name}
-              className="w-11 h-11 rounded-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+              className="w-12 h-12 rounded-full object-cover ring-2 ring-primary/20 cursor-pointer hover:opacity-90 transition-opacity shrink-0"
               onClick={() => setLightboxSrc(resolvedAvatar)}
             />
           ) : (
-            <div className="w-11 h-11 rounded-full bg-gradient-to-br from-blue-400 to-cyan-300 flex items-center justify-center text-white font-bold text-sm">
-              {post.author_name?.charAt(0) || 'U'}
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-white font-bold text-base ring-2 ring-primary/20 shrink-0">
+              {post.author_name?.charAt(0)?.toUpperCase() || 'U'}
             </div>
           )}
           <div>
