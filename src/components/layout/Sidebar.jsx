@@ -21,7 +21,7 @@ export default function Sidebar() {
   });
 
   return (
-    <aside className="hidden lg:block w-64 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto p-4">
+    <aside className="hidden lg:block w-64 shrink-0 sticky top-0 h-[calc(100vh-6rem)] overflow-y-auto p-4">
       {/* Navigation */}
       <nav className="space-y-1 mb-6">
         {NAV_ITEMS.map((item) => {
