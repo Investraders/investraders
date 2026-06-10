@@ -25,12 +25,12 @@ export default function Navbar({ user }) {
   const avatarUrl = userProfile?.avatar_url || null;
 
   return (
-    <nav className="sticky top-0 z-50 bg-white border-b-4 border-primary px-4 md:px-6 h-16 flex items-center justify-between">
+    <nav className="sticky top-0 z-50 bg-blue-600 px-4 md:px-6 h-16 flex items-center justify-between shadow-none">
       <Link to="/" className="flex items-center gap-2 shrink-0">
         <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center">
           <TrendingUp className="w-5 h-5 text-white" />
         </div>
-        <span className="text-xl font-bold text-blue-700 hidden sm:block">Investraders</span>
+        <span className="text-xl font-bold text-white hidden sm:block">Investraders</span>
       </Link>
 
       <div className="flex-1 max-w-md mx-4">
@@ -38,14 +38,14 @@ export default function Navbar({ user }) {
       </div>
 
       <div className="flex items-center gap-3">
-        <button className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center hover:bg-secondary transition-colors">
-          <LayoutGrid className="w-4 h-4 text-muted-foreground" />
+        <button className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors">
+          <LayoutGrid className="w-4 h-4 text-white" />
         </button>
         <Link
           to="/messages"
-          className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center hover:bg-secondary transition-colors"
+          className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors"
         >
-          <MessageCircle className="w-4 h-4 text-muted-foreground" />
+          <MessageCircle className="w-4 h-4 text-white" />
         </Link>
         <NotificationBell />
 
@@ -59,7 +59,7 @@ export default function Navbar({ user }) {
                   {initials}
                 </div>
               )}
-              <span className="text-sm font-medium hidden md:block">{displayName}</span>
+              <span className="text-sm font-medium hidden md:block text-white">{displayName}</span>
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
