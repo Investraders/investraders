@@ -8,18 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Users, ArrowLeft } from 'lucide-react';
+import CircleIcon, { CATEGORY_META } from '@/components/circles/CircleIcon';
 import { Link } from 'react-router-dom';
 import TagPicker from '@/components/circles/TagPicker';
 
-const CATEGORIES = [
-  { value: 'investing', label: 'Investing' },
-  { value: 'crypto', label: 'Crypto' },
-  { value: 'stocks', label: 'Stocks' },
-  { value: 'real_estate', label: 'Real Estate' },
-  { value: 'business', label: 'Business' },
-  { value: 'personal_finance', label: 'Personal Finance' },
-  { value: 'general', label: 'General' },
-];
+
 
 export default function CreateCircle() {
   const navigate = useNavigate();
@@ -76,16 +69,24 @@ export default function CreateCircle() {
 
           <div>
             <Label className="mb-1.5 block">Category</Label>
-            <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger className="h-12">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {CATEGORIES.map((c) => (
-                  <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-3">
+              <CircleIcon category={category} size="lg" />
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger className="h-12 flex-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(CATEGORY_META).map(([value, { label, Icon }]) => (
+                    <SelectItem key={value} value={value}>
+                      <div className="flex items-center gap-2">
+                        <Icon className="w-4 h-4" />
+                        {label}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div>

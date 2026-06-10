@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { Users, Plus, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import CircleIcon from '@/components/circles/CircleIcon';
 
 const CATEGORY_COLORS = {
   investing: 'bg-blue-100 text-blue-700',
@@ -105,9 +106,7 @@ export default function CircleDiscovery() {
               {circle.cover_image ? (
                 <img src={circle.cover_image} alt={circle.name} className="w-10 h-10 rounded-full object-cover shrink-0" />
               ) : (
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-cyan-300 flex items-center justify-center text-white font-bold text-sm shrink-0">
-                  {circle.name?.charAt(0)}
-                </div>
+                <CircleIcon category={circle.category} size="md" />
               )}
               <div className="min-w-0">
                 <p className="text-xs font-semibold truncate">{circle.name}</p>

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { ArrowLeft, Users, ArrowRight, Plus } from 'lucide-react';
+import CircleIcon from '@/components/circles/CircleIcon';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { TagBadge } from '@/components/circles/TagPicker';
@@ -72,9 +73,7 @@ export default function MyCircles() {
                 className="block bg-card rounded-2xl border shadow-sm p-5 hover:shadow-md transition-all group"
               >
                 <div className="flex items-start gap-3">
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-white font-bold text-lg shrink-0">
-                    {circle.name?.charAt(0)}
-                  </div>
+                  <CircleIcon category={circle.category} size="xl" />
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-lg truncate group-hover:text-primary transition-colors">
                       {circle.name}

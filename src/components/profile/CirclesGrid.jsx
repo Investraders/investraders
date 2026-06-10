@@ -2,15 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-
-const GRADIENT_COLORS = [
-  'from-blue-500 to-cyan-400',
-  'from-purple-500 to-pink-400',
-  'from-emerald-500 to-teal-400',
-  'from-orange-400 to-red-400',
-  'from-violet-500 to-indigo-400',
-  'from-yellow-400 to-orange-400',
-];
+import CircleIcon from '@/components/circles/CircleIcon';
 
 export default function CirclesGrid({ userId }) {
   const { data: circles = [] } = useQuery({
@@ -35,10 +27,8 @@ export default function CirclesGrid({ userId }) {
             to={`/circle/${circle.id}`}
             className="flex flex-col items-center gap-1.5 group"
           >
-            <div
-              className={`w-12 h-12 rounded-full bg-gradient-to-br ${GRADIENT_COLORS[i % GRADIENT_COLORS.length]} flex items-center justify-center text-white font-bold text-lg shadow-sm group-hover:scale-105 transition-transform`}
-            >
-              {circle.name?.charAt(0)?.toUpperCase() || '?'}
+            <div className="group-hover:scale-105 transition-transform shadow-sm rounded-full">
+              <CircleIcon category={circle.category} size="lg" />
             </div>
             <span className="text-xs text-muted-foreground max-w-[48px] truncate text-center">
               {circle.name}

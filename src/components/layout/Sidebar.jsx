@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, PlusCircle, FileText, BarChart3, Megaphone, Eye, Pencil, Trash2, Users } from 'lucide-react';
+import CircleIcon from '@/components/circles/CircleIcon';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
@@ -57,9 +58,7 @@ export default function Sidebar() {
               to={`/circle/${circle.id}`}
               className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-muted transition-colors group"
             >
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-cyan-300 flex items-center justify-center text-white text-xs font-bold shrink-0">
-                {circle.name?.charAt(0)}
-              </div>
+              <CircleIcon category={circle.category} size="md" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground truncate flex items-center gap-1">
                   {circle.name}
