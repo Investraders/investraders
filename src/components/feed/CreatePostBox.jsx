@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Image, Video, CircleDot, FileText, X, Loader2, Check, ChevronDown } from 'lucide-react';
+import { Image, Video, CircleDot, FileText, X, Loader2, Check, ChevronDown, Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -25,6 +26,7 @@ export default function CreatePostBox() {
   const photoInputRef = useRef(null);
   const videoInputRef = useRef(null);
 
+  const navigate = useNavigate();
   const displayName = user?.full_name || user?.email?.split('@')[0] || 'User';
 
   // Fetch full user profile to get avatar_url
@@ -144,6 +146,15 @@ export default function CreatePostBox() {
           <p className="text-sm font-semibold">Hello! {displayName}</p>
           <p className="text-xs text-muted-foreground">What's in your mind to post today..</p>
         </div>
+        <button
+          onClick={() => navigate('/create-circle')}
+          className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors shrink-0"
+          title="Create a new circle"
+        >
+          <CircleDot className="w-3.5 h-3.5" />
+          <Plus className="w-3 h-3" />
+          New Circle
+        </button>
       </div>
 
       {/* Circle badge if selected */}
