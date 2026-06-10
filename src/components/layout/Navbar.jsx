@@ -25,7 +25,7 @@ export default function Navbar({ user }) {
   const avatarUrl = userProfile?.avatar_url || null;
 
   return (
-    <nav className="sticky top-0 z-50 bg-white border-b border-border px-4 md:px-6 h-16 flex items-center justify-between">
+    <nav className="sticky top-0 z-50 bg-white border-b-4 border-primary px-4 md:px-6 h-16 flex items-center justify-between">
       <Link to="/" className="flex items-center gap-2 shrink-0">
         <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center">
           <TrendingUp className="w-5 h-5 text-white" />
