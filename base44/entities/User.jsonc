@@ -10,6 +10,19 @@
       ],
       "default": "user"
     },
+    "first_name": {
+      "type": "string",
+      "description": "First name"
+    },
+    "last_name": {
+      "type": "string",
+      "description": "Last name"
+    },
+    "date_of_birth": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of birth"
+    },
     "bio": {
       "type": "string",
       "description": "User bio / about text"
@@ -34,9 +47,10 @@
       "type": "string",
       "enum": [
         "innovator",
-        "investor"
+        "investor",
+        "other"
       ],
-      "description": "Whether the user is an Innovator or an Investor"
+      "description": "Whether the user is an Innovator, Investor or Other"
     },
     "business_type": {
       "type": "string",
@@ -51,6 +65,14 @@
         "other"
       ],
       "description": "Type of business or activity"
+    },
+    "interests": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Topics/domains the user is interested in",
+      "default": []
     }
   }
 }

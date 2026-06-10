@@ -55,18 +55,33 @@ export default function CircleDiscovery() {
 
     const userTags = userProfile?.tags || [];
     const userType = userProfile?.user_type;
+    const userInterests = userProfile?.interests || [];
 
-    // Score: +2 for matching tag, +1 for matching category to user_type
+    // Map interests to circle categories/tags
+    const interestToCategory = {
+      stocks: 'stocks', crypto: 'crypto', real_estate: 'real_estate',
+      venture_capital: 'investing', startups: 'business', fintech: 'business',
+      blockchain: 'crypto', esg: 'personal_finance', private_equity: 'investing',
+      commodities: 'investing', forex: 'investing', derivatives: 'stocks',
+    };
+
     const typeCategories = {
       investor: ['investing', 'stocks', 'crypto', 'real_estate'],
       innovator: ['business', 'general', 'personal_finance'],
     };
-    const preferredCategories = typeCategories[userType] || [];
+    const preferredCategories = [
+      ...(typeCategories[userType] || []),
+      ...userInterests.map((i) => interestToCategory[i]).filter(Boolean),
+    ];
 
     const scored = notMember.map((c) => {
       let score = 0;
       (c.tags || []).forEach((tag) => { if (userTags.includes(tag)) score += 2; });
       if (preferredCategories.includes(c.category)) score += 1;
+      // Bonus for interest-direct category match
+      userInterests.forEach((interest) => {
+        if (c.tags?.includes(interest) || c.category === interestToCategory[interest]) score += 2;
+      });
       return { ...c, score };
     });
 
