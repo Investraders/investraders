@@ -6,7 +6,7 @@ import SharePostModal from '@/components/feed/SharePostModal';
 import { Badge } from '@/components/ui/badge';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 
 export default function PostCard({ post }) {
@@ -16,6 +16,15 @@ export default function PostCard({ post }) {
   const [showShare, setShowShare] = useState(false);
   const liked = post.liked_by?.includes(user?.id);
   const saved = post.saved_by?.includes(user?.id);
+
+  // If post has no saved avatar, look up the author's current profile avatar
+  const { data: authorProfile } = useQuery({
+    queryKey: ['author-profile', post.created_by_id],
+    queryFn: () => base44.entities.User.filter({ id: post.created_by_id }),
+    enabled: !post.author_avatar && !!post.created_by_id,
+    select: (data) => data?.[0],
+  });
+  const resolvedAvatar = post.author_avatar || authorProfile?.avatar_url || null;
 
   const toggleLike = useMutation({
     mutationFn: async () => {
@@ -43,8 +52,8 @@ export default function PostCard({ post }) {
       {/* Header */}
       <div className="p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          {post.author_avatar ? (
-            <img src={post.author_avatar} alt={post.author_name} className="w-11 h-11 rounded-full object-cover" />
+          {resolvedAvatar ? (
+            <img src={resolvedAvatar} alt={post.author_name} className="w-11 h-11 rounded-full object-cover" />
           ) : (
             <div className="w-11 h-11 rounded-full bg-gradient-to-br from-blue-400 to-cyan-300 flex items-center justify-center text-white font-bold text-sm">
               {post.author_name?.charAt(0) || 'U'}
