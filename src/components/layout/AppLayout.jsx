@@ -11,12 +11,14 @@ export default function AppLayout() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar user={user} />
-      <div className="flex max-w-[1440px] mx-auto">
-        <Sidebar />
-        <main className="flex-1 min-w-0 p-4">
-          <Outlet />
-        </main>
-        <RightPanel />
+      <div className="max-w-[1440px] mx-auto px-4 pb-4">
+        <div className="flex rounded-2xl border-2 border-primary/60 shadow-lg shadow-primary/10 overflow-hidden bg-background min-h-[calc(100vh-72px)]">
+          <Sidebar />
+          <main className="flex-1 min-w-0 p-4">
+            <Outlet />
+          </main>
+          <RightPanel />
+        </div>
       </div>
     </div>
   );
