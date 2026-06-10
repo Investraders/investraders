@@ -6,6 +6,10 @@ import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { checkRateLimit } from '@/lib/rateLimiter';
+import { validate, validators, sanitize } from '@/lib/validation';
+import { logger } from '@/lib/logger';
+import { CACHE } from '@/lib/query-client';
 
 const ACCEPTED_FILE = '.pdf,.xls,.xlsx,.csv,.doc,.docx';
 
@@ -39,11 +43,15 @@ export default function CreatePostBox() {
 
   const avatarUrl = userProfile?.avatar_url || null;
 
+  const [validationError, setValidationError] = useState(null);
+  const [rateLimitError, setRateLimitError] = useState(null);
+
   // Fetch user's circles
   const { data: circles = [] } = useQuery({
     queryKey: ['my-circles-post'],
     queryFn: () => base44.entities.Circle.filter({ member_ids: { $elemMatch: user?.id } }),
     enabled: !!user?.id,
+    staleTime: CACHE.medium,
   });
 
   const handlePhotoSelect = async (e) => {
@@ -106,15 +114,36 @@ export default function CreatePostBox() {
   });
 
   const handlePost = () => {
-    if (!content.trim()) return;
+    setValidationError(null);
+    setRateLimitError(null);
 
+    // Input validation
+    const error = validate(content, [
+      validators.required,
+      validators.minLength(3),
+      validators.maxLength(2000),
+      validators.noScript,
+    ]);
+    if (error) { setValidationError(error); return; }
+
+    // Rate limiting: max 5 posts per minute
+    const { allowed, remainingMs } = checkRateLimit(`create-post-${user?.id}`, 5, 60_000);
+    if (!allowed) {
+      const secs = Math.ceil(remainingMs / 1000);
+      setRateLimitError(`Too many posts. Please wait ${secs}s before posting again.`);
+      return;
+    }
+
+    const sanitizedContent = sanitize(content);
     let postType = 'text';
     if (attachedImage) postType = 'photo';
     else if (attachedVideo) postType = 'video';
     else if (attachedFile) postType = 'document';
 
+    logger.track('post_created', { post_type: postType, has_circle: !!selectedCircle });
+
     createPost.mutate({
-      content,
+      content: sanitizedContent,
       author_name: displayName,
       author_avatar: avatarUrl,
       post_type: postType,
@@ -173,9 +202,11 @@ export default function CreatePostBox() {
       <Textarea
         placeholder="Write something what you want post..."
         value={content}
-        onChange={(e) => setContent(e.target.value)}
-        className="min-h-[80px] border-border resize-none mb-3"
+        onChange={(e) => { setContent(e.target.value); setValidationError(null); setRateLimitError(null); }}
+        className={`min-h-[80px] border-border resize-none mb-1 ${validationError ? 'border-destructive' : ''}`}
       />
+      {validationError && <p className="text-xs text-destructive mb-2">{validationError}</p>}
+      {rateLimitError && <p className="text-xs text-orange-500 mb-2">{rateLimitError}</p>}
 
       {/* Image preview */}
       {attachedImage && (

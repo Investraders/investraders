@@ -7,36 +7,49 @@ import { Shield, Users, Trash2, BarChart2, FileText, Bell, Circle } from 'lucide
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { format } from 'date-fns';
+import { useRBAC } from '@/hooks/useRBAC';
+import { logger } from '@/lib/logger';
+import { CACHE } from '@/lib/query-client';
 
 const TABS = ['Overview', 'Users', 'Posts', 'Circles'];
 
 export default function AdminDashboard() {
   const { user } = useAuth();
+  const { isAdmin } = useRBAC();
   const queryClient = useQueryClient();
   const [tab, setTab] = useState('Overview');
   const [search, setSearch] = useState('');
 
-  const { data: allUsers = [] } = useQuery({ queryKey: ['admin-users'], queryFn: () => base44.entities.User.list() });
-  const { data: allPosts = [] } = useQuery({ queryKey: ['admin-posts'], queryFn: () => base44.entities.Post.list('-created_date', 100) });
-  const { data: allCircles = [] } = useQuery({ queryKey: ['admin-circles'], queryFn: () => base44.entities.Circle.list() });
-  const { data: allNotifications = [] } = useQuery({ queryKey: ['admin-notifs'], queryFn: () => base44.entities.Notification.list('-created_date', 50) });
+  const { data: allUsers = [] } = useQuery({ queryKey: ['admin-users'], queryFn: () => base44.entities.User.list(), staleTime: CACHE.short });
+  const { data: allPosts = [] } = useQuery({ queryKey: ['admin-posts'], queryFn: () => base44.entities.Post.list('-created_date', 100), staleTime: CACHE.short });
+  const { data: allCircles = [] } = useQuery({ queryKey: ['admin-circles'], queryFn: () => base44.entities.Circle.list(), staleTime: CACHE.medium });
+  const { data: allNotifications = [] } = useQuery({ queryKey: ['admin-notifs'], queryFn: () => base44.entities.Notification.list('-created_date', 50), staleTime: CACHE.short });
 
   const deletePost = useMutation({
     mutationFn: (id) => base44.entities.Post.delete(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-posts'] }),
+    onSuccess: (_, id) => {
+      logger.track('admin_post_deleted', { post_id: id, admin_id: user?.id });
+      queryClient.invalidateQueries({ queryKey: ['admin-posts'] });
+    },
   });
 
   const deleteCircle = useMutation({
     mutationFn: (id) => base44.entities.Circle.delete(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-circles'] }),
+    onSuccess: (_, id) => {
+      logger.track('admin_circle_deleted', { circle_id: id, admin_id: user?.id });
+      queryClient.invalidateQueries({ queryKey: ['admin-circles'] });
+    },
   });
 
   const changeUserRole = useMutation({
     mutationFn: ({ id, role }) => base44.entities.User.update(id, { role }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-users'] }),
+    onSuccess: (_, vars) => {
+      logger.track('admin_role_changed', { target_user: vars.id, new_role: vars.role, admin_id: user?.id });
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+    },
   });
 
-  if (user?.role !== 'admin') return <Navigate to="/" replace />;
+  if (!isAdmin) return <Navigate to="/" replace />;
 
   const filteredUsers = allUsers.filter((u) =>
     (u.full_name || u.email || '').toLowerCase().includes(search.toLowerCase())
