@@ -11,6 +11,7 @@ import { Users, ArrowLeft } from 'lucide-react';
 import CircleIcon, { CATEGORY_META } from '@/components/circles/CircleIcon';
 import { Link } from 'react-router-dom';
 import TagPicker from '@/components/circles/TagPicker';
+import InviteFriendsModal from '@/components/circles/InviteFriendsModal';
 
 
 
@@ -22,24 +23,29 @@ export default function CreateCircle() {
   const [privacy, setPrivacy] = useState('public');
   const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [inviteModal, setInviteModal] = useState({ open: false, circleId: null, circleName: '' });
+  const [currentUser, setCurrentUser] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name.trim()) return;
     setLoading(true);
+    const user = await base44.auth.me();
     const circle = await base44.entities.Circle.create({
       name,
       description,
       category,
       privacy,
       tags,
-      member_ids: [],
+      member_ids: [user.id],
     });
+    setCurrentUser(user);
     setLoading(false);
-    navigate(`/circle/${circle.id}`);
+    setInviteModal({ open: true, circleId: circle.id, circleName: circle.name });
   };
 
   return (
+    <>
     <div className="max-w-xl mx-auto">
       <Link to="/" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6">
         <ArrowLeft className="w-4 h-4" /> Back to Home
@@ -114,5 +120,14 @@ export default function CreateCircle() {
         </form>
       </div>
     </div>
+
+    <InviteFriendsModal
+      open={inviteModal.open}
+      onClose={() => { setInviteModal({ open: false, circleId: null, circleName: '' }); navigate(`/circle/${inviteModal.circleId}`); }}
+      circleId={inviteModal.circleId}
+      circleName={inviteModal.circleName}
+      currentUser={currentUser}
+    />
+    </>
   );
 }
