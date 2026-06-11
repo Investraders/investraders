@@ -54,8 +54,8 @@ export default function InviteToCircleModal({ circle, onClose }) {
   );
 
   const sendInvite = useMutation({
-    mutationFn: ({ inviteeId, inviteeName }) =>
-      base44.entities.CircleInvite.create({
+    mutationFn: async ({ inviteeId, inviteeName }) => {
+      await base44.entities.CircleInvite.create({
         circle_id: circle.id,
         circle_name: circle.name,
         inviter_id: user.id,
@@ -63,7 +63,18 @@ export default function InviteToCircleModal({ circle, onClose }) {
         invitee_id: inviteeId,
         status: 'pending',
         token: generateToken(),
-      }),
+      });
+      // Notify the invitee
+      const inviterName = user.full_name || user.email?.split('@')[0] || 'Someone';
+      await base44.entities.Notification.create({
+        user_id: inviteeId,
+        type: 'circle_invite',
+        message: `${inviterName} invited you to join ${circle.name}`,
+        circle_id: circle.id,
+        circle_name: circle.name,
+        is_read: false,
+      });
+    },
     onSuccess: (_, vars) => {
       setSentTo((prev) => [...prev, vars.inviteeId]);
       queryClient.invalidateQueries({ queryKey: ['circle-invites'] });

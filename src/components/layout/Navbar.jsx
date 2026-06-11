@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { LayoutGrid, TrendingUp, LogOut, User, MessageCircle, Bookmark, Shield } from 'lucide-react';
+import { LayoutGrid, LogOut, User, MessageCircle, Bookmark, Shield } from 'lucide-react';
 import SearchBar from '@/components/layout/SearchBar';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
@@ -23,6 +23,15 @@ export default function Navbar({ user }) {
     select: (data) => data?.[0],
   });
   const avatarUrl = userProfile?.avatar_url || null;
+
+  // Unread messages count
+  const { data: unreadMessages = [] } = useQuery({
+    queryKey: ['unread-messages', user?.id],
+    queryFn: () => base44.entities.DirectMessage.filter({ recipient_id: user?.id, is_read: false }),
+    enabled: !!user?.id,
+    refetchInterval: 10000,
+  });
+  const hasUnreadMessages = unreadMessages.length > 0;
 
   return (
     <nav className="bg-blue-600 px-4 md:px-6 h-16 flex items-center justify-between shrink-0">
@@ -60,9 +69,12 @@ export default function Navbar({ user }) {
         </button>
         <Link
           to="/messages"
-          className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors"
+          className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors relative"
         >
           <MessageCircle className="w-4 h-4 text-white" />
+          {hasUnreadMessages && (
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-blue-600" />
+          )}
         </Link>
         <NotificationBell />
 

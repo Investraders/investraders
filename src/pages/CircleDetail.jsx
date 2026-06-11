@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -153,6 +153,19 @@ export default function CircleDetail() {
   ]));
 
   useCircleNotifications({ circle, user });
+
+  // Mark all unread notifications for this circle as read when user opens it
+  useEffect(() => {
+    if (!user?.id || !id) return;
+    const markCircleNotifsRead = async () => {
+      const notifs = await base44.entities.Notification.filter({ user_id: user.id, circle_id: id, is_read: false });
+      if (notifs.length > 0) {
+        await Promise.all(notifs.map((n) => base44.entities.Notification.update(n.id, { is_read: true })));
+        queryClient.invalidateQueries({ queryKey: ['notifications', user.id] });
+      }
+    };
+    markCircleNotifsRead();
+  }, [id, user?.id]);
 
   // Fetch real user profiles for ALL circle members including creator
   const allCircleMemberIds = Array.from(new Set([

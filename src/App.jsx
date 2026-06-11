@@ -18,7 +18,7 @@ import CircleDetail from '@/pages/CircleDetail';
 import CreatePoll from '@/pages/CreatePoll';
 import UserProfile from '@/pages/UserProfile';
 import AppLayout from '@/components/layout/AppLayout';
-import Messages from '@/pages/Messages';
+import Messages from '@/pages/Messages.jsx';
 import JoinCircle from '@/pages/JoinCircle';
 import SavedPosts from '@/pages/SavedPosts';
 import PostDetail from '@/pages/PostDetail';

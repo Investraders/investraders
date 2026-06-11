@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Bell, Check, MessageCircle, FileText, Zap } from 'lucide-react';
+import { Bell, Check, MessageCircle, FileText, Zap, UserPlus, Users } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+// Link removed — navigation handled via useNavigate for programmatic routing
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,11 +16,15 @@ const TYPE_ICON = {
   new_post: FileText,
   new_comment: MessageCircle,
   new_response: Zap,
+  connection_request: UserPlus,
+  circle_invite: Users,
+  message: MessageCircle,
 };
 
 export default function NotificationBell() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
   const { data: notifications = [] } = useQuery({
@@ -96,6 +101,9 @@ export default function NotificationBell() {
                   }`}
                   onClick={() => {
                     if (!n.is_read) markOneRead.mutate(n.id);
+                    if (n.circle_id) { setOpen(false); navigate(`/circle/${n.circle_id}`); }
+                    else if (n.type === 'connection_request') { setOpen(false); navigate('/profile'); }
+                    else if (n.type === 'message') { setOpen(false); navigate('/messages'); }
                   }}
                 >
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${

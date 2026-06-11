@@ -27,13 +27,29 @@ export default function ConnectionButton({ currentUserId, targetUserId }) {
     queryClient.invalidateQueries({ queryKey: ['conns-received', currentUserId] });
   };
 
+  const { data: currentUserData = [] } = useQuery({
+    queryKey: ['user-profile-for-conn', currentUserId],
+    queryFn: () => base44.entities.User.filter({ id: currentUserId }),
+    enabled: !!currentUserId,
+    select: (d) => d?.[0],
+  });
+
   const sendRequest = useMutation({
-    mutationFn: () =>
-      base44.entities.Connection.create({
+    mutationFn: async () => {
+      await base44.entities.Connection.create({
         requester_id: currentUserId,
         recipient_id: targetUserId,
         status: 'pending',
-      }),
+      });
+      // Notify the recipient
+      const senderName = currentUserData?.full_name || 'Someone';
+      await base44.entities.Notification.create({
+        user_id: targetUserId,
+        type: 'connection_request',
+        message: `${senderName} sent you a connection request`,
+        is_read: false,
+      });
+    },
     onSuccess: invalidate,
   });
 

@@ -11,7 +11,10 @@
       "enum": [
         "new_post",
         "new_comment",
-        "new_response"
+        "new_response",
+        "connection_request",
+        "circle_invite",
+        "message"
       ],
       "description": "Type of notification"
     },
