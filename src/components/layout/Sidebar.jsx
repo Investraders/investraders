@@ -1,24 +1,29 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, PlusCircle, FileText, BarChart3, Megaphone, Eye, Pencil, Trash2, Users } from 'lucide-react';
+import { Home, PlusCircle, Globe, Eye, Pencil, Users } from 'lucide-react';
 import CircleIcon from '@/components/circles/CircleIcon';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 
 const NAV_ITEMS = [
   { label: 'Home', icon: Home, path: '/' },
   { label: 'Create Circle', icon: PlusCircle, path: '/create-circle' },
   { label: 'My Circles', icon: Users, path: '/my-circles' },
-  { label: 'Create Poll', icon: BarChart3, path: '/create-poll' },
+  { label: 'All Circles', icon: Globe, path: '/all-circles' },
 ];
 
 export default function Sidebar() {
   const location = useLocation();
+  const { user } = useAuth();
 
   const { data: circles = [] } = useQuery({
-    queryKey: ['my-circles-sidebar'],
-    queryFn: () => base44.entities.Circle.list('-created_date', 6),
+    queryKey: ['sidebar-circles', user?.id],
+    queryFn: () => base44.entities.Circle.list('-created_date', 20),
+    enabled: !!user?.id,
   });
+
+  const createdCircles = circles.filter((c) => c.created_by_id === user?.id);
 
   return (
     <aside className="hidden lg:block w-64 shrink-0 sticky top-0 h-[calc(100vh-6rem)] overflow-y-auto p-4">
@@ -52,7 +57,7 @@ export default function Sidebar() {
         </div>
 
         <div className="space-y-2">
-          {circles.slice(0, 5).map((circle) => (
+          {createdCircles.slice(0, 5).map((circle) => (
             <Link
               key={circle.id}
               to={`/circle/${circle.id}`}
@@ -75,7 +80,7 @@ export default function Sidebar() {
           ))}
         </div>
 
-        {circles.length > 5 && (
+        {createdCircles.length > 5 && (
           <Link to="/my-circles" className="flex items-center gap-1 px-3 mt-3 text-sm text-primary hover:underline font-medium">
             View all circles →
           </Link>

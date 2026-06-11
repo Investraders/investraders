@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, Plus, Send, Users, MessageCircle, ChevronUp, ChevronDown, UserPlus, Share2, Newspaper, LayoutList } from 'lucide-react';
+import CircleIcon from '@/components/circles/CircleIcon';
 import CircleFeed from '@/components/circles/CircleFeed';
 import { TagBadge } from '@/components/circles/TagPicker';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -196,9 +197,7 @@ export default function CircleDetail() {
         {/* Circle Header */}
         <div className="p-6 border-b flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-white font-bold text-lg">
-              {circle?.name?.charAt(0)}
-            </div>
+            <CircleIcon category={circle?.category} size="xl" />
             <div>
               <h1 className="text-xl font-bold">{circle?.name}</h1>
               <p className="text-sm text-muted-foreground flex items-center gap-1">

@@ -23,6 +23,7 @@ import JoinCircle from '@/pages/JoinCircle';
 import SavedPosts from '@/pages/SavedPosts';
 import PostDetail from '@/pages/PostDetail';
 import AdminDashboard from '@/pages/AdminDashboard';
+import AllCircles from '@/pages/AllCircles';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -65,6 +66,7 @@ const AuthenticatedApp = () => {
           <Route path="/saved" element={<SavedPosts />} />
           <Route path="/post/:id" element={<PostDetail />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/all-circles" element={<AllCircles />} />
         </Route>
       </Route>
 

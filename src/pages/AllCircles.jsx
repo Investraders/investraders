@@ -1,14 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '@/lib/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { ArrowLeft, Users, ArrowRight, Plus } from 'lucide-react';
+import { useAuth } from '@/lib/AuthContext';
+import { Search, Users, ArrowRight } from 'lucide-react';
 import CircleIcon from '@/components/circles/CircleIcon';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { TagBadge } from '@/components/circles/TagPicker';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Input } from '@/components/ui/input';
 import { motion } from 'framer-motion';
 
 const CATEGORY_COLORS = {
@@ -21,61 +20,69 @@ const CATEGORY_COLORS = {
   general: 'bg-gray-100 text-gray-700',
 };
 
-export default function MyCircles() {
+export default function AllCircles() {
   const { user } = useAuth();
+  const [search, setSearch] = useState('');
 
   const { data: circles = [], isLoading } = useQuery({
-    queryKey: ['my-circles', user?.id],
+    queryKey: ['all-circles-browse'],
     queryFn: () => base44.entities.Circle.list('-created_date', 100),
-    enabled: !!user?.id,
   });
+
+  const filtered = circles
+    .filter((c) => {
+      if (!search.trim()) return true;
+      const q = search.toLowerCase();
+      return (
+        c.name?.toLowerCase().includes(q) ||
+        c.description?.toLowerCase().includes(q) ||
+        c.category?.toLowerCase().includes(q) ||
+        (c.tags || []).some((t) => t.toLowerCase().includes(q))
+      );
+    })
+    // Sort by most popular (member count desc)
+    .sort((a, b) => (b.member_ids?.length || 0) - (a.member_ids?.length || 0));
 
   return (
     <div className="max-w-3xl mx-auto">
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <Link to="/" className="text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
-          <h1 className="text-2xl font-bold">My Circles</h1>
-        </div>
+        <h1 className="text-2xl font-bold">All Circles</h1>
         <Link to="/create-circle">
-          <Button className="rounded-full bg-primary gap-2">
-            <Plus className="w-4 h-4" /> New Circle
-          </Button>
+          <button className="h-9 px-4 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors">
+            + New Circle
+          </button>
         </Link>
+      </div>
+
+      {/* Search */}
+      <div className="relative mb-6">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input
+          placeholder="Search circles by name, category, or tag..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="pl-9 h-11 rounded-xl"
+        />
       </div>
 
       {isLoading ? (
         <div className="grid gap-4 md:grid-cols-2">
-          {Array(4).fill(0).map((_, i) => (
-            <Skeleton key={i} className="h-40 rounded-2xl" />
-          ))}
+          {Array(6).fill(0).map((_, i) => <Skeleton key={i} className="h-40 rounded-2xl" />)}
         </div>
-      ) : (() => {
-        const myCircles = circles.filter(
-          (c) => c.created_by_id === user?.id || (c.member_ids || []).includes(user?.id)
-        );
-        if (myCircles.length === 0) return (
-          <div className="text-center py-20">
-            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-              <Users className="w-10 h-10 text-primary" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2">No circles yet</h3>
-            <p className="text-muted-foreground mb-4">Join or create your first circle!</p>
-            <Link to="/all-circles">
-              <Button className="rounded-full bg-primary">Browse Circles</Button>
-            </Link>
-          </div>
-        );
-        return (
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-20">
+          <Search className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+          <h3 className="text-lg font-semibold mb-1">No circles found</h3>
+          <p className="text-muted-foreground text-sm">Try a different keyword</p>
+        </div>
+      ) : (
         <div className="grid gap-4 md:grid-cols-2">
-          {myCircles.map((circle, i) => (
+          {filtered.map((circle, i) => (
             <motion.div
               key={circle.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
+              transition={{ delay: i * 0.04 }}
             >
               <Link
                 to={`/circle/${circle.id}`}
@@ -92,19 +99,18 @@ export default function MyCircles() {
                     <h3 className="font-semibold text-lg truncate group-hover:text-primary transition-colors">
                       {circle.name}
                     </h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                    <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
                       {circle.description || 'No description'}
                     </p>
                     <div className="flex flex-wrap items-center gap-2">
                       <Badge className={CATEGORY_COLORS[circle.category] || CATEGORY_COLORS.general}>
                         {circle.category?.replace(/_/g, ' ') || 'General'}
                       </Badge>
-                      {(circle.tags || []).map((tag) => (
-                        <TagBadge key={tag} tag={tag} />
-                      ))}
-                      <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Users className="w-3 h-3" /> {circle.member_ids?.length || 0} members
-                      </span>
+                      {(circle.member_ids?.length || 0) > 0 && (
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Users className="w-3 h-3" /> {circle.member_ids.length} members
+                        </span>
+                      )}
                     </div>
                   </div>
                   <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors mt-1 shrink-0" />
@@ -113,8 +119,7 @@ export default function MyCircles() {
             </motion.div>
           ))}
         </div>
-        );
-      })()}
+      )}
     </div>
   );
 }
