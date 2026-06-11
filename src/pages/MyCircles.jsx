@@ -73,7 +73,12 @@ export default function MyCircles() {
                 className="block bg-card rounded-2xl border shadow-sm p-5 hover:shadow-md transition-all group"
               >
                 <div className="flex items-start gap-3">
-                  <CircleIcon category={circle.category} size="xl" />
+                  <div className="relative shrink-0">
+                    <CircleIcon category={circle.category} size="xl" />
+                    <span className="absolute -bottom-1 -right-1 flex items-center gap-0.5 bg-primary text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
+                      <Users className="w-2.5 h-2.5" />{circle.member_ids?.length || 0}
+                    </span>
+                  </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-lg truncate group-hover:text-primary transition-colors">
                       {circle.name}

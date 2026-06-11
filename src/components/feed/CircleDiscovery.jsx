@@ -118,11 +118,16 @@ export default function CircleDiscovery() {
           >
             {/* Circle avatar */}
             <div className="flex items-center gap-2">
-              {circle.cover_image ? (
-                <img src={circle.cover_image} alt={circle.name} className="w-10 h-10 rounded-full object-cover shrink-0" />
-              ) : (
-                <CircleIcon category={circle.category} size="md" />
-              )}
+              <div className="relative shrink-0">
+                {circle.cover_image ? (
+                  <img src={circle.cover_image} alt={circle.name} className="w-10 h-10 rounded-full object-cover" />
+                ) : (
+                  <CircleIcon category={circle.category} size="md" />
+                )}
+                <span className="absolute -bottom-1 -right-1 flex items-center gap-0.5 bg-primary text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm leading-none">
+                  <Users className="w-2 h-2" />{(circle.member_ids || []).length}
+                </span>
+              </div>
               <div className="min-w-0">
                 <p className="text-xs font-semibold truncate">{circle.name}</p>
                 <p className="text-[10px] text-muted-foreground">
