@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { TrendingUp } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import GoogleIcon from '@/components/GoogleIcon';
 
 export default function Login() {
@@ -11,11 +11,20 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [emailError, setEmailError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setEmailError('');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setEmailError('Please enter a valid email address.');
+      setLoading(false);
+      return;
+    }
     try {
       await base44.auth.loginViaEmailPassword(email, password);
       window.location.href = '/';
@@ -47,11 +56,11 @@ export default function Login() {
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-56 rounded-full border-4 border-white" />
           </div>
           <div className="relative z-10 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
-              <TrendingUp className="w-8 h-8 text-white" />
+            <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <span className="text-3xl font-bold bg-gradient-to-br from-blue-700 to-sky-400 bg-clip-text text-transparent leading-none select-none">i</span>
             </div>
             <h1 className="text-3xl font-bold text-white mb-2">Investraders</h1>
-            <p className="text-white/80 text-sm mb-10">Trade Smarter Together</p>
+            <p className="text-white/80 text-sm mb-10">Make Money Meanwhile -3M</p>
             <div className="w-px h-8 bg-white/30 mx-auto mb-8" />
             <p className="text-white/90 text-lg font-medium mb-2">New here?</p>
             <p className="text-white/70 text-sm mb-6">Join thousands of investors and innovators on our platform.</p>
@@ -97,10 +106,11 @@ export default function Login() {
                   type="email"
                   placeholder="you@example.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => { setEmail(e.target.value); setEmailError(''); }}
                   required
-                  className="h-12 rounded-xl"
+                  className={`h-12 rounded-xl ${emailError ? 'border-red-400 focus-visible:ring-red-400' : ''}`}
                 />
+                {emailError && <p className="text-xs text-red-500 mt-1">{emailError}</p>}
               </div>
               <div>
                 <div className="flex items-center justify-between mb-1.5">
@@ -109,14 +119,23 @@ export default function Login() {
                     Forgot password?
                   </Link>
                 </div>
-                <Input
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="h-12 rounded-xl"
-                />
+                <div className="relative">
+                  <Input
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="h-12 rounded-xl pr-11"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
 
               <Button
