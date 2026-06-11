@@ -14,7 +14,8 @@ import { useCircleNotifications } from '@/hooks/useCircleNotifications';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Plus, Send, Users, MessageCircle, ChevronUp, ChevronDown, UserPlus, Share2 } from 'lucide-react';
+import { ArrowLeft, Plus, Send, Users, MessageCircle, ChevronUp, ChevronDown, UserPlus, Share2, Newspaper, LayoutList } from 'lucide-react';
+import CircleFeed from '@/components/circles/CircleFeed';
 import { TagBadge } from '@/components/circles/TagPicker';
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -74,6 +75,7 @@ export default function CircleDetail() {
   const [selectedResponseData, setSelectedResponseData] = useState(null);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [activeTab, setActiveTab] = useState('discussion');
 
   const { data: circle, isLoading: loadingCircle } = useQuery({
     queryKey: ['circle', id],
@@ -237,6 +239,26 @@ export default function CircleDetail() {
           </div>
         </div>
 
+        {/* Tabs */}
+        <div className="flex border-b">
+          <button
+            onClick={() => setActiveTab('discussion')}
+            className={`flex items-center gap-1.5 px-5 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'discussion' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+          >
+            <LayoutList className="w-4 h-4" /> Discussion
+          </button>
+          <button
+            onClick={() => setActiveTab('feed')}
+            className={`flex items-center gap-1.5 px-5 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'feed' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+          >
+            <Newspaper className="w-4 h-4" /> Feed
+          </button>
+        </div>
+
+        {activeTab === 'feed' ? (
+          <CircleFeed circle={circle} user={user} />
+        ) : (
+          <>
         {/* Circle Visual */}
         <CircleVisual
           members={memberNames}
@@ -383,6 +405,8 @@ export default function CircleDetail() {
               </Button>
             )}
           </div>
+        )}
+          </>
         )}
       </div>
     </div>
