@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { CalendarDays, Plus, X, Clock, Radio, CheckCircle, XCircle } from 'lucide-react';
+import { CalendarDays, Plus, X, Clock, Radio, CheckCircle, XCircle, CalendarPlus } from 'lucide-react';
 import { format, isFuture, isPast, isToday } from 'date-fns';
 import LiveSessionModal from '@/components/circles/LiveSessionModal';
 
@@ -71,6 +71,19 @@ export default function CircleEventCalendar({ circleId, isMember, isAdmin, isMod
 
   const canControl = (event) => isAdmin || isModerator || event.created_by_id === currentUserId;
 
+  const getGoogleCalendarUrl = (event) => {
+    const start = new Date(event.event_date);
+    const end = new Date(start.getTime() + 60 * 60 * 1000); // 1 hour duration
+    const fmt = (d) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    const params = new URLSearchParams({
+      action: 'TEMPLATE',
+      text: event.title,
+      dates: `${fmt(start)}/${fmt(end)}`,
+      details: event.description || `${event.event_type} session on Investraders`,
+    });
+    return `https://calendar.google.com/calendar/render?${params.toString()}`;
+  };
+
   function EventItem({ event, isPastItem }) {
     const isLive = event.session_active;
     const canDelete = isAdmin || isModerator || event.created_by_id === currentUserId;
@@ -121,7 +134,15 @@ export default function CircleEventCalendar({ circleId, isMember, isAdmin, isMod
           <p className="text-[10px] text-muted-foreground mt-1">by {event.author_name}</p>
 
           {!isPastItem && (
-            <div className="flex items-center gap-2 mt-2">
+            <div className="flex items-center gap-2 mt-2 flex-wrap">
+              <a
+                href={getGoogleCalendarUrl(event)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 h-7 px-2.5 text-xs rounded-full border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors font-medium"
+              >
+                <CalendarPlus className="w-3 h-3" /> Add to Calendar
+              </a>
               {isLive && isMember && (
                 <Button
                   size="sm"
