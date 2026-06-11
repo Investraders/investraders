@@ -144,11 +144,30 @@ export default function CircleDetail() {
 
   useCircleNotifications({ circle, user });
 
-  // Build member list for visual
-  const memberNames = (circle?.member_ids || []).map((_, i) => ({ name: `Member ${i + 1}` }));
-  if (memberNames.length < 8) {
-    while (memberNames.length < 8) memberNames.push({ name: '?' });
-  }
+  // Fetch real user profiles for circle members
+  const { data: memberProfiles = [] } = useQuery({
+    queryKey: ['circle-member-profiles', circle?.member_ids],
+    queryFn: async () => {
+      if (!circle?.member_ids?.length) return [];
+      return base44.entities.User.filter({ id: { $in: circle.member_ids } });
+    },
+    enabled: !!circle?.member_ids?.length,
+  });
+
+  // Build a set of user IDs who have responded to the active question
+  const activeResponderIds = new Set(responses.map((r) => r.created_by_id).filter(Boolean));
+
+  // Build member list with real avatars
+  const memberNames = (circle?.member_ids || []).map((memberId) => {
+    const profile = memberProfiles.find((p) => p.id === memberId);
+    return {
+      id: memberId,
+      name: profile?.full_name || profile?.email?.split('@')[0] || 'User',
+      avatar_url: profile?.avatar_url || null,
+      isActive: activeResponderIds.has(memberId),
+    };
+  });
+  while (memberNames.length < 8) memberNames.push({ name: '?', id: null, avatar_url: null, isActive: false });
 
   if (loadingCircle) {
     return (
@@ -228,6 +247,7 @@ export default function CircleDetail() {
           totalResponses={responses.length}
           totalMembers={circle?.member_ids?.length || 0}
           circleName={circle?.name}
+          memberProfiles={memberProfiles}
         />
 
         {/* Responses */}
@@ -251,10 +271,33 @@ export default function CircleDetail() {
                     }
                   >
                     <div className="flex items-center gap-2 mb-1">
-                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-400 to-cyan-300 flex items-center justify-center text-white text-[10px] font-bold">
-                        {r.author_name?.charAt(0)}
-                      </div>
+                      {(() => {
+                        const rProfile = memberProfiles.find((p) => p.id === r.created_by_id);
+                        const avatar = rProfile?.avatar_url || r.author_avatar;
+                        const isResponderActive = activeResponderIds.has(r.created_by_id);
+                        return avatar ? (
+                          <img
+                            src={avatar}
+                            alt={r.author_name}
+                            className="w-7 h-7 rounded-full object-cover shrink-0"
+                            style={{ border: isResponderActive ? '2px solid #22c55e' : '2px solid transparent' }}
+                          />
+                        ) : (
+                          <div
+                            className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-400 to-cyan-300 flex items-center justify-center text-white text-[10px] font-bold"
+                            style={{ border: isResponderActive ? '2px solid #22c55e' : 'none' }}
+                          >
+                            {r.author_name?.charAt(0)}
+                          </div>
+                        );
+                      })()}
                       <span className="text-sm font-medium">{r.author_name}</span>
+                      {activeResponderIds.has(r.created_by_id) && (
+                        <span className="flex items-center gap-1 text-[10px] text-green-600 font-medium ml-auto">
+                          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse inline-block" />
+                          Active
+                        </span>
+                      )}
                     </div>
                     <p className="text-sm text-muted-foreground ml-9">{r.response_text}</p>
                     <ResponseVotes response={r} userId={user?.id} />

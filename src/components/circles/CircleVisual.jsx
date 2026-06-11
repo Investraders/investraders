@@ -64,6 +64,7 @@ export default function CircleVisual({
   totalResponses = 0,
   totalMembers = 0,
   circleName,
+  memberProfiles = [],
 }) {
   // Always show 12 slots on the ring
   const RING_SLOTS = 12;
@@ -144,13 +145,25 @@ export default function CircleVisual({
         >
           {selectedResponse ? (
             <>
-              {/* Selected response view */}
-              <div
-                className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg mb-2 border-2 border-white/40 shadow-lg"
-                style={{ background: 'linear-gradient(135deg, #F5A623, #E8821A)' }}
-              >
-                {selectedResponse.author_name?.charAt(0)?.toUpperCase() || '?'}
-              </div>
+              {/* Selected response view – show real avatar if available */}
+              {(() => {
+                const responderProfile = memberProfiles.find((p) => p.id === selectedResponse.created_by_id);
+                const avatar = responderProfile?.avatar_url || selectedResponse.author_avatar;
+                return avatar ? (
+                  <img
+                    src={avatar}
+                    alt={selectedResponse.author_name}
+                    className="w-16 h-16 rounded-full object-cover mb-2 border-2 border-white/60 shadow-lg"
+                  />
+                ) : (
+                  <div
+                    className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg mb-2 border-2 border-white/40 shadow-lg"
+                    style={{ background: 'linear-gradient(135deg, #F5A623, #E8821A)' }}
+                  >
+                    {selectedResponse.author_name?.charAt(0)?.toUpperCase() || '?'}
+                  </div>
+                );
+              })()}
               <p className="text-white/80 text-xs font-medium underline underline-offset-2 mb-2">
                 {selectedResponse.author_name} Answer
               </p>
@@ -207,6 +220,7 @@ export default function CircleVisual({
             );
           }
 
+          const isActive = member?.isActive;
           return (
             <motion.div
               key={i}
@@ -221,17 +235,36 @@ export default function CircleVisual({
                 height: 40,
               }}
             >
+              {/* Green glow ring for active/interacting members */}
+              {isActive && (
+                <div
+                  className="absolute inset-0 rounded-full animate-pulse"
+                  style={{
+                    boxShadow: '0 0 0 3px #22c55e, 0 0 10px 4px rgba(34,197,94,0.55)',
+                    borderRadius: '50%',
+                    zIndex: 1,
+                  }}
+                />
+              )}
               {member?.avatar_url ? (
                 <img
                   src={member.avatar_url}
                   alt={member.name}
-                  className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md"
+                  className="w-10 h-10 rounded-full object-cover shadow-md relative"
+                  style={{
+                    border: isActive ? '2px solid #22c55e' : '2px solid white',
+                    zIndex: 2,
+                  }}
                 />
               ) : (
                 <div
-                  className={`w-10 h-10 rounded-full ${bgClass} flex items-center justify-center text-white text-xs font-bold border-2 border-white shadow-md`}
+                  className={`w-10 h-10 rounded-full ${bgClass} flex items-center justify-center text-white text-xs font-bold shadow-md relative`}
+                  style={{
+                    border: isActive ? '2px solid #22c55e' : '2px solid white',
+                    zIndex: 2,
+                  }}
                 >
-                  {member?.name?.charAt(0)?.toUpperCase() || member?.full_name?.charAt(0)?.toUpperCase() || (
+                  {member?.name?.charAt(0)?.toUpperCase() || (
                     <div className="w-6 h-6 rounded-full bg-white/20" />
                   )}
                 </div>
