@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { CalendarDays, Plus, X, Clock, Radio, CheckCircle, XCircle, CalendarPlus } from 'lucide-react';
+import { CalendarDays, Plus, X, Clock, Radio, CheckCircle, XCircle, CalendarPlus, Video } from 'lucide-react';
 import { format, isFuture, isPast, isToday } from 'date-fns';
 import LiveSessionModal from '@/components/circles/LiveSessionModal';
 
@@ -21,7 +21,7 @@ export default function CircleEventCalendar({ circleId, isMember, isAdmin, isMod
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [activeSession, setActiveSession] = useState(null);
-  const [form, setForm] = useState({ title: '', description: '', event_date: '', event_type: 'discussion' });
+  const [form, setForm] = useState({ title: '', description: '', event_date: '', event_type: 'discussion', meet_link: '' });
 
   const { data: events = [] } = useQuery({
     queryKey: ['circle-events', circleId],
@@ -39,7 +39,7 @@ export default function CircleEventCalendar({ circleId, isMember, isAdmin, isMod
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['circle-events', circleId] });
-      setForm({ title: '', description: '', event_date: '', event_type: 'discussion' });
+      setForm({ title: '', description: '', event_date: '', event_type: 'discussion', meet_link: '' });
       setShowForm(false);
     },
   });
@@ -143,6 +143,16 @@ export default function CircleEventCalendar({ circleId, isMember, isAdmin, isMod
               >
                 <CalendarPlus className="w-3 h-3" /> Add to Calendar
               </a>
+              {event.meet_link && isMember && (
+                <a
+                  href={event.meet_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 h-7 px-2.5 text-xs rounded-full border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 transition-colors font-medium"
+                >
+                  <Video className="w-3 h-3" /> Join Meet
+                </a>
+              )}
               {isLive && isMember && (
                 <Button
                   size="sm"
@@ -228,6 +238,12 @@ export default function CircleEventCalendar({ circleId, isMember, isAdmin, isMod
                     <option value="analysis">Analysis</option>
                   </select>
                 </div>
+                <Input
+                  placeholder="Google Meet link (optional)"
+                  value={form.meet_link}
+                  onChange={(e) => setForm({ ...form, meet_link: e.target.value })}
+                  className="h-9 text-sm"
+                />
                 {!isAdmin && !isModerator && (
                   <p className="text-xs text-amber-600 bg-amber-50 px-3 py-1.5 rounded-lg">
                     ⏳ Your event will be visible after admin approval.

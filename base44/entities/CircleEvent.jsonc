@@ -45,6 +45,10 @@
       "type": "boolean",
       "default": false,
       "description": "Whether the live video session is currently active"
+    },
+    "meet_link": {
+      "type": "string",
+      "description": "Google Meet or video call link for joining the event"
     }
   },
   "required": [

@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
-import { CalendarDays, ChevronLeft, ChevronRight, CalendarPlus, Clock, Users } from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight, CalendarPlus, Clock, Users, Video } from 'lucide-react';
 import { format, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isFuture } from 'date-fns';
 import { Button } from '@/components/ui/button';
 
@@ -161,14 +161,26 @@ export default function UpcomingEventsCalendar() {
                         )}
                       </div>
                     </div>
-                    <a
-                      href={getGoogleCalendarUrl(event)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="shrink-0 inline-flex items-center gap-1 h-7 px-2.5 text-xs rounded-full border bg-white/70 hover:bg-white transition-colors font-medium"
-                    >
-                      <CalendarPlus className="w-3 h-3" /> Add
-                    </a>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {event.meet_link && (
+                        <a
+                          href={event.meet_link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 h-7 px-2.5 text-xs rounded-full border border-green-300 bg-green-50 text-green-700 hover:bg-green-100 transition-colors font-medium"
+                        >
+                          <Video className="w-3 h-3" /> Join
+                        </a>
+                      )}
+                      <a
+                        href={getGoogleCalendarUrl(event)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 h-7 px-2.5 text-xs rounded-full border bg-white/70 hover:bg-white transition-colors font-medium"
+                      >
+                        <CalendarPlus className="w-3 h-3" /> Add
+                      </a>
+                    </div>
                   </div>
                 );
               })}
