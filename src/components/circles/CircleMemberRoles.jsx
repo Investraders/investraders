@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Shield, Crown, User, ChevronDown, Search, UserPlus } from 'lucide-react';
@@ -28,7 +28,7 @@ function RoleBadge({ role }) {
   );
 }
 
-function MemberRow({ userId, role, isCurrentUser, circle, canManage, displayName, currentUserId }) {
+function MemberRow({ userId, role, isCurrentUser, circle, canManage, displayName, avatarUrl, currentUserId }) {
   const queryClient = useQueryClient();
   const label = isCurrentUser ? `${displayName} (You)` : displayName;
 
@@ -60,8 +60,11 @@ function MemberRow({ userId, role, isCurrentUser, circle, canManage, displayName
   return (
     <div className="flex items-center justify-between py-2.5 px-3 rounded-xl hover:bg-muted/40 transition-colors">
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-300 flex items-center justify-center text-white text-xs font-bold shrink-0">
-          {(displayName || 'U').charAt(0).toUpperCase()}
+        <div className="w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-blue-400 to-cyan-300 flex items-center justify-center text-white text-xs font-bold shrink-0">
+          {avatarUrl
+            ? <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+            : (displayName || 'U').charAt(0).toUpperCase()
+          }
         </div>
         <p className="text-sm font-medium">{label}</p>
       </div>
@@ -121,15 +124,24 @@ export default function CircleMemberRoles({ circle, currentUserId }) {
 
   const allIds = [...new Set([...memberIds, ...(circle?.created_by_id ? [circle.created_by_id] : [])])];
 
-  const { data: nameData = {} } = useQuery({
-    queryKey: ['user-names', allIds.sort().join(',')],
-    queryFn: async () => {
-      if (allIds.length === 0) return {};
-      const res = await base44.functions.invoke('getUserNames', { user_ids: allIds });
-      return res.data?.names || {};
-    },
+  // Fetch real user profiles directly
+  const { data: memberProfiles = [] } = useQuery({
+    queryKey: ['member-roles-profiles', allIds.sort().join(',')],
+    queryFn: () => base44.entities.User.filter({ id: { $in: allIds } }),
     enabled: allIds.length > 0,
   });
+
+  const nameData = useMemo(() => {
+    const map = {};
+    memberProfiles.forEach((p) => { map[p.id] = p.full_name || p.email?.split('@')[0] || 'User'; });
+    return map;
+  }, [memberProfiles]);
+
+  const avatarData = useMemo(() => {
+    const map = {};
+    memberProfiles.forEach((p) => { map[p.id] = p.avatar_url || null; });
+    return map;
+  }, [memberProfiles]);
 
   const getRole = (userId) => {
     if (userId === circle?.created_by_id) return 'owner';
@@ -201,6 +213,7 @@ export default function CircleMemberRoles({ circle, currentUserId }) {
                   circle={circle}
                   canManage={canManage}
                   displayName={nameData[circle.created_by_id] || 'User'}
+                  avatarUrl={avatarData[circle.created_by_id] || null}
                   currentUserId={currentUserId}
                 />
               )}
@@ -213,6 +226,7 @@ export default function CircleMemberRoles({ circle, currentUserId }) {
                   circle={circle}
                   canManage={canManage}
                   displayName={nameData[uid] || 'Member'}
+                  avatarUrl={avatarData[uid] || null}
                   currentUserId={currentUserId}
                 />
               ))}

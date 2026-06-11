@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { Navigate } from 'react-router-dom';
-import { Shield, Users, Trash2, FileText, Bell, CircleDot, BarChart2, MessageCircle, TrendingUp, UserCheck, Hash } from 'lucide-react';
+import { Shield, Users, Trash2, FileText, Bell, CircleDot, BarChart2, MessageCircle, TrendingUp, UserCheck, Hash, ClipboardList } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { format, subDays, isAfter } from 'date-fns';
@@ -12,7 +12,7 @@ import { logger } from '@/lib/logger';
 import { CACHE } from '@/lib/query-client';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-const TABS = ['Overview', 'Users', 'Posts', 'Circles'];
+const TABS = ['Overview', 'Users', 'Posts', 'Circles', 'Audit Log'];
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -27,10 +27,28 @@ export default function AdminDashboard() {
   const { data: allComments = [] } = useQuery({ queryKey: ['admin-comments'], queryFn: () => base44.entities.Comment.list('-created_date', 200), staleTime: CACHE.short });
   const { data: allResponses = [] } = useQuery({ queryKey: ['admin-responses-all'], queryFn: () => base44.entities.CircleResponse.list('-created_date', 200), staleTime: CACHE.short });
 
+  const addAuditLog = async (action, details) => {
+    await base44.entities.AuditLog.create({
+      admin_id: user?.id,
+      admin_name: user?.full_name || user?.email || 'Admin',
+      action,
+      details,
+    });
+    queryClient.invalidateQueries({ queryKey: ['audit-logs'] });
+  };
+
+  const { data: auditLogs = [] } = useQuery({
+    queryKey: ['audit-logs'],
+    queryFn: () => base44.entities.AuditLog.list('-created_date', 100),
+    enabled: !!user?.id && isAdmin,
+    staleTime: CACHE.short,
+  });
+
   const deletePost = useMutation({
     mutationFn: (id) => base44.entities.Post.delete(id),
     onSuccess: (_, id) => {
       logger.track('admin_post_deleted', { post_id: id, admin_id: user?.id });
+      addAuditLog('delete_post', `Deleted post ${id}`);
       queryClient.invalidateQueries({ queryKey: ['admin-posts'] });
     },
   });
@@ -39,6 +57,7 @@ export default function AdminDashboard() {
     mutationFn: (id) => base44.entities.Circle.delete(id),
     onSuccess: (_, id) => {
       logger.track('admin_circle_deleted', { circle_id: id, admin_id: user?.id });
+      addAuditLog('delete_circle', `Deleted circle ${id}`);
       queryClient.invalidateQueries({ queryKey: ['admin-circles'] });
     },
   });
@@ -47,6 +66,7 @@ export default function AdminDashboard() {
     mutationFn: ({ id, role }) => base44.entities.User.update(id, { role }),
     onSuccess: (_, vars) => {
       logger.track('admin_role_changed', { target_user: vars.id, new_role: vars.role, admin_id: user?.id });
+      addAuditLog('role_change', `Changed user ${vars.id} role to ${vars.role}`);
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
     },
   });
@@ -281,6 +301,34 @@ export default function AdminDashboard() {
                 </Button>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {tab === 'Audit Log' && (
+        <div className="bg-card border rounded-2xl overflow-hidden">
+          <div className="px-5 py-3 border-b flex items-center gap-2 font-semibold text-sm">
+            <ClipboardList className="w-4 h-4 text-primary" /> Admin Audit Log
+          </div>
+          <div className="divide-y max-h-[600px] overflow-y-auto">
+            {auditLogs.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">No audit events yet</p>
+            ) : (
+              auditLogs.map((log) => (
+                <div key={log.id} className="flex items-start gap-3 px-5 py-3">
+                  <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
+                    <Shield className="w-4 h-4 text-purple-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium">{log.action?.replace(/_/g, ' ')}</p>
+                    <p className="text-xs text-muted-foreground">{log.details}</p>
+                    <p className="text-[10px] text-muted-foreground/60 mt-0.5">
+                      by {log.admin_name} · {log.created_date ? format(new Date(log.created_date), 'MMM d, yyyy HH:mm') : ''}
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       )}

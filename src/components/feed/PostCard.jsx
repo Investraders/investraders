@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, FileText, Download, FileSpreadsheet, File } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, FileText, Download, FileSpreadsheet, File, Trash2, Flag, Link as LinkIcon } from 'lucide-react';
 import EmojiReactions from '@/components/feed/EmojiReactions';
 import CommentSection from '@/components/feed/CommentSection';
 import SharePostModal from '@/components/feed/SharePostModal';
@@ -9,14 +9,18 @@ import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { useToast } from '@/components/ui/use-toast';
 
-export default function PostCard({ post }) {
+export default function PostCard({ post, onDeleted }) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [showComments, setShowComments] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [lightboxSrc, setLightboxSrc] = useState(null);
   const liked = post.liked_by?.includes(user?.id);
+  const isOwn = post.created_by_id === user?.id;
   const saved = post.saved_by?.includes(user?.id);
 
   // Always look up the author's current profile avatar to stay fresh
@@ -36,6 +40,15 @@ export default function PostCard({ post }) {
       await base44.entities.Post.update(post.id, { liked_by: newLikedBy, likes: newLikedBy.length });
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['posts'] }),
+  });
+
+  const deletePost = useMutation({
+    mutationFn: () => base44.entities.Post.delete(post.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      if (onDeleted) onDeleted(post.id);
+      toast({ title: 'Post deleted' });
+    },
   });
 
   const toggleSave = useMutation({
@@ -76,9 +89,43 @@ export default function PostCard({ post }) {
             </div>
           </div>
         </div>
-        <button className="text-muted-foreground hover:text-foreground">
-          <MoreHorizontal className="w-5 h-5" />
-        </button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="text-muted-foreground hover:text-foreground p-1 rounded-md hover:bg-muted transition-colors">
+              <MoreHorizontal className="w-5 h-5" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-44">
+            <DropdownMenuItem onClick={() => {
+              navigator.clipboard.writeText(`${window.location.origin}/post/${post.id}`);
+              toast({ title: 'Link copied!' });
+            }}>
+              <LinkIcon className="w-4 h-4 mr-2" /> Copy Link
+            </DropdownMenuItem>
+            {isOwn && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive"
+                  onClick={() => deletePost.mutate()}
+                >
+                  <Trash2 className="w-4 h-4 mr-2" /> Delete Post
+                </DropdownMenuItem>
+              </>
+            )}
+            {!isOwn && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-orange-600 focus:text-orange-600"
+                  onClick={() => toast({ title: 'Post reported', description: 'Thank you for your report.' })}
+                >
+                  <Flag className="w-4 h-4 mr-2" /> Report Post
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Content */}

@@ -55,7 +55,18 @@ export default function CircleEventCalendar({ circleId, isMember, isAdmin, isMod
   });
 
   const toggleSession = useMutation({
-    mutationFn: ({ id, active }) => base44.entities.CircleEvent.update(id, { session_active: active }),
+    mutationFn: async ({ id, active, eventTitle }) => {
+      let meet_link = undefined;
+      if (active) {
+        // Auto-generate Jitsi Meet room based on stable event ID
+        const roomName = `investraders-${id.replace(/[^a-zA-Z0-9]/g, '').slice(0, 20)}`;
+        meet_link = `https://meet.jit.si/${roomName}`;
+      }
+      await base44.entities.CircleEvent.update(id, {
+        session_active: active,
+        ...(meet_link !== undefined && { meet_link }),
+      });
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['circle-events', circleId] }),
   });
 
@@ -167,9 +178,9 @@ export default function CircleEventCalendar({ circleId, isMember, isAdmin, isMod
                   size="sm"
                   variant={isLive ? 'destructive' : 'outline'}
                   className="h-7 text-xs rounded-full"
-                  onClick={() => toggleSession.mutate({ id: event.id, active: !isLive })}
+                  onClick={() => toggleSession.mutate({ id: event.id, active: !isLive, eventTitle: event.title })}
                 >
-                  {isLive ? 'End Session' : 'Start Session'}
+                  {isLive ? 'End Session' : '🎥 Start Video Session'}
                 </Button>
               )}
             </div>
