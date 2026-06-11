@@ -7,6 +7,7 @@ import PostCard from '@/components/feed/PostCard';
 import CircleDiscovery from '@/components/feed/CircleDiscovery';
 import PendingInvites from '@/components/circles/PendingInvites';
 import WeeklyLeaderboard from '@/components/feed/WeeklyLeaderboard';
+import UpcomingEventsCalendar from '@/components/feed/UpcomingEventsCalendar';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Home() {
@@ -21,6 +22,7 @@ export default function Home() {
       <CreatePostBox />
       <PendingInvites />
       <WeeklyLeaderboard />
+      <UpcomingEventsCalendar />
       <CircleDiscovery />
 
       <div className="space-y-5">
