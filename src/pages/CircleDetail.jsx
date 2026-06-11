@@ -124,6 +124,7 @@ export default function CircleDetail() {
         circle_id: id,
         response_text: text,
         author_name: user?.full_name || user?.email?.split('@')[0] || 'User',
+        author_avatar: user?.avatar_url || null,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['circle-responses', activeQuestion?.id] });
@@ -145,29 +146,43 @@ export default function CircleDetail() {
   const isAdmin = circle?.created_by_id === user?.id;
   const isModerator = (circle?.moderator_ids || []).includes(user?.id);
 
+  // Precise member count: unique set of member_ids + creator
+  const allMemberIds = Array.from(new Set([
+    ...(circle?.member_ids || []),
+    ...(circle?.created_by_id ? [circle.created_by_id] : []),
+  ]));
+
   useCircleNotifications({ circle, user });
 
-  // Fetch real user profiles for circle members
+  // Fetch real user profiles for ALL circle members including creator
+  const allCircleMemberIds = Array.from(new Set([
+    ...(circle?.member_ids || []),
+    ...(circle?.created_by_id ? [circle.created_by_id] : []),
+  ]));
   const { data: memberProfiles = [] } = useQuery({
-    queryKey: ['circle-member-profiles', circle?.member_ids],
+    queryKey: ['circle-member-profiles', allCircleMemberIds.sort().join(',')],
     queryFn: async () => {
-      if (!circle?.member_ids?.length) return [];
-      return base44.entities.User.filter({ id: { $in: circle.member_ids } });
+      if (!allCircleMemberIds.length) return [];
+      return base44.entities.User.filter({ id: { $in: allCircleMemberIds } });
     },
-    enabled: !!circle?.member_ids?.length,
+    enabled: !!allCircleMemberIds.length,
   });
 
   // Build a set of user IDs who have responded to the active question
+  // Use both created_by_id and author_name fallback lookup to ensure correctness
   const activeResponderIds = new Set(responses.map((r) => r.created_by_id).filter(Boolean));
+  // Also track by author_name for fallback display (when created_by_id is missing)
+  const activeResponderNames = new Set(responses.map((r) => r.author_name).filter(Boolean));
 
-  // Build member list with real avatars
-  const memberNames = (circle?.member_ids || []).map((memberId) => {
+  // Build member list with real avatars — include creator even if not in member_ids
+  const memberNames = allMemberIds.map((memberId) => {
     const profile = memberProfiles.find((p) => p.id === memberId);
+    const name = profile?.full_name || profile?.email?.split('@')[0] || 'User';
     return {
       id: memberId,
-      name: profile?.full_name || profile?.email?.split('@')[0] || 'User',
+      name,
       avatar_url: profile?.avatar_url || null,
-      isActive: activeResponderIds.has(memberId),
+      isActive: activeResponderIds.has(memberId) || activeResponderNames.has(name),
     };
   });
   while (memberNames.length < 8) memberNames.push({ name: '?', id: null, avatar_url: null, isActive: false });
@@ -202,7 +217,7 @@ export default function CircleDetail() {
               <h1 className="text-xl font-bold">{circle?.name}</h1>
               <p className="text-sm text-muted-foreground flex items-center gap-1">
                 <Users className="w-3.5 h-3.5" />
-                {circle?.member_ids?.length || 0} members · {circle?.privacy}
+                {allMemberIds.length} members · {circle?.privacy}
               </p>
               {(circle?.tags || []).length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-1">
@@ -266,7 +281,7 @@ export default function CircleDetail() {
           questionNumber={activeQuestion?.question_number}
           closesAt={activeQuestion?.closes_at}
           totalResponses={responses.length}
-          totalMembers={circle?.member_ids?.length || 0}
+          totalMembers={allMemberIds.length}
           circleName={circle?.name}
           memberProfiles={memberProfiles}
         />
@@ -295,7 +310,9 @@ export default function CircleDetail() {
                       {(() => {
                         const rProfile = memberProfiles.find((p) => p.id === r.created_by_id);
                         const avatar = rProfile?.avatar_url || r.author_avatar;
-                        const isResponderActive = activeResponderIds.has(r.created_by_id);
+                        const isResponderActive = r.created_by_id
+                          ? activeResponderIds.has(r.created_by_id)
+                          : activeResponderNames.has(r.author_name);
                         return avatar ? (
                           <img
                             src={avatar}
@@ -313,7 +330,7 @@ export default function CircleDetail() {
                         );
                       })()}
                       <span className="text-sm font-medium">{r.author_name}</span>
-                      {activeResponderIds.has(r.created_by_id) && (
+                      {(r.created_by_id ? activeResponderIds.has(r.created_by_id) : activeResponderNames.has(r.author_name)) && (
                         <span className="flex items-center gap-1 text-[10px] text-green-600 font-medium ml-auto">
                           <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse inline-block" />
                           Active

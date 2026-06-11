@@ -47,7 +47,10 @@ export default function CircleAdminDashboard({ circleId, circle }) {
   });
 
   const weeklyData = buildWeeklyData(posts, responses);
-  const totalMembers = circle?.member_ids?.length || 0;
+  const totalMembers = Array.from(new Set([
+    ...(circle?.member_ids || []),
+    ...(circle?.created_by_id ? [circle.created_by_id] : []),
+  ])).length;
   const totalPosts = posts.length;
   const totalResponses = responses.length;
 

@@ -85,7 +85,7 @@ export default function MyCircles() {
                   <div className="relative shrink-0">
                     <CircleIcon category={circle.category} size="xl" />
                     <span className="absolute -bottom-1 -right-1 flex items-center gap-0.5 bg-primary text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
-                      <Users className="w-2.5 h-2.5" />{circle.member_ids?.length || 0}
+                      <Users className="w-2.5 h-2.5" />{Array.from(new Set([...(circle.member_ids || []), ...(circle.created_by_id ? [circle.created_by_id] : [])])).length}
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
@@ -103,7 +103,7 @@ export default function MyCircles() {
                         <TagBadge key={tag} tag={tag} />
                       ))}
                       <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Users className="w-3 h-3" /> {circle.member_ids?.length || 0} members
+                        <Users className="w-3 h-3" /> {Array.from(new Set([...(circle.member_ids || []), ...(circle.created_by_id ? [circle.created_by_id] : [])])).length} members
                       </span>
                     </div>
                   </div>

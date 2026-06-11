@@ -3,13 +3,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { Navigate } from 'react-router-dom';
-import { Shield, Users, Trash2, BarChart2, FileText, Bell, Circle } from 'lucide-react';
+import { Shield, Users, Trash2, FileText, Bell, CircleDot, BarChart2, MessageCircle, TrendingUp, UserCheck, Hash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { format } from 'date-fns';
+import { format, subDays, isAfter } from 'date-fns';
 import { useRBAC } from '@/hooks/useRBAC';
 import { logger } from '@/lib/logger';
 import { CACHE } from '@/lib/query-client';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const TABS = ['Overview', 'Users', 'Posts', 'Circles'];
 
@@ -21,9 +22,10 @@ export default function AdminDashboard() {
   const [search, setSearch] = useState('');
 
   const { data: allUsers = [] } = useQuery({ queryKey: ['admin-users'], queryFn: () => base44.entities.User.list(), staleTime: CACHE.short });
-  const { data: allPosts = [] } = useQuery({ queryKey: ['admin-posts'], queryFn: () => base44.entities.Post.list('-created_date', 100), staleTime: CACHE.short });
+  const { data: allPosts = [] } = useQuery({ queryKey: ['admin-posts'], queryFn: () => base44.entities.Post.list('-created_date', 200), staleTime: CACHE.short });
   const { data: allCircles = [] } = useQuery({ queryKey: ['admin-circles'], queryFn: () => base44.entities.Circle.list(), staleTime: CACHE.medium });
-  const { data: allNotifications = [] } = useQuery({ queryKey: ['admin-notifs'], queryFn: () => base44.entities.Notification.list('-created_date', 50), staleTime: CACHE.short });
+  const { data: allComments = [] } = useQuery({ queryKey: ['admin-comments'], queryFn: () => base44.entities.Comment.list('-created_date', 200), staleTime: CACHE.short });
+  const { data: allResponses = [] } = useQuery({ queryKey: ['admin-responses-all'], queryFn: () => base44.entities.CircleResponse.list('-created_date', 200), staleTime: CACHE.short });
 
   const deletePost = useMutation({
     mutationFn: (id) => base44.entities.Post.delete(id),
@@ -61,11 +63,49 @@ export default function AdminDashboard() {
     (c.name || '').toLowerCase().includes(search.toLowerCase())
   );
 
-  const stats = [
-    { label: 'Total Users', value: allUsers.length, icon: Users, color: 'text-blue-500 bg-blue-50' },
-    { label: 'Total Posts', value: allPosts.length, icon: FileText, color: 'text-green-500 bg-green-50' },
-    { label: 'Total Circles', value: allCircles.length, icon: Circle, color: 'text-purple-500 bg-purple-50' },
-    { label: 'Notifications Sent', value: allNotifications.length, icon: Bell, color: 'text-orange-500 bg-orange-50' },
+  // Computed stats
+  const last7days = subDays(new Date(), 7);
+  const last30days = subDays(new Date(), 30);
+  const newUsersLast7 = allUsers.filter((u) => u.created_date && isAfter(new Date(u.created_date), last7days)).length;
+  const postsLast7 = allPosts.filter((p) => p.created_date && isAfter(new Date(p.created_date), last7days)).length;
+  const postsLast30 = allPosts.filter((p) => p.created_date && isAfter(new Date(p.created_date), last30days)).length;
+  const totalMembers = allCircles.reduce((acc, c) => {
+    return acc + Array.from(new Set([...(c.member_ids || []), ...(c.created_by_id ? [c.created_by_id] : [])])).length;
+  }, 0);
+  const avgMembersPerCircle = allCircles.length ? (totalMembers / allCircles.length).toFixed(1) : 0;
+  const totalLikes = allPosts.reduce((acc, p) => acc + (p.likes || 0), 0);
+
+  // Top poster
+  const posterCounts = {};
+  allPosts.forEach((p) => { if (p.author_name) posterCounts[p.author_name] = (posterCounts[p.author_name] || 0) + 1; });
+  const topPoster = Object.entries(posterCounts).sort((a, b) => b[1] - a[1])[0];
+
+  // Top circle by members
+  const topCircle = [...allCircles].sort((a, b) => {
+    const aCount = Array.from(new Set([...(a.member_ids || []), ...(a.created_by_id ? [a.created_by_id] : [])])).length;
+    const bCount = Array.from(new Set([...(b.member_ids || []), ...(b.created_by_id ? [b.created_by_id] : [])])).length;
+    return bCount - aCount;
+  })[0];
+
+  // Posts per day (last 7 days) for chart
+  const dailyPostsData = Array.from({ length: 7 }, (_, i) => {
+    const day = subDays(new Date(), 6 - i);
+    const dayStart = new Date(day.setHours(0, 0, 0, 0));
+    const dayEnd = new Date(new Date(dayStart).setHours(23, 59, 59, 999));
+    return {
+      day: format(dayStart, 'EEE'),
+      Posts: allPosts.filter((p) => p.created_date && new Date(p.created_date) >= dayStart && new Date(p.created_date) <= dayEnd).length,
+      Comments: allComments.filter((c) => c.created_date && new Date(c.created_date) >= dayStart && new Date(c.created_date) <= dayEnd).length,
+    };
+  });
+
+  const statCards = [
+    { label: 'Total Users', value: allUsers.length, sub: `+${newUsersLast7} this week`, icon: Users, color: 'bg-blue-500' },
+    { label: 'Total Posts', value: allPosts.length, sub: `${postsLast7} this week`, icon: FileText, color: 'bg-indigo-500' },
+    { label: 'Total Circles', value: allCircles.length, sub: `Avg ${avgMembersPerCircle} members`, icon: CircleDot, color: 'bg-purple-500' },
+    { label: 'Total Comments', value: allComments.length, sub: `${allResponses.length} circle responses`, icon: MessageCircle, color: 'bg-cyan-500' },
+    { label: 'Total Likes', value: totalLikes, sub: 'across all posts', icon: TrendingUp, color: 'bg-pink-500' },
+    { label: 'Posts (30d)', value: postsLast30, sub: 'last 30 days', icon: BarChart2, color: 'bg-emerald-500' },
   ];
 
   return (
@@ -103,22 +143,75 @@ export default function AdminDashboard() {
 
       {tab === 'Overview' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {stats.map((s) => (
+          {/* Stat grid */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {statCards.map((s) => (
               <div key={s.label} className="bg-card border rounded-2xl p-4 flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${s.color}`}>
-                  <s.icon className="w-5 h-5" />
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${s.color}`}>
+                  <s.icon className="w-5 h-5 text-white" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-2xl font-bold">{s.value}</p>
-                  <p className="text-xs text-muted-foreground">{s.label}</p>
+                  <p className="text-xs text-muted-foreground truncate">{s.label}</p>
+                  <p className="text-[10px] text-muted-foreground/70 truncate">{s.sub}</p>
                 </div>
               </div>
             ))}
           </div>
+
+          {/* Highlights row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {topPoster && (
+              <div className="bg-card border rounded-2xl p-4 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
+                  <UserCheck className="w-5 h-5 text-amber-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Top Poster</p>
+                  <p className="font-semibold text-sm">{topPoster[0]}</p>
+                  <p className="text-[10px] text-muted-foreground">{topPoster[1]} posts published</p>
+                </div>
+              </div>
+            )}
+            {topCircle && (
+              <div className="bg-card border rounded-2xl p-4 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center shrink-0">
+                  <Hash className="w-5 h-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Largest Circle</p>
+                  <p className="font-semibold text-sm truncate">{topCircle.name}</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {Array.from(new Set([...(topCircle.member_ids || []), ...(topCircle.created_by_id ? [topCircle.created_by_id] : [])])).length} members · {topCircle.category}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Daily activity chart */}
           <div className="bg-card border rounded-2xl overflow-hidden">
             <div className="px-5 py-3 border-b font-semibold text-sm flex items-center gap-2">
-              <BarChart2 className="w-4 h-4 text-primary" /> Recent Posts
+              <BarChart2 className="w-4 h-4 text-primary" /> Daily Activity (last 7 days)
+            </div>
+            <div className="p-4">
+              <ResponsiveContainer width="100%" height={180}>
+                <BarChart data={dailyPostsData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="day" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+                  <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e2e8f0' }} />
+                  <Bar dataKey="Posts" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Comments" fill="#06b6d4" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Recent posts */}
+          <div className="bg-card border rounded-2xl overflow-hidden">
+            <div className="px-5 py-3 border-b font-semibold text-sm flex items-center gap-2">
+              <FileText className="w-4 h-4 text-primary" /> Recent Posts
             </div>
             <div className="divide-y">
               {allPosts.slice(0, 5).map((p) => (
@@ -128,7 +221,7 @@ export default function AdminDashboard() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm truncate">{p.content?.slice(0, 80)}</p>
-                    <p className="text-xs text-muted-foreground">{p.author_name} · {p.created_date ? format(new Date(p.created_date), 'MMM d') : ''}</p>
+                    <p className="text-xs text-muted-foreground">{p.author_name} · {p.created_date ? format(new Date(p.created_date), 'MMM d') : ''} · {p.likes || 0} likes</p>
                   </div>
                 </div>
               ))}
@@ -139,6 +232,9 @@ export default function AdminDashboard() {
 
       {tab === 'Users' && (
         <div className="bg-card border rounded-2xl overflow-hidden">
+          <div className="px-5 py-3 border-b text-xs text-muted-foreground font-medium">
+            {filteredUsers.length} users total
+          </div>
           <div className="divide-y">
             {filteredUsers.map((u) => (
               <div key={u.id} className="flex items-center gap-3 px-5 py-3">
@@ -147,7 +243,7 @@ export default function AdminDashboard() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium">{u.full_name || '—'}</p>
-                  <p className="text-xs text-muted-foreground">{u.email}</p>
+                  <p className="text-xs text-muted-foreground">{u.email} · joined {u.created_date ? format(new Date(u.created_date), 'MMM d, yyyy') : '—'}</p>
                 </div>
                 <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-600'}`}>
                   {u.role || 'user'}
@@ -166,6 +262,9 @@ export default function AdminDashboard() {
 
       {tab === 'Posts' && (
         <div className="bg-card border rounded-2xl overflow-hidden">
+          <div className="px-5 py-3 border-b text-xs text-muted-foreground font-medium">
+            {filteredPosts.length} posts
+          </div>
           <div className="divide-y">
             {filteredPosts.map((p) => (
               <div key={p.id} className="flex items-start gap-3 px-5 py-3">
@@ -174,7 +273,7 @@ export default function AdminDashboard() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm line-clamp-2">{p.content}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{p.author_name} · {p.created_date ? format(new Date(p.created_date), 'MMM d, yyyy') : ''} · {p.likes || 0} likes</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{p.author_name} · {p.created_date ? format(new Date(p.created_date), 'MMM d, yyyy') : ''} · {p.likes || 0} likes · {(p.liked_by || []).length} reactions</p>
                 </div>
                 <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:bg-destructive/10 shrink-0"
                   onClick={() => deletePost.mutate(p.id)}>
@@ -188,22 +287,30 @@ export default function AdminDashboard() {
 
       {tab === 'Circles' && (
         <div className="bg-card border rounded-2xl overflow-hidden">
+          <div className="px-5 py-3 border-b text-xs text-muted-foreground font-medium">
+            {filteredCircles.length} circles
+          </div>
           <div className="divide-y">
-            {filteredCircles.map((c) => (
-              <div key={c.id} className="flex items-center gap-3 px-5 py-3">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-cyan-300 flex items-center justify-center text-white text-sm font-bold shrink-0">
-                  {(c.name || 'C').charAt(0)}
+            {filteredCircles.map((c) => {
+              const memberCount = Array.from(new Set([...(c.member_ids || []), ...(c.created_by_id ? [c.created_by_id] : [])])).length;
+              return (
+                <div key={c.id} className="flex items-center gap-3 px-5 py-3">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-cyan-300 flex items-center justify-center text-white text-sm font-bold shrink-0">
+                    {(c.name || 'C').charAt(0)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{c.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {memberCount} members · {c.category?.replace(/_/g, ' ') || 'general'} · {c.privacy || 'public'} · created {c.created_date ? format(new Date(c.created_date), 'MMM d, yyyy') : '—'}
+                    </p>
+                  </div>
+                  <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:bg-destructive/10 shrink-0"
+                    onClick={() => deleteCircle.mutate(c.id)}>
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </Button>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{c.name}</p>
-                  <p className="text-xs text-muted-foreground">{c.member_ids?.length || 0} members · {c.category || 'general'} · {c.privacy || 'public'}</p>
-                </div>
-                <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:bg-destructive/10 shrink-0"
-                  onClick={() => deleteCircle.mutate(c.id)}>
-                  <Trash2 className="w-3.5 h-3.5" />
-                </Button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

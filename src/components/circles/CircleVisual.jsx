@@ -252,7 +252,8 @@ export default function CircleVisual({
                   alt={member.name}
                   className="w-10 h-10 rounded-full object-cover shadow-md relative"
                   style={{
-                    border: isActive ? '2px solid #22c55e' : '2px solid white',
+                    border: isActive ? '3px solid #22c55e' : '2px solid white',
+                    boxShadow: isActive ? '0 0 0 2px #22c55e, 0 0 8px 2px rgba(34,197,94,0.5)' : undefined,
                     zIndex: 2,
                   }}
                 />
@@ -260,7 +261,8 @@ export default function CircleVisual({
                 <div
                   className={`w-10 h-10 rounded-full ${bgClass} flex items-center justify-center text-white text-xs font-bold shadow-md relative`}
                   style={{
-                    border: isActive ? '2px solid #22c55e' : '2px solid white',
+                    border: isActive ? '3px solid #22c55e' : '2px solid white',
+                    boxShadow: isActive ? '0 0 0 2px #22c55e, 0 0 8px 2px rgba(34,197,94,0.5)' : undefined,
                     zIndex: 2,
                   }}
                 >

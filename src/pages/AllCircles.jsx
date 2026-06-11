@@ -92,7 +92,7 @@ export default function AllCircles() {
                   <div className="relative shrink-0">
                     <CircleIcon category={circle.category} size="xl" />
                     <span className="absolute -bottom-1 -right-1 flex items-center gap-0.5 bg-primary text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
-                      <Users className="w-2.5 h-2.5" />{circle.member_ids?.length || 0}
+                      <Users className="w-2.5 h-2.5" />{Array.from(new Set([...(circle.member_ids || []), ...(circle.created_by_id ? [circle.created_by_id] : [])])).length}
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
@@ -106,11 +106,14 @@ export default function AllCircles() {
                       <Badge className={CATEGORY_COLORS[circle.category] || CATEGORY_COLORS.general}>
                         {circle.category?.replace(/_/g, ' ') || 'General'}
                       </Badge>
-                      {(circle.member_ids?.length || 0) > 0 && (
-                        <span className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Users className="w-3 h-3" /> {circle.member_ids.length} members
-                        </span>
-                      )}
+                      {(() => {
+                        const cnt = Array.from(new Set([...(circle.member_ids || []), ...(circle.created_by_id ? [circle.created_by_id] : [])])).length;
+                        return cnt > 0 ? (
+                          <span className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Users className="w-3 h-3" /> {cnt} members
+                          </span>
+                        ) : null;
+                      })()}
                     </div>
                   </div>
                   <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors mt-1 shrink-0" />
