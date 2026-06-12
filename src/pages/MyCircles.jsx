@@ -23,6 +23,8 @@ const CATEGORY_COLORS = {
 
 export default function MyCircles() {
   const { user } = useAuth();
+  const urlParams = new URLSearchParams(window.location.search);
+  const showCreatedOnly = urlParams.get('filter') === 'created';
 
   const { data: circles = [], isLoading } = useQuery({
     queryKey: ['my-circles', user?.id],
@@ -37,7 +39,7 @@ export default function MyCircles() {
           <Link to="/" className="text-muted-foreground hover:text-foreground">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <h1 className="text-2xl font-bold">My Circles</h1>
+          <h1 className="text-2xl font-bold">{showCreatedOnly ? 'Your Created Circles' : 'My Circles'}</h1>
         </div>
         <Link to="/create-circle">
           <Button className="rounded-full bg-primary gap-2">
@@ -53,16 +55,18 @@ export default function MyCircles() {
           ))}
         </div>
       ) : (() => {
-        const myCircles = circles.filter(
-          (c) => c.created_by_id === user?.id || (c.member_ids || []).includes(user?.id)
+        const myCircles = circles.filter((c) =>
+          showCreatedOnly
+            ? c.created_by_id === user?.id
+            : c.created_by_id === user?.id || (c.member_ids || []).includes(user?.id)
         );
         if (myCircles.length === 0) return (
           <div className="text-center py-20">
             <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
               <Users className="w-10 h-10 text-primary" />
             </div>
-            <h3 className="text-lg font-semibold mb-2">No circles yet</h3>
-            <p className="text-muted-foreground mb-4">Join or create your first circle!</p>
+            <h3 className="text-lg font-semibold mb-2">{showCreatedOnly ? 'No created circles' : 'No circles yet'}</h3>
+            <p className="text-muted-foreground mb-4">{showCreatedOnly ? 'Create your first circle to get started!' : 'Join or create your first circle!'}</p>
             <Link to="/all-circles">
               <Button className="rounded-full bg-primary">Browse Circles</Button>
             </Link>

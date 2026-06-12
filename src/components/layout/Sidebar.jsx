@@ -17,13 +17,11 @@ export default function Sidebar() {
   const location = useLocation();
   const { user } = useAuth();
 
-  const { data: circles = [] } = useQuery({
-    queryKey: ['sidebar-circles', user?.id],
-    queryFn: () => base44.entities.Circle.list('-created_date', 20),
+  const { data: createdCircles = [] } = useQuery({
+    queryKey: ['sidebar-created-circles', user?.id],
+    queryFn: () => base44.entities.Circle.filter({ created_by_id: user?.id }, '-created_date', 20),
     enabled: !!user?.id,
   });
-
-  const createdCircles = circles.filter((c) => c.created_by_id === user?.id);
 
   return (
     <aside className="hidden lg:block w-64 shrink-0 sticky top-0 h-[calc(100vh-6rem)] overflow-y-auto p-4">
@@ -51,7 +49,7 @@ export default function Sidebar() {
       <div className="border-t pt-4">
         <div className="flex items-center justify-between px-3 mb-3">
           <h3 className="text-sm font-semibold text-foreground">Your created circles</h3>
-          <Link to="/my-circles" className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+          <Link to="/my-circles?filter=created" className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
             <Eye className="w-3 h-3 text-primary" />
           </Link>
         </div>
@@ -81,7 +79,7 @@ export default function Sidebar() {
         </div>
 
         {createdCircles.length > 5 && (
-          <Link to="/my-circles" className="flex items-center gap-1 px-3 mt-3 text-sm text-primary hover:underline font-medium">
+          <Link to="/my-circles?filter=created" className="flex items-center gap-1 px-3 mt-3 text-sm text-primary hover:underline font-medium">
             View all circles →
           </Link>
         )}
