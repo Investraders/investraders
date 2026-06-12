@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, Plus, Send, Users, MessageCircle, ChevronUp, ChevronDown, UserPlus, Share2, Newspaper, LayoutList } from 'lucide-react';
 import CircleIcon from '@/components/circles/CircleIcon';
+import VerifiedBadge from '@/components/circles/VerifiedBadge';
 import CircleFeed from '@/components/circles/CircleFeed';
 import { TagBadge } from '@/components/circles/TagPicker';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -227,7 +228,16 @@ export default function CircleDetail() {
           <div className="flex items-center gap-3">
             <CircleIcon category={circle?.category} size="xl" />
             <div>
-              <h1 className="text-xl font-bold">{circle?.name}</h1>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-xl font-bold">{circle?.name}</h1>
+                {circle?.is_verified && (
+                  <VerifiedBadge
+                    label={circle.verified_label || (circle.category === 'institutional' ? 'Official' : 'Verified')}
+                    size="md"
+                    dark={false}
+                  />
+                )}
+              </div>
               <p className="text-sm text-muted-foreground flex items-center gap-1">
                 <Users className="w-3.5 h-3.5" />
                 {allMemberIds.length} members · {circle?.privacy}

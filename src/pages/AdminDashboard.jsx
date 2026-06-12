@@ -3,7 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { Navigate } from 'react-router-dom';
-import { Shield, Users, Trash2, FileText, Bell, CircleDot, BarChart2, MessageCircle, TrendingUp, UserCheck, Hash, ClipboardList } from 'lucide-react';
+import { Shield, Users, Trash2, FileText, Bell, CircleDot, BarChart2, MessageCircle, TrendingUp, UserCheck, Hash, ClipboardList, ShieldCheck } from 'lucide-react';
+import VerifiedBadge from '@/components/circles/VerifiedBadge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { format, subDays, isAfter } from 'date-fns';
@@ -68,6 +69,18 @@ export default function AdminDashboard() {
       logger.track('admin_role_changed', { target_user: vars.id, new_role: vars.role, admin_id: user?.id });
       addAuditLog('role_change', `Changed user ${vars.id} role to ${vars.role}`);
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+    },
+  });
+
+  const toggleVerified = useMutation({
+    mutationFn: ({ id, is_verified, verified_label }) =>
+      base44.entities.Circle.update(id, { is_verified, verified_label: verified_label || '' }),
+    onSuccess: (_, vars) => {
+      addAuditLog(
+        vars.is_verified ? 'circle_verified' : 'circle_unverified',
+        `${vars.is_verified ? 'Granted' : 'Revoked'} verified badge for circle ${vars.id}`
+      );
+      queryClient.invalidateQueries({ queryKey: ['admin-circles'] });
     },
   });
 
@@ -335,8 +348,12 @@ export default function AdminDashboard() {
 
       {tab === 'Circles' && (
         <div className="bg-card border rounded-2xl overflow-hidden">
-          <div className="px-5 py-3 border-b text-xs text-muted-foreground font-medium">
+          <div className="px-5 py-3 border-b text-xs text-muted-foreground font-medium flex items-center gap-2">
             {filteredCircles.length} circles
+            <span className="ml-auto flex items-center gap-1 text-blue-600">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              {allCircles.filter((c) => c.is_verified).length} verified
+            </span>
           </div>
           <div className="divide-y">
             {filteredCircles.map((c) => {
@@ -347,11 +364,29 @@ export default function AdminDashboard() {
                     {(c.name || 'C').charAt(0)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{c.name}</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-medium truncate">{c.name}</p>
+                      {c.is_verified && <VerifiedBadge label={c.verified_label || 'Verified'} size="sm" />}
+                    </div>
                     <p className="text-xs text-muted-foreground">
                       {memberCount} members · {c.category?.replace(/_/g, ' ') || 'general'} · {c.privacy || 'public'} · created {c.created_date ? format(new Date(c.created_date), 'MMM d, yyyy') : '—'}
                     </p>
                   </div>
+                  <Button
+                    size="sm"
+                    variant={c.is_verified ? 'default' : 'outline'}
+                    className={`h-7 text-xs shrink-0 gap-1 ${c.is_verified ? 'bg-blue-600 hover:bg-blue-700 text-white' : ''}`}
+                    onClick={() => toggleVerified.mutate({
+                      id: c.id,
+                      is_verified: !c.is_verified,
+                      verified_label: c.category === 'institutional'
+                        ? (c.verified_label || 'Official')
+                        : (c.verified_label || 'Verified'),
+                    })}
+                  >
+                    <ShieldCheck className="w-3 h-3" />
+                    {c.is_verified ? 'Verified' : 'Verify'}
+                  </Button>
                   <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:bg-destructive/10 shrink-0"
                     onClick={() => deleteCircle.mutate(c.id)}>
                     <Trash2 className="w-3.5 h-3.5" />

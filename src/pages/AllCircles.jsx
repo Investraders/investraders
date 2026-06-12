@@ -5,6 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { Search, Users, ArrowRight, Landmark, Sparkles } from 'lucide-react';
 import CircleIcon from '@/components/circles/CircleIcon';
+import VerifiedBadge from '@/components/circles/VerifiedBadge';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
@@ -114,10 +115,16 @@ export default function AllCircles() {
                             {circle.description || 'Official institutional circle'}
                           </p>
                           <div className="flex flex-wrap items-center gap-2">
-                            {/* Institutional badge */}
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30">
                               <Landmark className="w-2.5 h-2.5" /> INSTITUTIONAL
                             </span>
+                            {circle.is_verified && (
+                              <VerifiedBadge
+                                label={circle.verified_label || 'Official'}
+                                size="sm"
+                                dark={true}
+                              />
+                            )}
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-sky-400/10 text-sky-300 border border-sky-400/20">
                               <Sparkles className="w-2.5 h-2.5" /> AI Finance
                             </span>
@@ -143,9 +150,14 @@ export default function AllCircles() {
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-lg truncate group-hover:text-primary transition-colors">
-                        {circle.name}
-                      </h3>
+                      <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                        <h3 className="font-semibold text-lg truncate group-hover:text-primary transition-colors">
+                          {circle.name}
+                        </h3>
+                        {circle.is_verified && (
+                          <VerifiedBadge label={circle.verified_label || 'Verified'} size="sm" />
+                        )}
+                      </div>
                       <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
                         {circle.description || 'No description'}
                       </p>

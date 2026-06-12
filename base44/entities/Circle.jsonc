@@ -3,16 +3,13 @@
   "type": "object",
   "properties": {
     "name": {
-      "type": "string",
-      "description": "Name of the circle"
+      "type": "string"
     },
     "description": {
-      "type": "string",
-      "description": "Description of the circle"
+      "type": "string"
     },
     "cover_image": {
-      "type": "string",
-      "description": "Cover image URL"
+      "type": "string"
     },
     "category": {
       "type": "string",
@@ -32,22 +29,19 @@
       "type": "array",
       "items": {
         "type": "string"
-      },
-      "description": "Finance topic tags for the circle"
+      }
     },
     "member_ids": {
       "type": "array",
       "items": {
         "type": "string"
-      },
-      "description": "User IDs of circle members"
+      }
     },
     "moderator_ids": {
       "type": "array",
       "items": {
         "type": "string"
-      },
-      "description": "User IDs of circle moderators"
+      }
     },
     "privacy": {
       "type": "string",
@@ -56,6 +50,15 @@
         "private"
       ],
       "default": "public"
+    },
+    "is_verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Officially verified by platform admins \u2014 shown as a verified badge"
+    },
+    "verified_label": {
+      "type": "string",
+      "description": "Optional label shown on the badge, e.g. 'Chamber of Commerce' or 'Stock Exchange'"
     }
   },
   "required": [
