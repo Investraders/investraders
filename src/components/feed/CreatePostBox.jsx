@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/components/ui/use-toast';
 import { checkRateLimit } from '@/lib/rateLimiter';
 import { validate, validators, sanitize } from '@/lib/validation';
 import { logger } from '@/lib/logger';
@@ -17,6 +18,7 @@ const ACCEPTED_FILE = '.pdf,.xls,.xlsx,.csv,.doc,.docx';
 export default function CreatePostBox() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const [content, setContent] = useState('');
   const [attachedFile, setAttachedFile] = useState(null); // { url, name, type }
@@ -129,6 +131,9 @@ export default function CreatePostBox() {
       setContent('');
       clearAttachments();
       setSelectedCircle(null);
+    },
+    onError: (err) => {
+      toast({ title: 'Post failed', description: err?.message || 'Something went wrong. Please try again.', variant: 'destructive' });
     },
   });
 
