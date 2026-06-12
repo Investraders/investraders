@@ -12,15 +12,16 @@ import { Input } from '@/components/ui/input';
 import { motion } from 'framer-motion';
 
 const CATEGORY_COLORS = {
-  investing: 'bg-green-100 text-green-700',
-  crypto: 'bg-orange-100 text-orange-700',
-  stocks: 'bg-blue-100 text-blue-700',
-  real_estate: 'bg-purple-100 text-purple-700',
-  business: 'bg-yellow-100 text-yellow-700',
-  personal_finance: 'bg-cyan-100 text-cyan-700',
-  institutional: 'bg-amber-100 text-amber-800',
-  general: 'bg-gray-100 text-gray-700',
+  chamber_of_commerce: 'bg-amber-100 text-amber-800',
+  stock_market: 'bg-green-100 text-green-700',
+  university: 'bg-purple-100 text-purple-700',
+  institution: 'bg-cyan-100 text-cyan-700',
+  small_business: 'bg-orange-100 text-orange-700',
+  individual: 'bg-blue-100 text-blue-700',
+  topics: 'bg-gray-100 text-gray-700',
 };
+
+const INSTITUTIONAL_CATEGORIES = ['chamber_of_commerce', 'institution', 'university', 'stock_market'];
 
 export default function AllCircles() {
   const { user } = useAuth();
@@ -86,7 +87,7 @@ export default function AllCircles() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04 }}
             >
-              {circle.category === 'institutional' ? (
+              {INSTITUTIONAL_CATEGORIES.includes(circle.category) ? (
                 <Link to={`/circle/${circle.id}`} className="block group">
                   <div
                     className="relative rounded-2xl p-[2px] shadow-lg hover:shadow-xl transition-all overflow-hidden"
@@ -99,7 +100,7 @@ export default function AllCircles() {
                       {/* Top row */}
                       <div className="flex items-start gap-3">
                         <div className="relative shrink-0">
-                          <CircleIcon category="institutional" size="xl" />
+                          <CircleIcon category={circle.category} size="xl" />
                           <span className="absolute -bottom-1 -right-1 flex items-center gap-0.5 bg-amber-400 text-slate-900 text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
                             <Users className="w-2.5 h-2.5" />
                             {Array.from(new Set([...(circle.member_ids || []), ...(circle.created_by_id ? [circle.created_by_id] : [])])).length}
@@ -162,8 +163,8 @@ export default function AllCircles() {
                         {circle.description || 'No description'}
                       </p>
                       <div className="flex flex-wrap items-center gap-2">
-                        <Badge className={CATEGORY_COLORS[circle.category] || CATEGORY_COLORS.general}>
-                          {circle.category?.replace(/_/g, ' ') || 'General'}
+                        <Badge className={`capitalize ${CATEGORY_COLORS[circle.category] || CATEGORY_COLORS.topics}`}>
+                          {circle.category?.replace(/_/g, ' ') || 'Topics'}
                         </Badge>
                         {(() => {
                           const cnt = Array.from(new Set([...(circle.member_ids || []), ...(circle.created_by_id ? [circle.created_by_id] : [])])).length;

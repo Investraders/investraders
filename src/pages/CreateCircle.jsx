@@ -19,7 +19,7 @@ export default function CreateCircle() {
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('general');
+  const [category, setCategory] = useState('topics');
   const [privacy, setPrivacy] = useState('public');
   const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -95,17 +95,17 @@ export default function CreateCircle() {
             </div>
           </div>
 
-          {category === 'institutional' && (
+          {['chamber_of_commerce', 'institution', 'university', 'stock_market'].includes(category) && (
             <div
               className="rounded-xl p-4 border border-amber-400/40"
               style={{ background: 'linear-gradient(135deg,#0f172a,#1e3a8a)' }}
             >
               <div className="flex items-center gap-2 mb-1">
                 <Landmark className="w-4 h-4 text-amber-300" />
-                <span className="text-amber-300 font-bold text-sm">Institutional Circle</span>
+                <span className="text-amber-300 font-bold text-sm">Organization Circle</span>
               </div>
               <p className="text-blue-200/80 text-xs leading-relaxed">
-                Designed for chambers of commerce, stock exchanges, and financial institutions to convene members, clients, and stakeholders in a branded professional space.
+                Designed for chambers of commerce, stock exchanges, universities, and institutions to convene members, clients, and stakeholders in a branded professional space.
               </p>
             </div>
           )}

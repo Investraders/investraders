@@ -14,16 +14,15 @@
     "category": {
       "type": "string",
       "enum": [
-        "investing",
-        "crypto",
-        "stocks",
-        "real_estate",
-        "business",
-        "personal_finance",
-        "institutional",
-        "general"
+        "chamber_of_commerce",
+        "stock_market",
+        "university",
+        "institution",
+        "small_business",
+        "individual",
+        "topics"
       ],
-      "default": "general"
+      "default": "topics"
     },
     "tags": {
       "type": "array",

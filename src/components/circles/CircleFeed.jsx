@@ -7,13 +7,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 // Maps circle category to relevant keywords/tags used in post filtering
 const CATEGORY_KEYWORDS = {
-  investing: ['investing', 'investment', 'portfolio', 'returns', 'dividends', 'equity', 'venture'],
-  crypto: ['crypto', 'bitcoin', 'ethereum', 'blockchain', 'defi', 'nft', 'web3', 'altcoin'],
-  stocks: ['stocks', 'shares', 'market', 'nasdaq', 'sp500', 'earnings', 'ipo', 'trading'],
-  real_estate: ['real estate', 'property', 'mortgage', 'reit', 'rental', 'housing'],
-  business: ['business', 'startup', 'entrepreneur', 'fintech', 'innovation', 'venture', 'growth'],
-  personal_finance: ['budget', 'savings', 'debt', 'tax', 'retirement', 'financial', 'wealth'],
-  general: [],
+  chamber_of_commerce: ['commerce', 'trade', 'business', 'economy', 'chamber', 'industry', 'enterprise'],
+  stock_market: ['stocks', 'shares', 'market', 'nasdaq', 'sp500', 'earnings', 'ipo', 'trading', 'equity'],
+  university: ['university', 'education', 'research', 'academic', 'campus', 'scholarship', 'faculty'],
+  institution: ['institution', 'finance', 'banking', 'regulation', 'governance', 'corporate'],
+  small_business: ['small business', 'startup', 'entrepreneur', 'local', 'growth', 'funding'],
+  individual: ['investor', 'portfolio', 'savings', 'wealth', 'personal', 'strategy'],
+  topics: [],
 };
 
 function scorePost(post, category, circleId) {
@@ -58,7 +58,7 @@ export default function CircleFeed({ circle, user }) {
       <div className="flex items-center gap-2 pt-4 pb-1">
         <TrendingUp className="w-4 h-4 text-primary" />
         <h3 className="text-sm font-semibold">
-          {category === 'general' ? 'Circle Feed' : `${category.replace(/_/g, ' ')} Feed`}
+          {category === 'topics' ? 'Circle Feed' : `${category.replace(/_/g, ' ')} Feed`}
         </h3>
         <span className="ml-auto text-xs text-muted-foreground">{filteredPosts.length} posts</span>
       </div>

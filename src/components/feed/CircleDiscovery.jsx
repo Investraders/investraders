@@ -9,13 +9,13 @@ import { Badge } from '@/components/ui/badge';
 import CircleIcon from '@/components/circles/CircleIcon';
 
 const CATEGORY_COLORS = {
-  investing: 'bg-blue-100 text-blue-700',
-  crypto: 'bg-orange-100 text-orange-700',
-  stocks: 'bg-green-100 text-green-700',
-  real_estate: 'bg-purple-100 text-purple-700',
-  business: 'bg-cyan-100 text-cyan-700',
-  personal_finance: 'bg-rose-100 text-rose-700',
-  general: 'bg-gray-100 text-gray-700',
+  chamber_of_commerce: 'bg-amber-100 text-amber-700',
+  stock_market: 'bg-green-100 text-green-700',
+  university: 'bg-purple-100 text-purple-700',
+  institution: 'bg-cyan-100 text-cyan-700',
+  small_business: 'bg-orange-100 text-orange-700',
+  individual: 'bg-blue-100 text-blue-700',
+  topics: 'bg-gray-100 text-gray-700',
 };
 
 export default function CircleDiscovery() {
@@ -59,15 +59,15 @@ export default function CircleDiscovery() {
 
     // Map interests to circle categories/tags
     const interestToCategory = {
-      stocks: 'stocks', crypto: 'crypto', real_estate: 'real_estate',
-      venture_capital: 'investing', startups: 'business', fintech: 'business',
-      blockchain: 'crypto', esg: 'personal_finance', private_equity: 'investing',
-      commodities: 'investing', forex: 'investing', derivatives: 'stocks',
+      stocks: 'stock_market', crypto: 'individual', real_estate: 'individual',
+      venture_capital: 'institution', startups: 'small_business', fintech: 'institution',
+      blockchain: 'individual', esg: 'institution', private_equity: 'institution',
+      commodities: 'stock_market', forex: 'stock_market', derivatives: 'stock_market',
     };
 
     const typeCategories = {
-      investor: ['investing', 'stocks', 'crypto', 'real_estate'],
-      innovator: ['business', 'general', 'personal_finance'],
+      investor: ['stock_market', 'individual', 'chamber_of_commerce', 'institution'],
+      innovator: ['small_business', 'topics', 'university'],
     };
     const preferredCategories = [
       ...(typeCategories[userType] || []),
@@ -137,8 +137,8 @@ export default function CircleDiscovery() {
             </div>
 
             {circle.category && (
-              <Badge className={`text-[10px] px-2 py-0 w-fit ${CATEGORY_COLORS[circle.category] || CATEGORY_COLORS.general}`}>
-                {circle.category.replace('_', ' ')}
+              <Badge className={`text-[10px] px-2 py-0 w-fit capitalize ${CATEGORY_COLORS[circle.category] || CATEGORY_COLORS.topics}`}>
+                {circle.category.replace(/_/g, ' ')}
               </Badge>
             )}
 
