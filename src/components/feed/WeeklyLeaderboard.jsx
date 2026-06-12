@@ -1,10 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { Trophy } from 'lucide-react';
-
-const WEEK_AGO = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
 const RANK_STYLES = [
   'bg-yellow-400 text-white',
@@ -12,30 +10,46 @@ const RANK_STYLES = [
   'bg-amber-600 text-white',
 ];
 
+function getWeekAgo() {
+  return new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+}
+
 function scoreUser({ posts, responses }) {
   const postScore = posts.length * 3;
   const responseScore = responses.length * 2;
+  // Use liked_by.length as the source of truth (always synced with likes number)
   const upvoteScore = responses.reduce((s, r) => s + (r.upvoted_by?.length || 0), 0);
-  const likeScore = posts.reduce((s, p) => s + (p.likes || 0), 0);
+  const likeScore = posts.reduce((s, p) => s + (p.liked_by?.length || p.likes || 0), 0);
   return postScore + responseScore + upvoteScore + likeScore;
 }
 
 export default function WeeklyLeaderboard() {
-  const { data: weeklyPosts = [] } = useQuery({
-    queryKey: ['leaderboard-posts'],
-    queryFn: () => base44.entities.Post.list('-created_date', 200),
-    select: (d) => d.filter((p) => p.created_date >= WEEK_AGO),
+  // Include date in query key so data auto-refreshes when the week window slides
+  const weekKey = useMemo(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}-${Math.floor(d.getHours() / 6)}`;
+  }, []);
+
+  const weekAgo = useMemo(() => getWeekAgo(), [weekKey]);
+
+  const { data: weeklyPosts = [], isLoading: postsLoading } = useQuery({
+    queryKey: ['leaderboard-posts', weekKey],
+    queryFn: () => base44.entities.Post.list('-created_date', 500),
+    select: (d) => d.filter((p) => p.created_date >= weekAgo),
+    staleTime: 15 * 60 * 1000,
   });
 
-  const { data: weeklyResponses = [] } = useQuery({
-    queryKey: ['leaderboard-responses'],
-    queryFn: () => base44.entities.CircleResponse.list('-created_date', 200),
-    select: (d) => d.filter((r) => r.created_date >= WEEK_AGO),
+  const { data: weeklyResponses = [], isLoading: responsesLoading } = useQuery({
+    queryKey: ['leaderboard-responses', weekKey],
+    queryFn: () => base44.entities.CircleResponse.list('-created_date', 500),
+    select: (d) => d.filter((r) => r.created_date >= weekAgo),
+    staleTime: 15 * 60 * 1000,
   });
 
   const { data: allUsers = [] } = useQuery({
     queryKey: ['leaderboard-users'],
     queryFn: () => base44.entities.User.list(),
+    staleTime: 30 * 60 * 1000,
   });
 
   // Aggregate scores per user
@@ -64,6 +78,22 @@ export default function WeeklyLeaderboard() {
     .filter((e) => e.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, 5);
+
+  const isLoading = postsLoading || responsesLoading;
+
+  if (isLoading && ranked.length === 0) {
+    return (
+      <div className="bg-card rounded-2xl border shadow-sm overflow-hidden mb-5">
+        <div className="px-5 py-4 border-b flex items-center gap-2">
+          <Trophy className="w-4 h-4 text-yellow-500" />
+          <h3 className="font-semibold text-sm">Weekly Leaderboard</h3>
+        </div>
+        <div className="px-5 py-8 flex items-center justify-center">
+          <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+        </div>
+      </div>
+    );
+  }
 
   if (ranked.length === 0) return null;
 
