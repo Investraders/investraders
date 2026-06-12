@@ -7,7 +7,6 @@ import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useToast } from '@/components/ui/use-toast';
 import { checkRateLimit } from '@/lib/rateLimiter';
 import { validate, validators, sanitize } from '@/lib/validation';
 import { logger } from '@/lib/logger';
@@ -18,7 +17,6 @@ const ACCEPTED_FILE = '.pdf,.xls,.xlsx,.csv,.doc,.docx';
 export default function CreatePostBox() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   const [content, setContent] = useState('');
   const [attachedFile, setAttachedFile] = useState(null); // { url, name, type }
@@ -132,9 +130,6 @@ export default function CreatePostBox() {
       clearAttachments();
       setSelectedCircle(null);
     },
-    onError: (err) => {
-      toast({ title: 'Post failed', description: err?.message || 'Something went wrong. Please try again.', variant: 'destructive' });
-    },
   });
 
   const handlePost = () => {
@@ -166,13 +161,15 @@ export default function CreatePostBox() {
 
     logger.track('post_created', { post_type: postType, has_circle: !!selectedCircle });
 
-    const payload = {
+    createPost.mutate({
       content: sanitizedContent,
       author_name: displayName,
       author_avatar: avatarUrl,
       post_type: postType,
       visibility: selectedCircle ? 'circle' : 'public',
-      ...(selectedCircle && { circle_id: selectedCircle.id }),
+      circle_id: selectedCircle?.id || undefined,
+      likes: 0,
+      liked_by: [],
       ...(attachedImage && { image_url: attachedImage.url }),
       ...(attachedVideo && { video_url: attachedVideo.url }),
       ...(attachedFile && {
@@ -180,9 +177,7 @@ export default function CreatePostBox() {
         file_name: attachedFile.name,
         file_type: attachedFile.type,
       }),
-    };
-
-    createPost.mutate(payload);
+    });
   };
 
   return (

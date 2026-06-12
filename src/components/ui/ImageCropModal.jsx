@@ -58,9 +58,7 @@ export default function ImageCropModal({ src, aspect, onConfirm, onCancel }) {
     const cx = INTERNAL_W / 2 + offset.x * CANVAS_SCALE;
     const cy = INTERNAL_H / 2 + offset.y * CANVAS_SCALE;
 
-    // Fill white background so JPEG export has no black bars
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, INTERNAL_W, INTERNAL_H);
+    ctx.clearRect(0, 0, INTERNAL_W, INTERNAL_H);
     ctx.drawImage(imgRef.current, cx - drawW / 2, cy - drawH / 2, drawW, drawH);
   }, [imgLoaded, zoom, offset, naturalSize, INTERNAL_W, INTERNAL_H, DISPLAY_W, CANVAS_SCALE]);
 

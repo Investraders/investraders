@@ -40,7 +40,7 @@ export default function AdminDashboard() {
 
   const { data: auditLogs = [] } = useQuery({
     queryKey: ['audit-logs'],
-    queryFn: () => base44.entities.AuditLog.list('-created_date', 500),
+    queryFn: () => base44.entities.AuditLog.list('-created_date', 100),
     enabled: !!user?.id && isAdmin,
     staleTime: CACHE.short,
   });
