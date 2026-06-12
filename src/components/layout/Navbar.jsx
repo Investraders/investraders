@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LayoutGrid, LogOut, User, MessageCircle, Bookmark, Shield } from 'lucide-react';
 import SearchBar from '@/components/layout/SearchBar';
@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import NotificationBell from '@/components/layout/NotificationBell';
+import ShortcutsModal from '@/components/layout/ShortcutsModal';
 
 export default function Navbar({ user }) {
   const displayName = user?.full_name || user?.email?.split('@')[0] || 'User';
@@ -32,6 +33,7 @@ export default function Navbar({ user }) {
     refetchInterval: 10000,
   });
   const hasUnreadMessages = unreadMessages.length > 0;
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
 
   return (
     <nav className="bg-blue-600 px-4 md:px-6 h-16 flex items-center justify-between shrink-0">
@@ -64,7 +66,10 @@ export default function Navbar({ user }) {
       </div>
 
       <div className="flex items-center gap-3">
-        <button className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors">
+        <button
+          onClick={() => setShortcutsOpen(true)}
+          className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors"
+        >
           <LayoutGrid className="w-4 h-4 text-white" />
         </button>
         <Link
@@ -109,6 +114,8 @@ export default function Navbar({ user }) {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      <ShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} user={user} />
     </nav>
   );
 }
