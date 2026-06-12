@@ -166,15 +166,13 @@ export default function CreatePostBox() {
 
     logger.track('post_created', { post_type: postType, has_circle: !!selectedCircle });
 
-    createPost.mutate({
+    const payload = {
       content: sanitizedContent,
       author_name: displayName,
       author_avatar: avatarUrl,
       post_type: postType,
       visibility: selectedCircle ? 'circle' : 'public',
-      circle_id: selectedCircle?.id || undefined,
-      likes: 0,
-      liked_by: [],
+      ...(selectedCircle && { circle_id: selectedCircle.id }),
       ...(attachedImage && { image_url: attachedImage.url }),
       ...(attachedVideo && { video_url: attachedVideo.url }),
       ...(attachedFile && {
@@ -182,7 +180,9 @@ export default function CreatePostBox() {
         file_name: attachedFile.name,
         file_type: attachedFile.type,
       }),
-    });
+    };
+
+    createPost.mutate(payload);
   };
 
   return (
