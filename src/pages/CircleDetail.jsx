@@ -19,6 +19,7 @@ import CircleIcon from '@/components/circles/CircleIcon';
 import VerifiedBadge from '@/components/circles/VerifiedBadge';
 import CircleFeed from '@/components/circles/CircleFeed';
 import { TagBadge } from '@/components/circles/TagPicker';
+import InstitutionalCircleLayout from '@/components/circles/InstitutionalCircleLayout';
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -210,6 +211,19 @@ export default function CircleDetail() {
     );
   }
 
+  const isInstitutional = ['institutional', 'business'].includes(circle?.category);
+
+  // Shared institutional layout props
+  const institutionalProps = {
+    circle, user, circleId: id,
+    memberNames, memberProfiles, activeQuestion,
+    selectedResponseData, setSelectedResponseData,
+    responses, isMember, isAdmin, isModerator,
+    newResponse, setNewResponse, submitResponse,
+    newQuestion, setNewQuestion, showQuestionForm, setShowQuestionForm, createQuestion,
+    allMemberIds,
+  };
+
   return (
     <div className="max-w-2xl mx-auto">
       {showInviteModal && circle && (
@@ -222,232 +236,183 @@ export default function CircleDetail() {
         <ArrowLeft className="w-4 h-4" /> Back to Home
       </Link>
 
-      <div className="bg-card rounded-2xl border shadow-sm overflow-hidden">
-        {/* Circle Header */}
-        <div className="p-6 border-b flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <CircleIcon category={circle?.category} size="xl" />
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-xl font-bold">{circle?.name}</h1>
-                {circle?.is_verified && (
-                  <VerifiedBadge
-                    label={circle.verified_label || (circle.category === 'institutional' ? 'Official' : 'Verified')}
-                    size="md"
-                    dark={false}
-                  />
-                )}
-              </div>
-              <p className="text-sm text-muted-foreground flex items-center gap-1">
-                <Users className="w-3.5 h-3.5" />
-                {allMemberIds.length} members · {circle?.privacy}
-              </p>
-              {(circle?.tags || []).length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {circle.tags.map((tag) => <TagBadge key={tag} tag={tag} />)}
-                </div>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-full gap-1.5"
-              onClick={() => setShowShareModal(true)}
-            >
+      {/* ── Institutional/Business: premium AI-finance layout ── */}
+      {isInstitutional ? (
+        <>
+          <div className="flex items-center gap-2 mb-3">
+            <Button variant="outline" size="sm" className="rounded-full gap-1.5" onClick={() => setShowShareModal(true)}>
               <Share2 className="w-4 h-4" /> Share
             </Button>
             {isMember && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-full gap-1.5"
-                onClick={() => setShowInviteModal(true)}
-              >
+              <Button variant="outline" size="sm" className="rounded-full gap-1.5" onClick={() => setShowInviteModal(true)}>
                 <UserPlus className="w-4 h-4" /> Invite
               </Button>
             )}
             {!isMember && (
-              <Button onClick={() => joinCircle.mutate()} className="rounded-full bg-primary">
-                Join Circle
-              </Button>
+              <Button onClick={() => joinCircle.mutate()} className="rounded-full bg-primary">Join Circle</Button>
             )}
           </div>
-        </div>
-
-        {/* Tabs */}
-        <div className="flex border-b">
-          <button
-            onClick={() => setActiveTab('discussion')}
-            className={`flex items-center gap-1.5 px-5 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'discussion' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
-          >
-            <LayoutList className="w-4 h-4" /> Discussion
-          </button>
-          <button
-            onClick={() => setActiveTab('feed')}
-            className={`flex items-center gap-1.5 px-5 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'feed' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
-          >
-            <Newspaper className="w-4 h-4" /> Feed
-          </button>
-        </div>
-
-        {activeTab === 'feed' ? (
-          <CircleFeed circle={circle} user={user} />
-        ) : (
-          <>
-        {/* Circle Visual */}
-        <CircleVisual
-          members={memberNames}
-          question={activeQuestion?.question_text}
-          selectedResponse={selectedResponseData}
-          questionNumber={activeQuestion?.question_number}
-          closesAt={activeQuestion?.closes_at}
-          totalResponses={responses.length}
-          totalMembers={allMemberIds.length}
-          circleName={circle?.name}
-          memberProfiles={memberProfiles}
-        />
-
-        {/* Responses */}
-        {responses.length > 0 && (
-          <div className="px-6 pb-4">
-            <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-              <MessageCircle className="w-4 h-4 text-primary" /> Responses
-            </h3>
-            <div className="space-y-2">
-              <AnimatePresence>
-                {responses.map((r) => (
-                  <motion.div
-                    key={r.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`p-3 rounded-xl border cursor-pointer transition-colors ${
-                      selectedResponseData?.id === r.id ? 'bg-primary/10 border-primary/30' : 'hover:bg-muted'
-                    }`}
-                    onClick={() =>
-                      setSelectedResponseData(selectedResponseData?.id === r.id ? null : r)
-                    }
-                  >
-                    <div className="flex items-center gap-2 mb-1">
-                      {(() => {
-                        const rProfile = memberProfiles.find((p) => p.id === r.created_by_id);
-                        const avatar = rProfile?.avatar_url || r.author_avatar;
-                        const isResponderActive = r.created_by_id
-                          ? activeResponderIds.has(r.created_by_id)
-                          : activeResponderNames.has(r.author_name);
-                        return avatar ? (
-                          <img
-                            src={avatar}
-                            alt={r.author_name}
-                            className="w-7 h-7 rounded-full object-cover shrink-0"
-                            style={{ border: isResponderActive ? '2px solid #22c55e' : '2px solid transparent' }}
-                          />
-                        ) : (
-                          <div
-                            className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-400 to-cyan-300 flex items-center justify-center text-white text-[10px] font-bold"
-                            style={{ border: isResponderActive ? '2px solid #22c55e' : 'none' }}
-                          >
-                            {r.author_name?.charAt(0)}
-                          </div>
-                        );
-                      })()}
-                      <span className="text-sm font-medium">{r.author_name}</span>
-                      {(r.created_by_id ? activeResponderIds.has(r.created_by_id) : activeResponderNames.has(r.author_name)) && (
-                        <span className="flex items-center gap-1 text-[10px] text-green-600 font-medium ml-auto">
-                          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse inline-block" />
-                          Active
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm text-muted-foreground ml-9">{r.response_text}</p>
-                    <ResponseVotes response={r} userId={user?.id} />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
+          <InstitutionalCircleLayout {...institutionalProps} />
+        </>
+      ) : (
+        /* ── Standard layout for all other categories ── */
+        <div className="bg-card rounded-2xl border shadow-sm overflow-hidden">
+          {/* Circle Header */}
+          <div className="p-6 border-b flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <CircleIcon category={circle?.category} size="xl" />
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="text-xl font-bold">{circle?.name}</h1>
+                  {circle?.is_verified && (
+                    <VerifiedBadge
+                      label={circle.verified_label || 'Verified'}
+                      size="md"
+                      dark={false}
+                    />
+                  )}
+                </div>
+                <p className="text-sm text-muted-foreground flex items-center gap-1">
+                  <Users className="w-3.5 h-3.5" />
+                  {allMemberIds.length} members · {circle?.privacy}
+                </p>
+                {(circle?.tags || []).length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {circle.tags.map((tag) => <TagBadge key={tag} tag={tag} />)}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" className="rounded-full gap-1.5" onClick={() => setShowShareModal(true)}>
+                <Share2 className="w-4 h-4" /> Share
+              </Button>
+              {isMember && (
+                <Button variant="outline" size="sm" className="rounded-full gap-1.5" onClick={() => setShowInviteModal(true)}>
+                  <UserPlus className="w-4 h-4" /> Invite
+                </Button>
+              )}
+              {!isMember && (
+                <Button onClick={() => joinCircle.mutate()} className="rounded-full bg-primary">
+                  Join Circle
+                </Button>
+              )}
             </div>
           </div>
-        )}
 
-        {/* Submit Response */}
-        {isMember && activeQuestion && (
-          <div className="px-6 pb-6">
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (newResponse.trim()) submitResponse.mutate(newResponse);
-              }}
-              className="flex gap-2"
+          {/* Tabs */}
+          <div className="flex border-b">
+            <button
+              onClick={() => setActiveTab('discussion')}
+              className={`flex items-center gap-1.5 px-5 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'discussion' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
             >
-              <Input
-                placeholder="Share your answer..."
-                value={newResponse}
-                onChange={(e) => setNewResponse(e.target.value)}
-                className="flex-1 rounded-full h-10"
+              <LayoutList className="w-4 h-4" /> Discussion
+            </button>
+            <button
+              onClick={() => setActiveTab('feed')}
+              className={`flex items-center gap-1.5 px-5 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'feed' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+            >
+              <Newspaper className="w-4 h-4" /> Feed
+            </button>
+          </div>
+
+          {activeTab === 'feed' ? (
+            <CircleFeed circle={circle} user={user} />
+          ) : (
+            <>
+              <CircleVisual
+                members={memberNames}
+                question={activeQuestion?.question_text}
+                selectedResponse={selectedResponseData}
+                questionNumber={activeQuestion?.question_number}
+                closesAt={activeQuestion?.closes_at}
+                totalResponses={responses.length}
+                totalMembers={allMemberIds.length}
+                circleName={circle?.name}
+                memberProfiles={memberProfiles}
               />
-              <Button type="submit" disabled={!newResponse.trim()} size="icon" className="rounded-full h-10 w-10 bg-primary">
-                <Send className="w-4 h-4" />
-              </Button>
-            </form>
-          </div>
-        )}
 
-        {/* Admin Dashboard */}
-        {isAdmin && <CircleAdminDashboard circleId={id} circle={circle} />}
-
-        {/* Event Calendar */}
-        <CircleEventCalendar
-          circleId={id}
-          isMember={isMember}
-          isAdmin={isAdmin}
-          isModerator={isModerator}
-          currentUserId={user?.id}
-        />
-
-        {/* Member Roles */}
-        <CircleMemberRoles circle={circle} currentUserId={user?.id} />
-
-        {/* Leaderboard */}
-        <CircleLeaderboard circleId={id} />
-
-        {/* New Question */}
-        {isMember && (
-          <div className="px-6 pb-6">
-            {showQuestionForm ? (
-              <div className="space-y-3">
-                <Textarea
-                  placeholder="Ask a question to your circle..."
-                  value={newQuestion}
-                  onChange={(e) => setNewQuestion(e.target.value)}
-                  className="min-h-[80px]"
-                />
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => { if (newQuestion.trim()) createQuestion.mutate(newQuestion); }}
-                    disabled={!newQuestion.trim()}
-                    className="rounded-full bg-primary"
-                  >
-                    Post Question
-                  </Button>
-                  <Button variant="outline" onClick={() => setShowQuestionForm(false)} className="rounded-full">
-                    Cancel
-                  </Button>
+              {responses.length > 0 && (
+                <div className="px-6 pb-4">
+                  <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                    <MessageCircle className="w-4 h-4 text-primary" /> Responses
+                  </h3>
+                  <div className="space-y-2">
+                    <AnimatePresence>
+                      {responses.map((r) => (
+                        <motion.div
+                          key={r.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className={`p-3 rounded-xl border cursor-pointer transition-colors ${selectedResponseData?.id === r.id ? 'bg-primary/10 border-primary/30' : 'hover:bg-muted'}`}
+                          onClick={() => setSelectedResponseData(selectedResponseData?.id === r.id ? null : r)}
+                        >
+                          <div className="flex items-center gap-2 mb-1">
+                            {(() => {
+                              const rProfile = memberProfiles.find((p) => p.id === r.created_by_id);
+                              const avatar = rProfile?.avatar_url || r.author_avatar;
+                              const isResponderActive = r.created_by_id ? activeResponderIds.has(r.created_by_id) : activeResponderNames.has(r.author_name);
+                              return avatar ? (
+                                <img src={avatar} alt={r.author_name} className="w-7 h-7 rounded-full object-cover shrink-0" style={{ border: isResponderActive ? '2px solid #22c55e' : '2px solid transparent' }} />
+                              ) : (
+                                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-400 to-cyan-300 flex items-center justify-center text-white text-[10px] font-bold" style={{ border: isResponderActive ? '2px solid #22c55e' : 'none' }}>
+                                  {r.author_name?.charAt(0)}
+                                </div>
+                              );
+                            })()}
+                            <span className="text-sm font-medium">{r.author_name}</span>
+                            {(r.created_by_id ? activeResponderIds.has(r.created_by_id) : activeResponderNames.has(r.author_name)) && (
+                              <span className="flex items-center gap-1 text-[10px] text-green-600 font-medium ml-auto">
+                                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse inline-block" /> Active
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground ml-9">{r.response_text}</p>
+                          <ResponseVotes response={r} userId={user?.id} />
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <Button
-                onClick={() => setShowQuestionForm(true)}
-                variant="outline"
-                className="w-full rounded-full border-dashed"
-              >
-                <Plus className="w-4 h-4 mr-2" /> Ask a New Question
-              </Button>
-            )}
-          </div>
-        )}
-          </>
-        )}
-      </div>
+              )}
+
+              {isMember && activeQuestion && (
+                <div className="px-6 pb-6">
+                  <form onSubmit={(e) => { e.preventDefault(); if (newResponse.trim()) submitResponse.mutate(newResponse); }} className="flex gap-2">
+                    <Input placeholder="Share your answer..." value={newResponse} onChange={(e) => setNewResponse(e.target.value)} className="flex-1 rounded-full h-10" />
+                    <Button type="submit" disabled={!newResponse.trim()} size="icon" className="rounded-full h-10 w-10 bg-primary">
+                      <Send className="w-4 h-4" />
+                    </Button>
+                  </form>
+                </div>
+              )}
+
+              {isAdmin && <CircleAdminDashboard circleId={id} circle={circle} />}
+              <CircleEventCalendar circleId={id} isMember={isMember} isAdmin={isAdmin} isModerator={isModerator} currentUserId={user?.id} />
+              <CircleMemberRoles circle={circle} currentUserId={user?.id} />
+              <CircleLeaderboard circleId={id} />
+
+              {isMember && (
+                <div className="px-6 pb-6">
+                  {showQuestionForm ? (
+                    <div className="space-y-3">
+                      <Textarea placeholder="Ask a question to your circle..." value={newQuestion} onChange={(e) => setNewQuestion(e.target.value)} className="min-h-[80px]" />
+                      <div className="flex gap-2">
+                        <Button onClick={() => { if (newQuestion.trim()) createQuestion.mutate(newQuestion); }} disabled={!newQuestion.trim()} className="rounded-full bg-primary">Post Question</Button>
+                        <Button variant="outline" onClick={() => setShowQuestionForm(false)} className="rounded-full">Cancel</Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <Button onClick={() => setShowQuestionForm(true)} variant="outline" className="w-full rounded-full border-dashed">
+                      <Plus className="w-4 h-4 mr-2" /> Ask a New Question
+                    </Button>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }
