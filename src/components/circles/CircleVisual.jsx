@@ -1,29 +1,33 @@
 import React, { useMemo, useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const AVATAR_INITIALS_BG = [
-  'bg-orange-400', 'bg-blue-400', 'bg-green-400', 'bg-purple-400',
-  'bg-yellow-400', 'bg-cyan-400', 'bg-rose-400', 'bg-teal-400',
-  'bg-indigo-400', 'bg-lime-500', 'bg-sky-400', 'bg-amber-400',
+// Simulated live comments that float up (replace with real data if available)
+const SAMPLE_COMMENTS = [
+  "Great insight! 🔥",
+  "Totally agree with this",
+  "What about inflation? 📈",
+  "Buying the dip 💎",
+  "This is bullish 🚀",
+  "Long term hold!",
+  "Market timing is key",
+  "Risk management first",
+  "Love this circle ❤️",
+  "More analysis please!",
 ];
 
-const RING_SLOTS = 12;
-const RADIUS = 155;
-
-// Simulated live comments that cycle through active members
-const SAMPLE_COMMENTS = [
-  "📈 This is pumping hard!",
-  "💎 Hold strong everyone",
-  "🔥 Great analysis!",
-  "🚀 To the moon!",
-  "📊 Watching RSI closely",
-  "💰 Bought the dip",
-  "🎯 Target hit!",
-  "⚡ Huge volume spike",
-  "🌙 Bullish setup forming",
-  "📉 Careful of resistance",
-  "✅ Confirmed breakout",
-  "💡 Entry looks perfect",
+const AVATAR_COLORS = [
+  'linear-gradient(135deg,#E8A87C,#d4843a)',
+  'linear-gradient(135deg,#7EB5D6,#3a8fc8)',
+  'linear-gradient(135deg,#6BAF92,#2e8a5c)',
+  'linear-gradient(135deg,#D4A5C9,#a855c8)',
+  'linear-gradient(135deg,#F0C987,#e0a030)',
+  'linear-gradient(135deg,#9BB5CE,#4a7aaa)',
+  'linear-gradient(135deg,#E8927C,#d44a2a)',
+  'linear-gradient(135deg,#8DB8A3,#3a8a6a)',
+  'linear-gradient(135deg,#C9A5D4,#8844bb)',
+  'linear-gradient(135deg,#7CC4E8,#2288cc)',
+  'linear-gradient(135deg,#D6A57E,#bb6622)',
+  'linear-gradient(135deg,#a5d4c9,#2a9a8a)',
 ];
 
 function CountdownTimer({ closesAt }) {
@@ -45,41 +49,142 @@ function CountdownTimer({ closesAt }) {
   return <span className="font-mono font-bold text-white text-sm tracking-wide">{timeLeft}</span>;
 }
 
-// Floating comment bubble that rises and fades out
-function FloatingComment({ comment, x, y, id, onDone }) {
+// Floating comment caption that drifts up and fades out
+function FloatingComment({ comment, x, onDone }) {
   return (
     <motion.div
-      key={id}
       initial={{ opacity: 0, y: 0, scale: 0.8 }}
-      animate={{ opacity: [0, 1, 1, 0], y: -90, scale: [0.8, 1, 1, 0.9] }}
-      transition={{ duration: 3.2, times: [0, 0.15, 0.7, 1], ease: 'easeOut' }}
+      animate={{ opacity: [0, 1, 1, 0], y: -120, scale: [0.8, 1, 1, 0.9] }}
+      transition={{ duration: 3.2, ease: 'easeOut', times: [0, 0.15, 0.7, 1] }}
       onAnimationComplete={onDone}
-      className="absolute pointer-events-none z-30"
-      style={{ left: x, top: y, transform: 'translateX(-50%)' }}
+      style={{ left: x, bottom: 0, position: 'absolute', pointerEvents: 'none', zIndex: 30 }}
     >
       <div
-        className="rounded-2xl px-3 py-1.5 text-xs font-semibold text-white shadow-xl whitespace-nowrap"
+        className="text-white text-xs font-semibold px-3 py-1.5 rounded-full whitespace-nowrap shadow-lg"
         style={{
-          background: 'linear-gradient(135deg, rgba(30,80,180,0.92) 0%, rgba(14,100,220,0.88) 100%)',
-          border: '1px solid rgba(100,180,255,0.4)',
+          background: 'rgba(10,30,80,0.78)',
+          border: '1px solid rgba(100,180,255,0.35)',
           backdropFilter: 'blur(8px)',
-          maxWidth: 160,
+          maxWidth: 180,
           overflow: 'hidden',
           textOverflow: 'ellipsis',
         }}
       >
         {comment}
       </div>
-      {/* Tail */}
-      <div
-        className="absolute left-1/2 -translate-x-1/2 -bottom-1.5 w-0 h-0"
-        style={{
-          borderLeft: '5px solid transparent',
-          borderRight: '5px solid transparent',
-          borderTop: '6px solid rgba(14,100,220,0.88)',
-        }}
-      />
     </motion.div>
+  );
+}
+
+// Orbiting member avatar with clockwise CSS animation
+function OrbitingMember({ member, index, total, orbitRadius, avatarSize, angleOffset }) {
+  const bgGradient = AVATAR_COLORS[index % AVATAR_COLORS.length];
+  const isActive = member?.isActive;
+  const delay = (index / total) * -30; // stagger start so they're evenly spread on orbit
+
+  // Each avatar starts at its position and rotates the full circle
+  const startAngleDeg = (index / total) * 360 + angleOffset;
+
+  return (
+    <div
+      className="absolute"
+      style={{
+        left: '50%',
+        top: '50%',
+        width: 0,
+        height: 0,
+        // Clockwise rotation: spin the arm, avatar counter-rotates to stay upright
+        animation: `orbitCW 18s linear infinite`,
+        animationDelay: `${delay}s`,
+        transform: `rotate(${startAngleDeg}deg)`,
+        transformOrigin: '0 0',
+      }}
+    >
+      {/* Arm to avatar */}
+      <div
+        style={{
+          position: 'absolute',
+          top: -orbitRadius,
+          left: -avatarSize / 2,
+          width: avatarSize,
+          height: avatarSize,
+          // Counter-rotate so face stays upright
+          animation: `counterCW 18s linear infinite`,
+          animationDelay: `${delay}s`,
+        }}
+      >
+        {/* Glow ring for active */}
+        {isActive && (
+          <div
+            className="absolute inset-0 rounded-full animate-pulse"
+            style={{
+              boxShadow: `0 0 0 3px #22c55e, 0 0 16px 6px rgba(34,197,94,0.6)`,
+              borderRadius: '50%',
+              zIndex: 1,
+            }}
+          />
+        )}
+
+        {/* Avatar */}
+        {member?.avatar_url ? (
+          <img
+            src={member.avatar_url}
+            alt={member.name}
+            className="rounded-full object-cover shadow-2xl"
+            style={{
+              width: avatarSize,
+              height: avatarSize,
+              border: isActive ? '3px solid #22c55e' : '2.5px solid rgba(255,255,255,0.8)',
+              boxShadow: isActive
+                ? '0 0 0 2px #22c55e, 0 4px 20px rgba(34,197,94,0.4)'
+                : '0 4px 20px rgba(0,0,0,0.4)',
+              zIndex: 2,
+              position: 'relative',
+            }}
+          />
+        ) : (
+          <div
+            className="rounded-full flex items-center justify-center font-bold shadow-2xl"
+            style={{
+              width: avatarSize,
+              height: avatarSize,
+              background: bgGradient,
+              border: isActive ? '3px solid #22c55e' : '2.5px solid rgba(255,255,255,0.8)',
+              boxShadow: isActive
+                ? '0 0 0 2px #22c55e, 0 4px 20px rgba(34,197,94,0.4)'
+                : '0 4px 20px rgba(0,0,0,0.35)',
+              fontSize: avatarSize * 0.38,
+              color: 'white',
+              zIndex: 2,
+              position: 'relative',
+            }}
+          >
+            {member?.name?.charAt(0)?.toUpperCase() || '?'}
+          </div>
+        )}
+
+        {/* Name caption below avatar */}
+        {member?.name && (
+          <div
+            className="absolute text-center whitespace-nowrap"
+            style={{
+              top: avatarSize + 4,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              color: 'rgba(255,255,255,0.9)',
+              fontSize: 9,
+              fontWeight: 600,
+              textShadow: '0 1px 4px rgba(0,0,0,0.8)',
+              background: 'rgba(0,0,20,0.5)',
+              borderRadius: 6,
+              padding: '1px 5px',
+            }}
+          >
+            {member.name.split(' ')[0]}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -94,328 +199,209 @@ export default function CircleVisual({
   circleName,
   memberProfiles = [],
 }) {
-  const [rotation, setRotation] = useState(0);
-  const [floatingComments, setFloatingComments] = useState([]);
-  const commentCounterRef = useRef(0);
-  const animFrameRef = useRef(null);
-  const lastTimeRef = useRef(null);
+  const SIZE = 380;
+  const SPHERE_SIZE = 220;
+  const ORBIT_RADIUS = SPHERE_SIZE / 2 + 52;
+  const AVATAR_SIZE = 52;
 
-  // Smooth clockwise rotation via requestAnimationFrame
-  useEffect(() => {
-    const animate = (timestamp) => {
-      if (!lastTimeRef.current) lastTimeRef.current = timestamp;
-      const delta = timestamp - lastTimeRef.current;
-      lastTimeRef.current = timestamp;
-      setRotation((r) => (r + delta * 0.018) % 360); // ~6.5 rpm slow spin
-      animFrameRef.current = requestAnimationFrame(animate);
-    };
-    animFrameRef.current = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(animFrameRef.current);
-  }, []);
+  // Live floating comments state
+  const [liveComments, setLiveComments] = useState([]);
+  const commentIdRef = useRef(0);
 
-  // Spawn floating comments from active members
+  // Simulate or use real active member comments
+  const activeMembers = members.filter((m) => m?.isActive);
+
   useEffect(() => {
-    const activeMemberCount = Math.max(1, members.filter((m) => m?.isActive).length || Math.min(4, members.length));
+    // Spawn a floating comment every 1.8s
     const interval = setInterval(() => {
-      // Pick a random active slot position
-      const activeSlots = members
-        .map((m, i) => (m ? i : -1))
-        .filter((i) => i >= 0)
-        .slice(0, Math.min(8, members.length));
-
-      if (activeSlots.length === 0) return;
-
-      const slotIdx = activeSlots[Math.floor(Math.random() * activeSlots.length)];
-      const angleRad = ((slotIdx / RING_SLOTS) * 360 - 90 + rotation) * (Math.PI / 180);
-      const px = 185 + Math.cos(angleRad) * RADIUS;
-      const py = 185 + Math.sin(angleRad) * RADIUS;
-
-      const comment = SAMPLE_COMMENTS[commentCounterRef.current % SAMPLE_COMMENTS.length];
-      commentCounterRef.current++;
-
-      setFloatingComments((prev) => [
-        ...prev.slice(-8), // keep max 8 at once
-        { id: Date.now() + Math.random(), text: comment, x: px, y: py },
-      ]);
+      const source = activeMembers.length > 0 ? activeMembers : members.filter(Boolean);
+      if (source.length === 0) return;
+      const member = source[Math.floor(Math.random() * source.length)];
+      const comment = member?.lastComment || SAMPLE_COMMENTS[Math.floor(Math.random() * SAMPLE_COMMENTS.length)];
+      const id = ++commentIdRef.current;
+      const x = 20 + Math.random() * (SIZE - 200);
+      setLiveComments((prev) => [...prev.slice(-8), { id, text: comment, x, name: member?.name }]);
     }, 1800);
-
     return () => clearInterval(interval);
-  }, [members, rotation]);
+  }, [members.length, activeMembers.length]);
 
-  // Compute avatar positions accounting for current rotation angle
-  const positions = useMemo(() => {
-    return Array.from({ length: RING_SLOTS }).map((_, i) => {
-      const baseDeg = (i / RING_SLOTS) * 360 - 90;
-      return { baseDeg };
-    });
-  }, []);
+  const removeComment = (id) => setLiveComments((prev) => prev.filter((c) => c.id !== id));
 
-  const SIZE = 370;
-  const CENTER = SIZE / 2;
+  // Use up to 12 member slots on the orbit
+  const orbitSlots = Array.from({ length: Math.max(members.length, 1) }).map((_, i) => members[i] || null);
+  const displaySlots = orbitSlots.slice(0, 12);
 
   return (
-    <div className="flex flex-col items-center py-6 px-4 select-none" style={{ userSelect: 'none' }}>
+    <div className="flex flex-col items-center bg-white py-8 px-4 select-none">
+      {/* Inject keyframes */}
+      <style>{`
+        @keyframes orbitCW {
+          from { transform: rotate(var(--start-angle, 0deg)); }
+          to   { transform: rotate(calc(var(--start-angle, 0deg) + 360deg)); }
+        }
+        @keyframes counterCW {
+          from { transform: rotate(0deg); }
+          to   { transform: rotate(-360deg); }
+        }
+        @keyframes sphereGlow {
+          0%, 100% { box-shadow: 0 0 60px 20px rgba(30,100,255,0.35), inset 0 0 40px rgba(100,180,255,0.15); }
+          50%       { box-shadow: 0 0 90px 30px rgba(30,100,255,0.55), inset 0 0 60px rgba(100,180,255,0.25); }
+        }
+        @keyframes ringRotate {
+          from { transform: rotateX(75deg) rotateZ(0deg); }
+          to   { transform: rotateX(75deg) rotateZ(360deg); }
+        }
+      `}</style>
+
       {/* Circle Title */}
-      <h2
-        className="text-3xl font-bold mb-6 text-center"
-        style={{
-          background: 'linear-gradient(135deg, #2563EB 0%, #38BDF8 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-        }}
-      >
+      <h2 className="text-4xl font-bold mb-6" style={{ color: '#3B9EE8' }}>
         {circleName || `Circle ${questionNumber || ''}`}
       </h2>
 
-      {/* Main Visual */}
-      <div className="relative" style={{ width: SIZE, height: SIZE }}>
+      {/* Main container — relative, holds orbit + sphere + floating comments */}
+      <div
+        className="relative flex items-center justify-center"
+        style={{ width: SIZE, height: SIZE }}
+      >
+        {/* ── Orbiting member avatars ── */}
+        {displaySlots.map((member, i) => (
+          <OrbitingMember
+            key={i}
+            member={member}
+            index={i}
+            total={displaySlots.length}
+            orbitRadius={ORBIT_RADIUS}
+            avatarSize={AVATAR_SIZE}
+            angleOffset={0}
+          />
+        ))}
 
-        {/* ─── 3D Ring track (CSS perspective trick) ─── */}
+        {/* ── 3D Sphere (CSS perspective trick) ── */}
         <div
-          className="absolute inset-0 rounded-full pointer-events-none"
+          className="absolute flex items-center justify-center rounded-full"
           style={{
-            border: '3px solid rgba(59,130,246,0.15)',
-            boxShadow: '0 0 0 10px rgba(59,130,246,0.04), 0 0 60px 10px rgba(37,99,235,0.12)',
-          }}
-        />
-
-        {/* Outer glowing orbit track */}
-        <div
-          className="absolute pointer-events-none"
-          style={{
-            inset: 16,
-            borderRadius: '50%',
-            border: '2px solid rgba(96,165,250,0.25)',
-            boxShadow: 'inset 0 2px 12px rgba(59,130,246,0.18), 0 0 24px rgba(59,130,246,0.1)',
-          }}
-        />
-
-        {/* 3D sphere – main blue ball */}
-        <div
-          className="absolute"
-          style={{
-            inset: 52,
-            borderRadius: '50%',
+            width: SPHERE_SIZE,
+            height: SPHERE_SIZE,
             background: `
-              radial-gradient(circle at 36% 32%,
-                #7EC8FF 0%,
+              radial-gradient(circle at 35% 30%,
+                #7DC8F5 0%,
                 #3A8FD4 18%,
                 #1A5FA8 42%,
-                #0C3570 70%,
-                #061D45 100%
+                #0D3F7A 70%,
+                #071E45 100%
               )
             `,
             boxShadow: `
-              0 16px 60px rgba(10,50,140,0.7),
-              0 0 0 3px rgba(96,165,250,0.3),
-              inset 0 -8px 30px rgba(0,0,0,0.5),
-              inset 4px 4px 20px rgba(200,230,255,0.15)
+              0 0 60px 20px rgba(30,100,255,0.35),
+              inset -20px -20px 60px rgba(0,0,60,0.6),
+              inset 10px 10px 30px rgba(120,200,255,0.2)
             `,
+            animation: 'sphereGlow 3s ease-in-out infinite',
           }}
-        />
-
-        {/* Specular highlight (top-left gloss) */}
-        <div
-          className="absolute pointer-events-none"
-          style={{
-            inset: 52,
-            borderRadius: '50%',
-            background: 'radial-gradient(ellipse at 30% 28%, rgba(255,255,255,0.28) 0%, transparent 55%)',
-          }}
-        />
-
-        {/* Bottom shadow arc for 3D depth */}
-        <div
-          className="absolute pointer-events-none"
-          style={{
-            inset: 52,
-            borderRadius: '50%',
-            background: 'radial-gradient(ellipse at 65% 75%, rgba(0,10,40,0.4) 0%, transparent 55%)',
-          }}
-        />
-
-        {/* Equator band for 3D illusion */}
-        <div
-          className="absolute pointer-events-none"
-          style={{
-            left: 52,
-            right: 52,
-            top: '50%',
-            height: 2,
-            background: 'linear-gradient(90deg, transparent 0%, rgba(96,165,250,0.18) 30%, rgba(96,165,250,0.35) 50%, rgba(96,165,250,0.18) 70%, transparent 100%)',
-            transform: 'translateY(-50%)',
-          }}
-        />
-
-        {/* ─── Center content ─── */}
-        <div
-          className="absolute flex flex-col items-center justify-center text-center"
-          style={{ inset: 52, padding: '0 24px' }}
         >
-          {selectedResponse ? (
-            <>
-              {(() => {
-                const profile = memberProfiles.find((p) => p.id === selectedResponse.created_by_id);
-                const avatar = profile?.avatar_url || selectedResponse.author_avatar;
-                return avatar ? (
-                  <img src={avatar} alt={selectedResponse.author_name}
-                    className="w-14 h-14 rounded-full object-cover mb-2 border-2 border-white/60 shadow-lg" />
-                ) : (
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg mb-2 shadow-lg"
-                    style={{ background: 'linear-gradient(135deg,#F5A623,#E8821A)' }}>
-                    {selectedResponse.author_name?.charAt(0)?.toUpperCase() || '?'}
-                  </div>
-                );
-              })()}
-              <p className="text-white/70 text-[10px] font-medium mb-1 underline underline-offset-2">
-                {selectedResponse.author_name}
-              </p>
-              <p className="text-white text-sm font-semibold leading-snug line-clamp-4">
-                {selectedResponse.response_text}
-              </p>
-            </>
-          ) : (
-            <>
-              {questionNumber && (
-                <p className="text-blue-200/80 text-xs font-medium mb-1">Q. {questionNumber}</p>
-              )}
-              {/* Big member count */}
-              <p
-                className="font-black leading-none mb-2"
-                style={{
-                  fontSize: 52,
-                  background: 'linear-gradient(180deg, #FFFFFF 0%, #93C5FD 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  textShadow: 'none',
-                  filter: 'drop-shadow(0 2px 8px rgba(59,130,246,0.6))',
-                }}
-              >
-                {totalMembers}
-              </p>
-              <p className="text-blue-200/80 text-[11px] font-medium -mt-1 mb-2">members</p>
-              <p className="text-white text-sm font-semibold leading-snug line-clamp-3">
-                {question || 'No question yet'}
-              </p>
-            </>
-          )}
+          {/* Shiny specular highlight */}
+          <div
+            className="absolute rounded-full pointer-events-none"
+            style={{
+              width: SPHERE_SIZE * 0.45,
+              height: SPHERE_SIZE * 0.35,
+              top: '12%',
+              left: '18%',
+              background: 'radial-gradient(ellipse, rgba(255,255,255,0.35) 0%, transparent 70%)',
+              filter: 'blur(6px)',
+            }}
+          />
 
-          {/* Countdown */}
-          <div className="absolute bottom-5 text-center">
-            <CountdownTimer closesAt={closesAt} />
-            <p className="text-blue-200/60 text-[9px] mt-0.5">left to close</p>
+          {/* Equator ring (CSS 3D) */}
+          <div
+            style={{
+              position: 'absolute',
+              width: SPHERE_SIZE * 0.92,
+              height: SPHERE_SIZE * 0.92,
+              borderRadius: '50%',
+              border: '2px solid rgba(100,180,255,0.35)',
+              animation: 'ringRotate 12s linear infinite',
+              transformStyle: 'preserve-3d',
+            }}
+          />
+
+          {/* Tilted meridian ring */}
+          <div
+            style={{
+              position: 'absolute',
+              width: SPHERE_SIZE * 0.92,
+              height: SPHERE_SIZE * 0.92,
+              borderRadius: '50%',
+              border: '1.5px solid rgba(100,180,255,0.2)',
+              animation: 'ringRotate 18s linear infinite reverse',
+              transformStyle: 'preserve-3d',
+              transform: 'rotateX(75deg) rotateY(45deg)',
+            }}
+          />
+
+          {/* Center text content */}
+          <div
+            className="absolute flex flex-col items-center justify-center text-center px-6"
+            style={{ inset: 0 }}
+          >
+            {selectedResponse ? (
+              <>
+                {(() => {
+                  const responderProfile = memberProfiles.find((p) => p.id === selectedResponse.created_by_id);
+                  const avatar = responderProfile?.avatar_url || selectedResponse.author_avatar;
+                  return avatar ? (
+                    <img src={avatar} alt={selectedResponse.author_name} className="w-14 h-14 rounded-full object-cover mb-2 border-2 border-white/60 shadow-lg" />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg mb-2 border-2 border-white/40 shadow-lg" style={{ background: 'linear-gradient(135deg,#F5A623,#E8821A)' }}>
+                      {selectedResponse.author_name?.charAt(0)?.toUpperCase() || '?'}
+                    </div>
+                  );
+                })()}
+                <p className="text-white/80 text-xs font-medium underline underline-offset-2 mb-1">{selectedResponse.author_name}</p>
+                <p className="text-white text-sm font-semibold leading-snug line-clamp-4">{selectedResponse.response_text}</p>
+              </>
+            ) : (
+              <>
+                {questionNumber && <p className="text-blue-200/80 text-xs font-medium mb-1">Q. {questionNumber}</p>}
+                <p className="text-white text-base font-bold leading-snug line-clamp-4">{question || 'No question yet'}</p>
+              </>
+            )}
+
+            {/* Countdown */}
+            <div className="absolute bottom-7 text-center">
+              <CountdownTimer closesAt={closesAt} />
+              <p className="text-blue-200/70 text-[10px] mt-0.5">left to close</p>
+            </div>
           </div>
         </div>
 
-        {/* ─── Orbiting member avatars ─── */}
-        {positions.map((pos, i) => {
-          const member = members[i];
-          const bgClass = AVATAR_INITIALS_BG[i % AVATAR_INITIALS_BG.length];
-          const isActive = member?.isActive;
-
-          // Compute live angle including rotation
-          const liveDeg = pos.baseDeg + rotation;
-          const liveRad = (liveDeg * Math.PI) / 180;
-          const x = CENTER + Math.cos(liveRad) * RADIUS;
-          const y = CENTER + Math.sin(liveRad) * RADIUS;
-
-          // 3D depth scaling: avatars at "back" (top) are slightly smaller
-          const depthScale = 0.72 + 0.28 * ((Math.sin(liveRad) + 1) / 2);
-          const opacity = 0.6 + 0.4 * ((Math.sin(liveRad) + 1) / 2);
-          const zIndex = Math.round(depthScale * 20);
-          const avatarSize = Math.round(36 * depthScale);
-
-          if (!member && !isActive) {
-            // Empty slot – small dot
-            return (
-              <div
-                key={i}
-                className="absolute rounded-full"
-                style={{
-                  width: 8,
-                  height: 8,
-                  left: x - 4,
-                  top: y - 4,
-                  background: 'rgba(96,165,250,0.25)',
-                  zIndex,
-                  opacity,
-                }}
+        {/* ── Floating live comments (Facebook Live style) ── */}
+        <div
+          className="absolute bottom-0 left-0 right-0 overflow-hidden pointer-events-none"
+          style={{ height: SIZE, zIndex: 20 }}
+        >
+          <AnimatePresence>
+            {liveComments.map((c) => (
+              <FloatingComment
+                key={c.id}
+                comment={`${c.name ? c.name.split(' ')[0] + ': ' : ''}${c.text}`}
+                x={c.x}
+                onDone={() => removeComment(c.id)}
               />
-            );
-          }
-
-          return (
-            <div
-              key={i}
-              className="absolute"
-              style={{
-                left: x - avatarSize / 2,
-                top: y - avatarSize / 2,
-                width: avatarSize,
-                height: avatarSize,
-                zIndex,
-                opacity,
-                transition: 'none',
-              }}
-            >
-              {/* Active glow ring */}
-              {isActive && (
-                <div
-                  className="absolute inset-0 rounded-full animate-pulse"
-                  style={{
-                    boxShadow: '0 0 0 3px #22c55e, 0 0 12px 5px rgba(34,197,94,0.5)',
-                  }}
-                />
-              )}
-              {member?.avatar_url ? (
-                <img
-                  src={member.avatar_url}
-                  alt={member.name}
-                  className="w-full h-full rounded-full object-cover shadow-lg"
-                  style={{ border: isActive ? '2px solid #22c55e' : '2px solid rgba(255,255,255,0.8)' }}
-                />
-              ) : (
-                <div
-                  className={`w-full h-full rounded-full ${bgClass} flex items-center justify-center text-white font-bold shadow-lg`}
-                  style={{
-                    fontSize: Math.round(avatarSize * 0.38),
-                    border: isActive ? '2px solid #22c55e' : '2px solid rgba(255,255,255,0.6)',
-                  }}
-                >
-                  {member?.name?.charAt(0)?.toUpperCase() || '·'}
-                </div>
-              )}
-            </div>
-          );
-        })}
-
-        {/* ─── Floating comment bubbles ─── */}
-        <AnimatePresence>
-          {floatingComments.map((fc) => (
-            <FloatingComment
-              key={fc.id}
-              id={fc.id}
-              comment={fc.text}
-              x={fc.x}
-              y={fc.y}
-              onDone={() =>
-                setFloatingComments((prev) => prev.filter((c) => c.id !== fc.id))
-              }
-            />
-          ))}
-        </AnimatePresence>
+            ))}
+          </AnimatePresence>
+        </div>
       </div>
 
-      {/* Response pill */}
-      <div className="mt-6 flex flex-col items-center gap-1.5">
-        <p className="text-sm font-semibold text-blue-500">Total Responses</p>
+      {/* Total Response pill */}
+      <div className="mt-10 flex flex-col items-center gap-1.5">
+        <p className="text-sm font-medium" style={{ color: '#3B9EE8' }}>Total Response</p>
         <div
-          className="px-10 py-2.5 rounded-full text-white font-black text-2xl shadow-xl"
+          className="px-10 py-2.5 rounded-full text-white font-bold text-2xl shadow-lg"
           style={{
-            background: 'linear-gradient(90deg, #1E3A8A 0%, #2563EB 60%, #38BDF8 100%)',
+            background: 'linear-gradient(90deg,#1A4E8A 0%,#2E7EC8 60%,#3B9EE8 100%)',
             minWidth: 160,
             textAlign: 'center',
-            boxShadow: '0 4px 24px rgba(37,99,235,0.4)',
           }}
         >
           {totalResponses} / {totalMembers}
