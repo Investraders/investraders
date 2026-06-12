@@ -2,31 +2,31 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { X, ZoomIn, ZoomOut, RotateCcw, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+const CANVAS_SCALE = 4; // 4x internal resolution for crisp output
+
 /**
  * ImageCropModal
- * Props:
- *   src        — object URL of the image to crop
- *   aspect     — desired aspect ratio (e.g. 1 for square, 16/9, undefined = free)
- *   onConfirm  — (blob) => void   called with cropped image blob
- *   onCancel   — () => void
+ * - Display size is fixed at 320px; internal canvas renders at CANVAS_SCALE × that
+ * - Resulting blob is high-res and matches exactly what the user saw in the preview
  */
 export default function ImageCropModal({ src, aspect, onConfirm, onCancel }) {
   const canvasRef = useRef(null);
   const imgRef = useRef(null);
-  const containerRef = useRef(null);
 
   const [imgLoaded, setImgLoaded] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
   const dragStart = useRef(null);
-
-  // Natural dimensions of the image
   const [naturalSize, setNaturalSize] = useState({ w: 1, h: 1 });
 
-  // Fixed crop area size (display)
-  const CROP_W = 320;
-  const CROP_H = aspect ? Math.round(CROP_W / aspect) : 320;
+  // Display crop area (CSS size)
+  const DISPLAY_W = 320;
+  const DISPLAY_H = aspect ? Math.round(DISPLAY_W / aspect) : 320;
+
+  // Internal canvas resolution
+  const INTERNAL_W = DISPLAY_W * CANVAS_SCALE;
+  const INTERNAL_H = DISPLAY_H * CANVAS_SCALE;
 
   useEffect(() => {
     if (!src) return;
@@ -41,23 +41,26 @@ export default function ImageCropModal({ src, aspect, onConfirm, onCancel }) {
     imgRef.current = img;
   }, [src]);
 
-  // Draw preview on canvas
+  // Draw high-res preview on canvas
   useEffect(() => {
     if (!imgLoaded || !canvasRef.current) return;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-    canvas.width = CROP_W;
-    canvas.height = CROP_H;
 
-    const scale = (CROP_W / naturalSize.w) * zoom;
-    const drawW = naturalSize.w * scale;
-    const drawH = naturalSize.h * scale;
-    const cx = CROP_W / 2 + offset.x;
-    const cy = CROP_H / 2 + offset.y;
+    // Internal resolution
+    canvas.width = INTERNAL_W;
+    canvas.height = INTERNAL_H;
 
-    ctx.clearRect(0, 0, CROP_W, CROP_H);
+    // Scale factor: how many internal pixels per display pixel
+    const displayScale = (DISPLAY_W / naturalSize.w) * zoom;
+    const drawW = naturalSize.w * displayScale * CANVAS_SCALE;
+    const drawH = naturalSize.h * displayScale * CANVAS_SCALE;
+    const cx = INTERNAL_W / 2 + offset.x * CANVAS_SCALE;
+    const cy = INTERNAL_H / 2 + offset.y * CANVAS_SCALE;
+
+    ctx.clearRect(0, 0, INTERNAL_W, INTERNAL_H);
     ctx.drawImage(imgRef.current, cx - drawW / 2, cy - drawH / 2, drawW, drawH);
-  }, [imgLoaded, zoom, offset, naturalSize, CROP_W, CROP_H]);
+  }, [imgLoaded, zoom, offset, naturalSize, INTERNAL_W, INTERNAL_H, DISPLAY_W, CANVAS_SCALE]);
 
   const handleMouseDown = (e) => {
     e.preventDefault();
@@ -70,7 +73,6 @@ export default function ImageCropModal({ src, aspect, onConfirm, onCancel }) {
   }, [dragging]);
   const handleMouseUp = () => setDragging(false);
 
-  // Touch support
   const handleTouchStart = (e) => {
     const t = e.touches[0];
     setDragging(true);
@@ -84,7 +86,8 @@ export default function ImageCropModal({ src, aspect, onConfirm, onCancel }) {
 
   const handleConfirm = () => {
     if (!canvasRef.current) return;
-    canvasRef.current.toBlob((blob) => onConfirm(blob), 'image/jpeg', 0.92);
+    // Export at high quality — what you see is what you get
+    canvasRef.current.toBlob((blob) => onConfirm(blob), 'image/jpeg', 0.95);
   };
 
   useEffect(() => {
@@ -103,12 +106,11 @@ export default function ImageCropModal({ src, aspect, onConfirm, onCancel }) {
           </button>
         </div>
 
-        {/* Crop canvas */}
+        {/* Crop canvas — display size stays 320px, internal res is 4x */}
         <div className="flex items-center justify-center bg-gray-100 p-4">
           <div
-            ref={containerRef}
             className="relative overflow-hidden rounded-xl cursor-grab active:cursor-grabbing select-none"
-            style={{ width: CROP_W, height: CROP_H }}
+            style={{ width: DISPLAY_W, height: DISPLAY_H }}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onTouchStart={handleTouchStart}
@@ -116,7 +118,11 @@ export default function ImageCropModal({ src, aspect, onConfirm, onCancel }) {
             onTouchEnd={() => setDragging(false)}
           >
             {imgLoaded ? (
-              <canvas ref={canvasRef} className="block" style={{ width: CROP_W, height: CROP_H }} />
+              <canvas
+                ref={canvasRef}
+                className="block"
+                style={{ width: DISPLAY_W, height: DISPLAY_H }}
+              />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
                 Loading…
@@ -124,8 +130,9 @@ export default function ImageCropModal({ src, aspect, onConfirm, onCancel }) {
             )}
             {/* Crop grid overlay */}
             <div className="absolute inset-0 pointer-events-none" style={{
-              backgroundImage: 'linear-gradient(rgba(255,255,255,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.12) 1px, transparent 1px)',
-              backgroundSize: `${CROP_W/3}px ${CROP_H/3}px`,
+              backgroundImage:
+                `linear-gradient(rgba(255,255,255,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.12) 1px, transparent 1px)`,
+              backgroundSize: `${DISPLAY_W / 3}px ${DISPLAY_H / 3}px`,
               boxShadow: 'inset 0 0 0 2px rgba(255,255,255,0.5)',
             }} />
           </div>
@@ -133,7 +140,10 @@ export default function ImageCropModal({ src, aspect, onConfirm, onCancel }) {
 
         {/* Zoom controls */}
         <div className="px-5 py-3 flex items-center gap-3 border-t">
-          <button onClick={() => setZoom((z) => Math.max(z - 0.1, 0.3))} className="p-1.5 rounded-lg hover:bg-gray-100">
+          <button
+            onClick={() => setZoom((z) => Math.max(z - 0.1, 0.3))}
+            className="p-1.5 rounded-lg hover:bg-gray-100"
+          >
             <ZoomOut className="w-4 h-4 text-muted-foreground" />
           </button>
           <input
@@ -145,7 +155,10 @@ export default function ImageCropModal({ src, aspect, onConfirm, onCancel }) {
             onChange={(e) => setZoom(parseFloat(e.target.value))}
             className="flex-1 accent-blue-600"
           />
-          <button onClick={() => setZoom((z) => Math.min(z + 0.1, 3))} className="p-1.5 rounded-lg hover:bg-gray-100">
+          <button
+            onClick={() => setZoom((z) => Math.min(z + 0.1, 3))}
+            className="p-1.5 rounded-lg hover:bg-gray-100"
+          >
             <ZoomIn className="w-4 h-4 text-muted-foreground" />
           </button>
           <button
@@ -166,7 +179,10 @@ export default function ImageCropModal({ src, aspect, onConfirm, onCancel }) {
           <Button variant="outline" className="flex-1 rounded-xl" onClick={onCancel}>
             Cancel
           </Button>
-          <Button className="flex-1 rounded-xl bg-gradient-to-r from-blue-700 to-blue-500 text-white" onClick={handleConfirm}>
+          <Button
+            className="flex-1 rounded-xl bg-gradient-to-r from-blue-700 to-blue-500 text-white"
+            onClick={handleConfirm}
+          >
             <Check className="w-4 h-4 mr-1" /> Apply
           </Button>
         </div>
