@@ -18,41 +18,47 @@ import CircleMemberRoles from '@/components/circles/CircleMemberRoles';
 import CircleAdminDashboard from '@/components/circles/CircleAdminDashboard';
 import CircleVisual from '@/components/circles/CircleVisual';
 
-// ── Simulated market ticker data (replace with real API if available)
-const MARKET_TICKERS = [
-  { symbol: 'S&P 500', value: '5,308.13', change: '+0.74%', up: true },
-  { symbol: 'NASDAQ', value: '16,742.39', change: '+1.10%', up: true },
-  { symbol: 'DOW', value: '38,996.39', change: '+0.32%', up: true },
-  { symbol: 'BTC/USD', value: '67,843.20', change: '-1.22%', up: false },
-  { symbol: 'ETH/USD', value: '3,521.80', change: '+2.10%', up: true },
-  { symbol: 'GOLD', value: '2,341.50', change: '-0.18%', up: false },
-  { symbol: 'OIL (WTI)', value: '81.34', change: '+0.55%', up: true },
-  { symbol: 'EUR/USD', value: '1.0823', change: '-0.09%', up: false },
-];
+function formatPrice(symbol, price) {
+  if (!price && price !== 0) return '—';
+  const crypto = ['BTC/USD', 'ETH/USD'];
+  const forex = ['EUR/USD'];
+  if (crypto.includes(symbol)) return Number(price).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  if (forex.includes(symbol)) return Number(price).toFixed(4);
+  if (symbol === 'GOLD' || symbol === 'OIL (WTI)') return Number(price).toFixed(2);
+  return Number(price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
 
-function MarketTicker() {
+function MarketTicker({ marketData }) {
+  const items = marketData || [];
   return (
     <div
       className="w-full overflow-hidden py-2 px-4 border-b"
       style={{ background: 'linear-gradient(90deg,#0f172a,#1e2d5a)' }}
     >
       <div className="flex items-center gap-6 overflow-x-auto scrollbar-hide" style={{ whiteSpace: 'nowrap' }}>
-        {MARKET_TICKERS.map((t) => (
-          <div key={t.symbol} className="flex items-center gap-1.5 shrink-0">
-            <span className="text-blue-300/80 text-[11px] font-semibold">{t.symbol}</span>
-            <span className="text-white text-[11px] font-bold">{t.value}</span>
-            <span className={`text-[10px] font-bold flex items-center gap-0.5 ${t.up ? 'text-emerald-400' : 'text-red-400'}`}>
-              {t.up ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
-              {t.change}
-            </span>
-          </div>
-        ))}
+        {items.length === 0 ? (
+          <span className="text-blue-300/50 text-[11px]">Loading market data...</span>
+        ) : (
+          items.map((t) => {
+            const up = (t.change_pct || 0) >= 0;
+            return (
+              <div key={t.symbol} className="flex items-center gap-1.5 shrink-0">
+                <span className="text-blue-300/80 text-[11px] font-semibold">{t.symbol}</span>
+                <span className="text-white text-[11px] font-bold">{formatPrice(t.symbol, t.price)}</span>
+                <span className={`text-[10px] font-bold flex items-center gap-0.5 ${up ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {up ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
+                  {t.change_pct != null ? `${up ? '+' : ''}${t.change_pct}%` : '—'}
+                </span>
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );
 }
 
-function MarketUpdatesTab({ circleId }) {
+function MarketUpdatesTab({ circleId, marketData }) {
   const { data: posts = [], isLoading, refetch, isFetching } = useQuery({
     queryKey: ['institutional-market-updates', circleId],
     queryFn: () => base44.entities.Post.filter({ circle_id: circleId, post_type: 'text' }, '-created_date', 20),
@@ -62,6 +68,8 @@ function MarketUpdatesTab({ circleId }) {
     const c = (p.content || '').toLowerCase();
     return ['market', 'index', 'price', 'rate', 'update', 'report', 'analysis', 'gdp', 'inflation', 'fed', 'ecb'].some((kw) => c.includes(kw));
   });
+
+  const items = marketData || [];
 
   return (
     <div className="p-5 space-y-3">
@@ -78,22 +86,29 @@ function MarketUpdatesTab({ circleId }) {
         </button>
       </div>
 
-      {/* Live market grid */}
+      {/* Live market grid from real data */}
       <div className="grid grid-cols-2 gap-2 mb-5">
-        {MARKET_TICKERS.map((t) => (
-          <div
-            key={t.symbol}
-            className="rounded-xl p-3 border"
-            style={{ background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(100,180,255,0.12)' }}
-          >
-            <p className="text-[10px] text-blue-300/70 font-medium mb-0.5">{t.symbol}</p>
-            <p className="text-white font-bold text-sm">{t.value}</p>
-            <p className={`text-[11px] font-semibold flex items-center gap-0.5 mt-0.5 ${t.up ? 'text-emerald-400' : 'text-red-400'}`}>
-              {t.up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-              {t.change}
-            </p>
-          </div>
-        ))}
+        {items.length === 0 ? (
+          <p className="col-span-2 text-blue-300/40 text-sm text-center py-4">Loading market data...</p>
+        ) : (
+          items.map((t) => {
+            const up = (t.change_pct || 0) >= 0;
+            return (
+              <div
+                key={t.symbol}
+                className="rounded-xl p-3 border"
+                style={{ background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(100,180,255,0.12)' }}
+              >
+                <p className="text-[10px] text-blue-300/70 font-medium mb-0.5">{t.symbol}</p>
+                <p className="text-white font-bold text-sm">{formatPrice(t.symbol, t.price)}</p>
+                <p className={`text-[11px] font-semibold flex items-center gap-0.5 mt-0.5 ${up ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                  {t.change_pct != null ? `${up ? '+' : ''}${t.change_pct}%` : '—'}
+                </p>
+              </div>
+            );
+          })
+        )}
       </div>
 
       {/* Circle market-related posts */}
@@ -248,6 +263,13 @@ export default function InstitutionalCircleLayout({
 }) {
   const [activeTab, setActiveTab] = useState('market');
 
+  // ── Fetch real market data from entity (updated daily via automation) ──
+  const { data: marketData = [] } = useQuery({
+    queryKey: ['market-data'],
+    queryFn: () => base44.entities.MarketData.list(),
+    staleTime: 5 * 60 * 1000,
+  });
+
   return (
     <div className="rounded-2xl overflow-hidden shadow-2xl" style={{ background: 'linear-gradient(160deg,#0a0f1e 0%,#0f1e3a 50%,#091428 100%)' }}>
 
@@ -281,7 +303,7 @@ export default function InstitutionalCircleLayout({
       </div>
 
       {/* ── Live Market Ticker ── */}
-      <MarketTicker />
+      <MarketTicker marketData={marketData} />
 
       {/* ── Tabs ── */}
       <div
@@ -313,7 +335,7 @@ export default function InstitutionalCircleLayout({
           exit={{ opacity: 0, y: -6 }}
           transition={{ duration: 0.18 }}
         >
-          {activeTab === 'market' && <MarketUpdatesTab circleId={circleId} />}
+          {activeTab === 'market' && <MarketUpdatesTab circleId={circleId} marketData={marketData} />}
 
           {activeTab === 'announcements' && (
             <AnnouncementsTab
