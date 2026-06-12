@@ -20,6 +20,7 @@ import VerifiedBadge from '@/components/circles/VerifiedBadge';
 import CircleFeed from '@/components/circles/CircleFeed';
 import { TagBadge } from '@/components/circles/TagPicker';
 import InstitutionalCircleLayout from '@/components/circles/InstitutionalCircleLayout';
+import CircleMonetization from '@/components/circles/CircleMonetization';
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -423,6 +424,13 @@ export default function CircleDetail() {
               )}
             </>
           )}
+        </div>
+      )}
+
+      {/* Admin monetization — visible in both standard and institutional layouts */}
+      {isAdmin && (
+        <div className="mt-5">
+          <CircleMonetization memberCount={allMemberIds.length} />
         </div>
       )}
     </div>
