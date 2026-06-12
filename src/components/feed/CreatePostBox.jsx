@@ -161,23 +161,31 @@ export default function CreatePostBox() {
 
     logger.track('post_created', { post_type: postType, has_circle: !!selectedCircle });
 
-    createPost.mutate({
+    const payload = {
       content: sanitizedContent,
       author_name: displayName,
       author_avatar: avatarUrl,
       post_type: postType,
-      visibility: selectedCircle ? 'circle' : 'public',
-      circle_id: selectedCircle?.id || undefined,
       likes: 0,
       liked_by: [],
-      ...(attachedImage && { image_url: attachedImage.url }),
-      ...(attachedVideo && { video_url: attachedVideo.url }),
-      ...(attachedFile && {
-        file_url: attachedFile.url,
-        file_name: attachedFile.name,
-        file_type: attachedFile.type,
-      }),
-    });
+    };
+
+    if (selectedCircle) {
+      payload.visibility = 'circle';
+      payload.circle_id = selectedCircle.id;
+    } else {
+      payload.visibility = 'public';
+    }
+
+    if (attachedImage) payload.image_url = attachedImage.url;
+    if (attachedVideo) payload.video_url = attachedVideo.url;
+    if (attachedFile) {
+      payload.file_url = attachedFile.url;
+      payload.file_name = attachedFile.name;
+      payload.file_type = attachedFile.type;
+    }
+
+    createPost.mutate(payload);
   };
 
   return (
@@ -230,7 +238,7 @@ export default function CreatePostBox() {
       {/* Image preview */}
       {attachedImage && (
         <div className="relative mb-3">
-          <img src={attachedImage.previewUrl} alt="Preview" className="w-full rounded-xl object-cover max-h-64" />
+          <img src={attachedImage.previewUrl} alt="Preview" className="w-full rounded-xl object-contain max-h-80" />
           <button
             onClick={clearAttachments}
             className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1 hover:bg-black/70"

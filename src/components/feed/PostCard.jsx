@@ -139,7 +139,7 @@ export default function PostCard({ post, onDeleted }) {
           <img
             src={post.image_url}
             alt=""
-            className="w-full rounded-xl object-cover max-h-96 cursor-zoom-in hover:brightness-95 transition-all"
+            className="w-full rounded-xl object-contain max-h-96 cursor-zoom-in hover:brightness-95 transition-all"
             onClick={() => setLightboxSrc(post.image_url)}
           />
         </div>
