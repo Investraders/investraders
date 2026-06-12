@@ -76,114 +76,79 @@ function FloatingComment({ comment, x, onDone }) {
   );
 }
 
-// Orbiting member avatar with clockwise CSS animation
-function OrbitingMember({ member, index, total, orbitRadius, avatarSize, angleOffset }) {
+// Single avatar slot — placed at a fixed angle, counter-rotates to stay upright
+function AvatarSlot({ member, index, total, orbitRadius, avatarSize }) {
   const bgGradient = AVATAR_COLORS[index % AVATAR_COLORS.length];
   const isActive = member?.isActive;
-  const delay = (index / total) * -30; // stagger start so they're evenly spread on orbit
-
-  // Each avatar starts at its position and rotates the full circle
-  const startAngleDeg = (index / total) * 360 + angleOffset;
+  // Fixed angle on the ring — perfectly symmetric
+  const angleDeg = (index / total) * 360;
+  const angleRad = (angleDeg * Math.PI) / 180;
+  const x = Math.cos(angleRad) * orbitRadius;
+  const y = Math.sin(angleRad) * orbitRadius;
 
   return (
     <div
       className="absolute"
       style={{
-        left: '50%',
-        top: '50%',
-        width: 0,
-        height: 0,
-        // Clockwise rotation: spin the arm, avatar counter-rotates to stay upright
-        animation: `orbitCW 18s linear infinite`,
-        animationDelay: `${delay}s`,
-        transform: `rotate(${startAngleDeg}deg)`,
-        transformOrigin: '0 0',
+        left: `calc(50% + ${x}px - ${avatarSize / 2}px)`,
+        top: `calc(50% + ${y}px - ${avatarSize / 2}px)`,
+        width: avatarSize,
+        height: avatarSize,
+        // Counter-rotate to keep face upright while parent ring rotates
+        animation: `counterCW 22s linear infinite`,
       }}
     >
-      {/* Arm to avatar */}
-      <div
-        style={{
-          position: 'absolute',
-          top: -orbitRadius,
-          left: -avatarSize / 2,
-          width: avatarSize,
-          height: avatarSize,
-          // Counter-rotate so face stays upright
-          animation: `counterCW 18s linear infinite`,
-          animationDelay: `${delay}s`,
-        }}
-      >
-        {/* Glow ring for active */}
-        {isActive && (
-          <div
-            className="absolute inset-0 rounded-full animate-pulse"
-            style={{
-              boxShadow: `0 0 0 3px #22c55e, 0 0 16px 6px rgba(34,197,94,0.6)`,
-              borderRadius: '50%',
-              zIndex: 1,
-            }}
-          />
-        )}
-
-        {/* Avatar */}
-        {member?.avatar_url ? (
-          <img
-            src={member.avatar_url}
-            alt={member.name}
-            className="rounded-full object-cover shadow-2xl"
-            style={{
-              width: avatarSize,
-              height: avatarSize,
-              border: isActive ? '3px solid #22c55e' : '2.5px solid rgba(255,255,255,0.8)',
-              boxShadow: isActive
-                ? '0 0 0 2px #22c55e, 0 4px 20px rgba(34,197,94,0.4)'
-                : '0 4px 20px rgba(0,0,0,0.4)',
-              zIndex: 2,
-              position: 'relative',
-            }}
-          />
-        ) : (
-          <div
-            className="rounded-full flex items-center justify-center font-bold shadow-2xl"
-            style={{
-              width: avatarSize,
-              height: avatarSize,
-              background: bgGradient,
-              border: isActive ? '3px solid #22c55e' : '2.5px solid rgba(255,255,255,0.8)',
-              boxShadow: isActive
-                ? '0 0 0 2px #22c55e, 0 4px 20px rgba(34,197,94,0.4)'
-                : '0 4px 20px rgba(0,0,0,0.35)',
-              fontSize: avatarSize * 0.38,
-              color: 'white',
-              zIndex: 2,
-              position: 'relative',
-            }}
-          >
-            {member?.name?.charAt(0)?.toUpperCase() || '?'}
-          </div>
-        )}
-
-        {/* Name caption below avatar */}
-        {member?.name && (
-          <div
-            className="absolute text-center whitespace-nowrap"
-            style={{
-              top: avatarSize + 4,
-              left: '50%',
-              transform: 'translateX(-50%)',
-              color: 'rgba(255,255,255,0.9)',
-              fontSize: 9,
-              fontWeight: 600,
-              textShadow: '0 1px 4px rgba(0,0,0,0.8)',
-              background: 'rgba(0,0,20,0.5)',
-              borderRadius: 6,
-              padding: '1px 5px',
-            }}
-          >
-            {member.name.split(' ')[0]}
-          </div>
-        )}
-      </div>
+      {isActive && (
+        <div
+          className="absolute inset-0 rounded-full animate-pulse"
+          style={{ boxShadow: `0 0 0 3px #22c55e, 0 0 16px 6px rgba(34,197,94,0.6)` }}
+        />
+      )}
+      {member?.avatar_url ? (
+        <img
+          src={member.avatar_url}
+          alt={member?.name}
+          className="rounded-full object-cover shadow-2xl"
+          style={{
+            width: avatarSize, height: avatarSize,
+            border: isActive ? '3px solid #22c55e' : '2.5px solid rgba(255,255,255,0.85)',
+            boxShadow: isActive ? '0 0 0 2px #22c55e, 0 4px 20px rgba(34,197,94,0.4)' : '0 4px 20px rgba(0,0,0,0.4)',
+          }}
+        />
+      ) : (
+        <div
+          className="rounded-full flex items-center justify-center font-bold shadow-2xl"
+          style={{
+            width: avatarSize, height: avatarSize,
+            background: bgGradient,
+            border: isActive ? '3px solid #22c55e' : '2.5px solid rgba(255,255,255,0.85)',
+            boxShadow: isActive ? '0 0 0 2px #22c55e, 0 4px 20px rgba(34,197,94,0.4)' : '0 4px 20px rgba(0,0,0,0.35)',
+            fontSize: avatarSize * 0.38,
+            color: 'white',
+          }}
+        >
+          {member?.name?.charAt(0)?.toUpperCase() || '·'}
+        </div>
+      )}
+      {member?.name && (
+        <div
+          className="absolute text-center whitespace-nowrap"
+          style={{
+            top: avatarSize + 3,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            color: 'rgba(255,255,255,0.95)',
+            fontSize: 9,
+            fontWeight: 600,
+            textShadow: '0 1px 4px rgba(0,0,0,0.9)',
+            background: 'rgba(0,0,20,0.55)',
+            borderRadius: 6,
+            padding: '1px 5px',
+          }}
+        >
+          {member.name.split(' ')[0]}
+        </div>
+      )}
     </div>
   );
 }
@@ -236,8 +201,8 @@ export default function CircleVisual({
       {/* Inject keyframes */}
       <style>{`
         @keyframes orbitCW {
-          from { transform: rotate(var(--start-angle, 0deg)); }
-          to   { transform: rotate(calc(var(--start-angle, 0deg) + 360deg)); }
+          from { transform: rotate(0deg); }
+          to   { transform: rotate(360deg); }
         }
         @keyframes counterCW {
           from { transform: rotate(0deg); }
@@ -263,18 +228,22 @@ export default function CircleVisual({
         className="relative flex items-center justify-center"
         style={{ width: SIZE, height: SIZE }}
       >
-        {/* ── Orbiting member avatars ── */}
-        {displaySlots.map((member, i) => (
-          <OrbitingMember
-            key={i}
-            member={member}
-            index={i}
-            total={displaySlots.length}
-            orbitRadius={ORBIT_RADIUS}
-            avatarSize={AVATAR_SIZE}
-            angleOffset={0}
-          />
-        ))}
+        {/* ── Orbiting ring: single wrapper rotates CW, avatars counter-rotate to stay upright ── */}
+        <div
+          className="absolute inset-0"
+          style={{ animation: 'orbitCW 22s linear infinite' }}
+        >
+          {displaySlots.map((member, i) => (
+            <AvatarSlot
+              key={i}
+              member={member}
+              index={i}
+              total={displaySlots.length}
+              orbitRadius={ORBIT_RADIUS}
+              avatarSize={AVATAR_SIZE}
+            />
+          ))}
+        </div>
 
         {/* ── 3D Sphere (CSS perspective trick) ── */}
         <div
