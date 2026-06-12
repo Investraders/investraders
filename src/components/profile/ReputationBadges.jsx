@@ -58,8 +58,6 @@ export default function ReputationBadges({ userId }) {
     );
   }
 
-  if (earnedBadges.length === 0) return null;
-
   return (
     <TooltipProvider>
       <div className="space-y-2">
@@ -67,21 +65,35 @@ export default function ReputationBadges({ userId }) {
           <ShieldCheck className="w-3.5 h-3.5" /> Reputation
         </div>
         <div className="flex flex-wrap gap-2">
-          {earnedBadges.map((badge) => (
-            <Tooltip key={badge.id}>
+          {earnedBadges.length === 0 ? (
+            <Tooltip>
               <TooltipTrigger asChild>
-                <span
-                  className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full border cursor-default select-none ${badge.color}`}
-                >
-                  <span>{badge.emoji}</span>
-                  {badge.label}
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full border cursor-default select-none bg-gray-100 text-gray-600 border-gray-300">
+                  <span>🔨</span>
+                  Building Up
                 </span>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="text-xs">
-                {badge.description}
+                Keep active to earn your first reputation badge!
               </TooltipContent>
             </Tooltip>
-          ))}
+          ) : (
+            earnedBadges.map((badge) => (
+              <Tooltip key={badge.id}>
+                <TooltipTrigger asChild>
+                  <span
+                    className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full border cursor-default select-none ${badge.color}`}
+                  >
+                    <span>{badge.emoji}</span>
+                    {badge.label}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="text-xs">
+                  {badge.description}
+                </TooltipContent>
+              </Tooltip>
+            ))
+          )}
         </div>
 
         {/* Mini stats */}
