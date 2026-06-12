@@ -56,7 +56,7 @@ export default function CreatePostBox() {
     queryFn: () => base44.entities.Circle.list('-created_date', 100),
     enabled: !!user?.id,
     staleTime: CACHE.medium,
-    select: (data) => data.filter((c) => c.member_ids?.includes(user?.id)),
+    select: (data) => data.filter((c) => c.member_ids?.includes(user?.id) || c.created_by_id === user?.id),
   });
 
   const handlePhotoSelect = (e) => {

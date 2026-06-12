@@ -43,8 +43,10 @@ export function useCircleNotifications({ circle, user }) {
     });
 
     const unsubComment = base44.entities.Comment.subscribe((event) => {
-      if (event.type === 'create') {
-        notifyMembers(`New comment in ${circle.name}`, 'new_comment');
+      // Only notify if this comment belongs to a post in THIS circle
+      if (event.type === 'create' && event.data?.circle_id === circle.id) {
+        const author = event.data.author_name || 'Someone';
+        notifyMembers(`${author} commented in ${circle.name}`, 'new_comment');
       }
     });
 

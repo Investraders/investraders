@@ -8,8 +8,20 @@ export default function SharePostModal({ post, onClose }) {
   const text = encodeURIComponent(`${post.content?.slice(0, 120) || 'Check this out'}... | Investraders`);
   const encodedUrl = encodeURIComponent(postUrl);
 
-  const copyLink = () => {
-    navigator.clipboard.writeText(postUrl);
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(postUrl);
+    } catch {
+      // Fallback for older browsers / non-HTTPS origins
+      const ta = document.createElement('textarea');
+      ta.value = postUrl;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

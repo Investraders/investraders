@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -156,24 +156,29 @@ export default function CircleDetail() {
 
   useCircleNotifications({ circle, user });
 
-  // Mark all unread notifications for this circle as read when user opens it
-  const markedReadRef = useRef(new Set());
+  // Mark all unread notifications for this circle as read when user opens it,
+  // and keep checking periodically to catch new notifications that arrive while viewing
   useEffect(() => {
     if (!user?.id || !id) return;
-    if (markedReadRef.current.has(id)) return;
-    markedReadRef.current.add(id);
 
     const markCircleNotifsRead = async () => {
-      const notifs = await base44.entities.Notification.filter({ user_id: user.id, circle_id: id, is_read: false });
-      if (notifs.length > 0) {
-        // Update sequentially to avoid rate limits
-        for (const n of notifs) {
-          await base44.entities.Notification.update(n.id, { is_read: true });
+      try {
+        const notifs = await base44.entities.Notification.filter({ user_id: user.id, circle_id: id, is_read: false });
+        if (notifs.length > 0) {
+          for (const n of notifs) {
+            await base44.entities.Notification.update(n.id, { is_read: true });
+          }
+          queryClient.invalidateQueries({ queryKey: ['notifications', user.id] });
         }
-        queryClient.invalidateQueries({ queryKey: ['notifications', user.id] });
-      }
+      } catch (_) { /* ignore transient errors */ }
     };
+
+    // Clear immediately on entry
     markCircleNotifsRead();
+
+    // Also poll every 4 seconds to clear notifications that arrive while viewing
+    const interval = setInterval(markCircleNotifsRead, 4000);
+    return () => clearInterval(interval);
   }, [id, user?.id]);
 
   // Fetch real user profiles for ALL circle members including creator
