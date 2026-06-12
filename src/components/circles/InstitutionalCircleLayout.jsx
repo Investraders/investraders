@@ -28,32 +28,48 @@ function formatPrice(symbol, price) {
   return Number(price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+function TickerItem({ t }) {
+  const up = (t.change_pct || 0) >= 0;
+  return (
+    <div className="flex items-center gap-1.5 shrink-0 px-5">
+      <span className="text-blue-300/80 text-[11px] font-semibold">{t.symbol}</span>
+      <span className="text-white text-[11px] font-bold">{formatPrice(t.symbol, t.price)}</span>
+      <span className={`text-[10px] font-bold flex items-center gap-0.5 ${up ? 'text-emerald-400' : 'text-red-400'}`}>
+        {up ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
+        {t.change_pct != null ? `${up ? '+' : ''}${Number(t.change_pct).toFixed(2)}%` : '—'}
+      </span>
+      <span className="text-blue-300/20 text-[10px] ml-3">|</span>
+    </div>
+  );
+}
+
 function MarketTicker({ marketData }) {
   const items = marketData || [];
+  // Duplicate items so the scroll loops seamlessly
+  const doubled = [...items, ...items];
+
   return (
     <div
-      className="w-full overflow-hidden py-2 px-4 border-b"
+      className="w-full overflow-hidden py-2 border-b"
       style={{ background: 'linear-gradient(90deg,#0f172a,#1e2d5a)' }}
     >
-      <div className="flex items-center gap-6 overflow-x-auto scrollbar-hide" style={{ whiteSpace: 'nowrap' }}>
-        {items.length === 0 ? (
-          <span className="text-blue-300/50 text-[11px]">Loading market data...</span>
-        ) : (
-          items.map((t) => {
-            const up = (t.change_pct || 0) >= 0;
-            return (
-              <div key={t.symbol} className="flex items-center gap-1.5 shrink-0">
-                <span className="text-blue-300/80 text-[11px] font-semibold">{t.symbol}</span>
-                <span className="text-white text-[11px] font-bold">{formatPrice(t.symbol, t.price)}</span>
-                <span className={`text-[10px] font-bold flex items-center gap-0.5 ${up ? 'text-emerald-400' : 'text-red-400'}`}>
-                  {up ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
-                  {t.change_pct != null ? `${up ? '+' : ''}${t.change_pct}%` : '—'}
-                </span>
-              </div>
-            );
-          })
-        )}
-      </div>
+      {items.length === 0 ? (
+        <span className="px-4 text-blue-300/50 text-[11px]">Loading market data...</span>
+      ) : (
+        <div className="ticker-track flex" style={{ animation: `ticker-scroll ${items.length * 4}s linear infinite` }}>
+          {doubled.map((t, i) => (
+            <TickerItem key={`${t.symbol}-${i}`} t={t} />
+          ))}
+        </div>
+      )}
+      <style>{`
+        @keyframes ticker-scroll {
+          0%   { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .ticker-track { white-space: nowrap; }
+        .ticker-track:hover { animation-play-state: paused; }
+      `}</style>
     </div>
   );
 }
