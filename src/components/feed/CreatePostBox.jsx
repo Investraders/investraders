@@ -26,6 +26,7 @@ export default function CreatePostBox() {
   const [uploadingType, setUploadingType] = useState(null); // 'photo' | 'video' | 'file'
   const [showCirclePicker, setShowCirclePicker] = useState(false);
   const [selectedCircle, setSelectedCircle] = useState(null);
+  const [circleSearch, setCircleSearch] = useState('');
   const [cropSrc, setCropSrc] = useState(null); // raw object URL for crop modal
   const pendingPhotoFileRef = useRef(null);
 
@@ -278,34 +279,54 @@ export default function CreatePostBox() {
               <ChevronDown className="w-3 h-3" />
             </button>
 
-            {/* Circle dropdown */}
-            {showCirclePicker && (
-              <div className="absolute left-0 top-9 z-50 w-52 bg-card border border-border rounded-xl shadow-lg overflow-hidden">
-                <div className="p-1">
-                  <button
-                    onClick={() => { setSelectedCircle(null); setShowCirclePicker(false); }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-xs rounded-lg hover:bg-secondary text-left"
-                  >
-                    <span className="flex-1">Public (no circle)</span>
-                    {!selectedCircle && <Check className="w-3.5 h-3.5 text-primary" />}
-                  </button>
-                  {circles.length === 0 && (
-                    <p className="px-3 py-2 text-xs text-muted-foreground">You haven't joined any circles yet.</p>
-                  )}
-                  {circles.map((c) => (
+            {/* Circle dropdown — searchable, scrollable, compact */}
+            {showCirclePicker && (() => {
+              const filtered = circleSearch.trim()
+                ? circles.filter((c) => c.name.toLowerCase().includes(circleSearch.toLowerCase()))
+                : circles;
+              return (
+                <div className="absolute left-0 top-9 z-50 w-56 bg-card border border-border rounded-xl shadow-lg overflow-hidden">
+                  {/* Search field */}
+                  <div className="px-2 pt-2">
+                    <input
+                      type="text"
+                      value={circleSearch}
+                      onChange={(e) => setCircleSearch(e.target.value)}
+                      placeholder="Search circles..."
+                      className="w-full h-8 text-xs rounded-lg border border-border bg-muted/50 px-2.5 outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60"
+                      autoFocus
+                    />
+                  </div>
+                  {/* Scrollable list (shows ~4 rows) */}
+                  <div className="max-h-[148px] overflow-y-auto p-1" style={{ scrollbarWidth: 'none' }}>
                     <button
-                      key={c.id}
-                      onClick={() => { setSelectedCircle(c); setShowCirclePicker(false); }}
+                      onClick={() => { setSelectedCircle(null); setShowCirclePicker(false); setCircleSearch(''); }}
                       className="w-full flex items-center gap-2 px-3 py-2 text-xs rounded-lg hover:bg-secondary text-left"
                     >
-                      <CircleDot className="w-3 h-3 text-primary shrink-0" />
-                      <span className="flex-1 truncate">{c.name}</span>
-                      {selectedCircle?.id === c.id && <Check className="w-3.5 h-3.5 text-primary" />}
+                      <span className="flex-1">Public (no circle)</span>
+                      {!selectedCircle && <Check className="w-3.5 h-3.5 text-primary" />}
                     </button>
-                  ))}
+                    {filtered.length === 0 ? (
+                      <p className="px-3 py-2 text-xs text-muted-foreground">
+                        {circleSearch.trim() ? 'No matching circles.' : "You haven't joined any circles yet."}
+                      </p>
+                    ) : (
+                      filtered.map((c) => (
+                        <button
+                          key={c.id}
+                          onClick={() => { setSelectedCircle(c); setShowCirclePicker(false); setCircleSearch(''); }}
+                          className="w-full flex items-center gap-2 px-3 py-2 text-xs rounded-lg hover:bg-secondary text-left"
+                        >
+                          <CircleDot className="w-3 h-3 text-primary shrink-0" />
+                          <span className="flex-1 truncate">{c.name}</span>
+                          {selectedCircle?.id === c.id && <Check className="w-3.5 h-3.5 text-primary" />}
+                        </button>
+                      ))
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
           </div>
 
           {/* Photo button */}
@@ -352,7 +373,7 @@ export default function CreatePostBox() {
 
       {/* Close circle picker on outside click */}
       {showCirclePicker && (
-        <div className="fixed inset-0 z-40" onClick={() => setShowCirclePicker(false)} />
+        <div className="fixed inset-0 z-40" onClick={() => { setShowCirclePicker(false); setCircleSearch(''); }} />
       )}
 
       {/* Crop modal */}
