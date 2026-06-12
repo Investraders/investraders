@@ -32,8 +32,6 @@ export default function CreatePoll() {
       post_type: 'poll',
       visibility: 'public',
       author_name: user?.full_name || user?.email?.split('@')[0] || 'User',
-      likes: 0,
-      liked_by: [],
     });
     setLoading(false);
     navigate('/');

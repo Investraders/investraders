@@ -122,6 +122,8 @@ export default function CreatePostBox() {
     setAttachedVideo(null);
   };
 
+  const [postError, setPostError] = useState(null);
+
   const createPost = useMutation({
     mutationFn: (data) => base44.entities.Post.create(data),
     onSuccess: () => {
@@ -129,6 +131,10 @@ export default function CreatePostBox() {
       setContent('');
       clearAttachments();
       setSelectedCircle(null);
+      setPostError(null);
+    },
+    onError: (err) => {
+      setPostError(err?.message || 'Failed to create post. Please try again.');
     },
   });
 
@@ -166,8 +172,6 @@ export default function CreatePostBox() {
       author_name: displayName,
       author_avatar: avatarUrl,
       post_type: postType,
-      likes: 0,
-      liked_by: [],
     };
 
     if (selectedCircle) {
@@ -234,6 +238,7 @@ export default function CreatePostBox() {
       />
       {validationError && <p className="text-xs text-destructive mb-2">{validationError}</p>}
       {rateLimitError && <p className="text-xs text-orange-500 mb-2">{rateLimitError}</p>}
+      {postError && <p className="text-xs text-destructive mb-2">{postError}</p>}
 
       {/* Image preview */}
       {attachedImage && (
