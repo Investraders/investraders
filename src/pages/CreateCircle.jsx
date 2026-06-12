@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Users, ArrowLeft } from 'lucide-react';
+import { Users, ArrowLeft, Landmark } from 'lucide-react';
 import CircleIcon, { CATEGORY_META } from '@/components/circles/CircleIcon';
 import { Link } from 'react-router-dom';
 import TagPicker from '@/components/circles/TagPicker';
@@ -94,6 +94,21 @@ export default function CreateCircle() {
               </Select>
             </div>
           </div>
+
+          {category === 'institutional' && (
+            <div
+              className="rounded-xl p-4 border border-amber-400/40"
+              style={{ background: 'linear-gradient(135deg,#0f172a,#1e3a8a)' }}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <Landmark className="w-4 h-4 text-amber-300" />
+                <span className="text-amber-300 font-bold text-sm">Institutional Circle</span>
+              </div>
+              <p className="text-blue-200/80 text-xs leading-relaxed">
+                Designed for chambers of commerce, stock exchanges, and financial institutions to convene members, clients, and stakeholders in a branded professional space.
+              </p>
+            </div>
+          )}
 
           <div>
             <Label className="mb-1.5 block">Topics <span className="text-muted-foreground font-normal">(up to 5)</span></Label>

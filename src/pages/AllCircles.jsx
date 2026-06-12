@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
-import { Search, Users, ArrowRight } from 'lucide-react';
+import { Search, Users, ArrowRight, Landmark, Sparkles } from 'lucide-react';
 import CircleIcon from '@/components/circles/CircleIcon';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -17,6 +17,7 @@ const CATEGORY_COLORS = {
   real_estate: 'bg-purple-100 text-purple-700',
   business: 'bg-yellow-100 text-yellow-700',
   personal_finance: 'bg-cyan-100 text-cyan-700',
+  institutional: 'bg-amber-100 text-amber-800',
   general: 'bg-gray-100 text-gray-700',
 };
 
@@ -84,41 +85,88 @@ export default function AllCircles() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04 }}
             >
-              <Link
-                to={`/circle/${circle.id}`}
-                className="block bg-card rounded-2xl border shadow-sm p-5 hover:shadow-md transition-all group"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="relative shrink-0">
-                    <CircleIcon category={circle.category} size="xl" />
-                    <span className="absolute -bottom-1 -right-1 flex items-center gap-0.5 bg-primary text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
-                      <Users className="w-2.5 h-2.5" />{Array.from(new Set([...(circle.member_ids || []), ...(circle.created_by_id ? [circle.created_by_id] : [])])).length}
-                    </span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-lg truncate group-hover:text-primary transition-colors">
-                      {circle.name}
-                    </h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
-                      {circle.description || 'No description'}
-                    </p>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Badge className={CATEGORY_COLORS[circle.category] || CATEGORY_COLORS.general}>
-                        {circle.category?.replace(/_/g, ' ') || 'General'}
-                      </Badge>
-                      {(() => {
-                        const cnt = Array.from(new Set([...(circle.member_ids || []), ...(circle.created_by_id ? [circle.created_by_id] : [])])).length;
-                        return cnt > 0 ? (
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Users className="w-3 h-3" /> {cnt} members
+              {circle.category === 'institutional' ? (
+                <Link to={`/circle/${circle.id}`} className="block group">
+                  <div
+                    className="relative rounded-2xl p-[2px] shadow-lg hover:shadow-xl transition-all overflow-hidden"
+                    style={{ background: 'linear-gradient(135deg,#f59e0b,#1e3a8a,#0ea5e9)' }}
+                  >
+                    <div
+                      className="rounded-2xl p-5"
+                      style={{ background: 'linear-gradient(135deg,#0f172a 0%,#1e2d5a 60%,#0c2461 100%)' }}
+                    >
+                      {/* Top row */}
+                      <div className="flex items-start gap-3">
+                        <div className="relative shrink-0">
+                          <CircleIcon category="institutional" size="xl" />
+                          <span className="absolute -bottom-1 -right-1 flex items-center gap-0.5 bg-amber-400 text-slate-900 text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
+                            <Users className="w-2.5 h-2.5" />
+                            {Array.from(new Set([...(circle.member_ids || []), ...(circle.created_by_id ? [circle.created_by_id] : [])])).length}
                           </span>
-                        ) : null;
-                      })()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <h3 className="font-bold text-lg truncate text-white group-hover:text-amber-300 transition-colors">
+                              {circle.name}
+                            </h3>
+                          </div>
+                          <p className="text-sm text-blue-200/70 line-clamp-2 mb-2">
+                            {circle.description || 'Official institutional circle'}
+                          </p>
+                          <div className="flex flex-wrap items-center gap-2">
+                            {/* Institutional badge */}
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                              <Landmark className="w-2.5 h-2.5" /> INSTITUTIONAL
+                            </span>
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-sky-400/10 text-sky-300 border border-sky-400/20">
+                              <Sparkles className="w-2.5 h-2.5" /> AI Finance
+                            </span>
+                          </div>
+                        </div>
+                        <ArrowRight className="w-5 h-5 text-blue-300/60 group-hover:text-amber-300 transition-colors mt-1 shrink-0" />
+                      </div>
+                      {/* Decorative bottom line */}
+                      <div className="mt-4 h-px w-full rounded-full" style={{ background: 'linear-gradient(90deg,transparent,rgba(245,158,11,0.5),transparent)' }} />
                     </div>
                   </div>
-                  <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors mt-1 shrink-0" />
-                </div>
-              </Link>
+                </Link>
+              ) : (
+                <Link
+                  to={`/circle/${circle.id}`}
+                  className="block bg-card rounded-2xl border shadow-sm p-5 hover:shadow-md transition-all group"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="relative shrink-0">
+                      <CircleIcon category={circle.category} size="xl" />
+                      <span className="absolute -bottom-1 -right-1 flex items-center gap-0.5 bg-primary text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
+                        <Users className="w-2.5 h-2.5" />{Array.from(new Set([...(circle.member_ids || []), ...(circle.created_by_id ? [circle.created_by_id] : [])])).length}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-lg truncate group-hover:text-primary transition-colors">
+                        {circle.name}
+                      </h3>
+                      <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
+                        {circle.description || 'No description'}
+                      </p>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge className={CATEGORY_COLORS[circle.category] || CATEGORY_COLORS.general}>
+                          {circle.category?.replace(/_/g, ' ') || 'General'}
+                        </Badge>
+                        {(() => {
+                          const cnt = Array.from(new Set([...(circle.member_ids || []), ...(circle.created_by_id ? [circle.created_by_id] : [])])).length;
+                          return cnt > 0 ? (
+                            <span className="text-xs text-muted-foreground flex items-center gap-1">
+                              <Users className="w-3 h-3" /> {cnt} members
+                            </span>
+                          ) : null;
+                        })()}
+                      </div>
+                    </div>
+                    <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors mt-1 shrink-0" />
+                  </div>
+                </Link>
+              )}
             </motion.div>
           ))}
         </div>

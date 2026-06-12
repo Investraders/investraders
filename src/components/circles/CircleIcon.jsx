@@ -1,39 +1,39 @@
 import React from 'react';
 import {
-  TrendingUp, Bitcoin, BarChart2, Building2, Briefcase, Wallet, Globe
+  TrendingUp, Bitcoin, BarChart2, Building2, Briefcase, Wallet, Globe, Landmark
 } from 'lucide-react';
 
 export const CATEGORY_META = {
-  investing:       { label: 'Investing',        Icon: TrendingUp,  bg: 'bg-blue-600',   text: 'text-white' },
-  crypto:          { label: 'Crypto',            Icon: Bitcoin,     bg: 'bg-orange-500', text: 'text-white' },
-  stocks:          { label: 'Stocks',            Icon: BarChart2,   bg: 'bg-green-600',  text: 'text-white' },
-  real_estate:     { label: 'Real Estate',       Icon: Building2,   bg: 'bg-purple-600', text: 'text-white' },
-  business:        { label: 'Business',          Icon: Briefcase,   bg: 'bg-cyan-600',   text: 'text-white' },
-  personal_finance:{ label: 'Personal Finance',  Icon: Wallet,      bg: 'bg-rose-500',   text: 'text-white' },
-  general:         { label: 'General',           Icon: Globe,       bg: 'bg-gray-500',   text: 'text-white' },
+  investing:        { label: 'Investing',       Icon: TrendingUp,  bg: '#2563eb', text: '#ffffff' },
+  crypto:           { label: 'Crypto',           Icon: Bitcoin,     bg: '#f97316', text: '#ffffff' },
+  stocks:           { label: 'Stocks',           Icon: BarChart2,   bg: '#16a34a', text: '#ffffff' },
+  real_estate:      { label: 'Real Estate',      Icon: Building2,   bg: '#9333ea', text: '#ffffff' },
+  business:         { label: 'Business',         Icon: Briefcase,   bg: '#0891b2', text: '#ffffff' },
+  personal_finance: { label: 'Personal Finance', Icon: Wallet,      bg: '#e11d48', text: '#ffffff' },
+  institutional:    { label: 'Institutional',    Icon: Landmark,    bg: 'linear-gradient(135deg,#1e293b 0%,#1e3a8a 100%)', text: '#fcd34d' },
+  general:          { label: 'General',          Icon: Globe,       bg: '#6b7280', text: '#ffffff' },
 };
 
 export default function CircleIcon({ category, size = 'md', className = '' }) {
   const meta = CATEGORY_META[category] || CATEGORY_META.general;
   const { Icon, bg, text } = meta;
 
-  const sizeClasses = {
-    sm: 'w-8 h-8',
-    md: 'w-10 h-10',
-    lg: 'w-12 h-12',
-    xl: 'w-16 h-16',
-  };
-
-  const iconSizes = {
-    sm: 'w-4 h-4',
-    md: 'w-5 h-5',
-    lg: 'w-6 h-6',
-    xl: 'w-8 h-8',
-  };
+  const sizeMap = { sm: 32, md: 40, lg: 48, xl: 64 };
+  const iconMap  = { sm: 16, md: 20, lg: 24, xl: 32 };
+  const px = sizeMap[size] || 40;
+  const ipx = iconMap[size] || 20;
 
   return (
-    <div className={`rounded-full ${bg} ${sizeClasses[size]} flex items-center justify-center shrink-0 ${className}`}>
-      <Icon className={`${iconSizes[size]} ${text}`} />
+    <div
+      className={`rounded-full flex items-center justify-center shrink-0 ${className}`}
+      style={{
+        width: px,
+        height: px,
+        background: bg,
+        minWidth: px,
+      }}
+    >
+      <Icon style={{ width: ipx, height: ipx, color: text }} />
     </div>
   );
 }

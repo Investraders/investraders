@@ -23,6 +23,7 @@
         "real_estate",
         "business",
         "personal_finance",
+        "institutional",
         "general"
       ],
       "default": "general"
