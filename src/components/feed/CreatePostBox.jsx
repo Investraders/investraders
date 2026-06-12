@@ -50,12 +50,13 @@ export default function CreatePostBox() {
   const [validationError, setValidationError] = useState(null);
   const [rateLimitError, setRateLimitError] = useState(null);
 
-  // Fetch user's circles
+  // Fetch circles and filter client-side for membership (matching app-wide pattern)
   const { data: circles = [] } = useQuery({
     queryKey: ['my-circles-post'],
-    queryFn: () => base44.entities.Circle.filter({ member_ids: { $elemMatch: user?.id } }),
+    queryFn: () => base44.entities.Circle.list('-created_date', 100),
     enabled: !!user?.id,
     staleTime: CACHE.medium,
+    select: (data) => data.filter((c) => c.member_ids?.includes(user?.id)),
   });
 
   const handlePhotoSelect = (e) => {
