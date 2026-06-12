@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
+import { getAppUrl } from '@/lib/app-url';
 
 export default function ShareCircleModal({ circle, onClose, onPostAsStory }) {
   const { user } = useAuth();
@@ -11,7 +12,7 @@ export default function ShareCircleModal({ circle, onClose, onPostAsStory }) {
   const [postingStory, setPostingStory] = useState(false);
   const [storyPosted, setStoryPosted] = useState(false);
 
-  const circleUrl = `${window.location.origin}/circle/${circle.id}`;
+  const circleUrl = `${getAppUrl()}/circle/${circle.id}`;
 
   const copy = () => {
     navigator.clipboard.writeText(circleUrl);

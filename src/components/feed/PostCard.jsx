@@ -11,6 +11,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/components/ui/use-toast';
+import { getAppUrl } from '@/lib/app-url';
 
 export default function PostCard({ post, onDeleted }) {
   const { user } = useAuth();
@@ -97,7 +98,7 @@ export default function PostCard({ post, onDeleted }) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-44">
             <DropdownMenuItem onClick={() => {
-              navigator.clipboard.writeText(`${window.location.origin}/post/${post.id}`);
+              navigator.clipboard.writeText(`${getAppUrl()}/post/${post.id}`);
               toast({ title: 'Link copied!' });
             }}>
               <LinkIcon className="w-4 h-4 mr-2" /> Copy Link

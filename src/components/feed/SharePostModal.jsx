@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { X, Link2, Twitter, Facebook, MessageCircle, Check } from 'lucide-react';
+import { getAppUrl } from '@/lib/app-url';
 
 export default function SharePostModal({ post, onClose }) {
   const [copied, setCopied] = useState(false);
-  const postUrl = `${window.location.origin}/post/${post.id}`;
+  const postUrl = `${getAppUrl()}/post/${post.id}`;
   const text = encodeURIComponent(`${post.content?.slice(0, 120) || 'Check this out'}... | Investraders`);
   const encodedUrl = encodeURIComponent(postUrl);
 

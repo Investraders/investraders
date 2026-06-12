@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { X, Link2, Check, Search, UserPlus, Copy } from 'lucide-react';
+import { getAppUrl } from '@/lib/app-url';
 
 function generateToken() {
   return Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
@@ -95,7 +96,7 @@ export default function InviteToCircleModal({ circle, onClose }) {
       return token;
     },
     onSuccess: (token) => {
-      const link = `${window.location.origin}/join-circle?token=${token}`;
+      const link = `${getAppUrl()}/join-circle?token=${token}`;
       setInviteLink(link);
     },
   });

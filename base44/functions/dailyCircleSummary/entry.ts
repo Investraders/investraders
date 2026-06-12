@@ -3,7 +3,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const APP_URL = 'https://investraders.base44.app';
+    const APP_URL = Deno.env.get('APP_URL') || 'https://investraders.base44.app';
 
     // This runs as a scheduled job — use service role for all data access
     const allUsers = await base44.asServiceRole.entities.User.list();
