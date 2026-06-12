@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   TrendingUp, TrendingDown, Megaphone, Newspaper, LayoutList,
   BarChart2, Globe, Users, Plus, Send, MessageCircle,
-  ChevronUp, ChevronDown, RefreshCw, Landmark, Sparkles
+  ChevronUp, ChevronDown, RefreshCw, Landmark, Sparkles,
+  Target, Eye, BookOpen, ShieldCheck, ExternalLink, Briefcase, Star
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -74,79 +75,166 @@ function MarketTicker({ marketData }) {
   );
 }
 
-function MarketUpdatesTab({ circleId, marketData }) {
-  const { data: posts = [], isLoading, refetch, isFetching } = useQuery({
-    queryKey: ['institutional-market-updates', circleId],
-    queryFn: () => base44.entities.Post.filter({ circle_id: circleId, post_type: 'text' }, '-created_date', 20),
-  });
+function InfoTab({ circle }) {
+  const isBvmt = (circle?.name || '').toLowerCase().match(/tunis|bvmt|bourse/);
 
-  const marketPosts = posts.filter((p) => {
-    const c = (p.content || '').toLowerCase();
-    return ['market', 'index', 'price', 'rate', 'update', 'report', 'analysis', 'gdp', 'inflation', 'fed', 'ecb'].some((kw) => c.includes(kw));
-  });
-
-  const items = marketData || [];
-
-  return (
-    <div className="p-5 space-y-3">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <BarChart2 className="w-4 h-4 text-amber-400" />
-          <span className="text-sm font-bold text-white">Market Updates</span>
+  if (isBvmt) {
+    return (
+      <div className="p-5 space-y-4 overflow-y-auto max-h-[70vh]">
+        {/* Header */}
+        <div className="flex items-center gap-2 mb-1">
+          <Landmark className="w-4 h-4 text-amber-400" />
+          <span className="text-sm font-bold text-white">La Bourse de Tunis</span>
+          <a href="https://tunis-stockexchange.com" target="_blank" rel="noopener noreferrer"
+            className="ml-auto flex items-center gap-1 text-[10px] text-blue-300/60 hover:text-blue-200">
+            <ExternalLink className="w-3 h-3" /> tunis-stockexchange.com
+          </a>
         </div>
-        <button
-          onClick={() => refetch()}
-          className="flex items-center gap-1 text-[11px] text-blue-300 hover:text-blue-200"
-        >
-          <RefreshCw className={`w-3 h-3 ${isFetching ? 'animate-spin' : ''}`} /> Refresh
-        </button>
-      </div>
 
-      {/* Live market grid from real data */}
-      <div className="grid grid-cols-2 gap-2 mb-5">
-        {items.length === 0 ? (
-          <p className="col-span-2 text-blue-300/40 text-sm text-center py-4">Loading market data...</p>
-        ) : (
-          items.map((t) => {
-            const up = (t.change_pct || 0) >= 0;
-            return (
-              <div
-                key={t.symbol}
-                className="rounded-xl p-3 border"
-                style={{ background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(100,180,255,0.12)' }}
-              >
-                <p className="text-[10px] text-blue-300/70 font-medium mb-0.5">{t.symbol}</p>
-                <p className="text-white font-bold text-sm">{formatPrice(t.symbol, t.price)}</p>
-                <p className={`text-[11px] font-semibold flex items-center gap-0.5 mt-0.5 ${up ? 'text-emerald-400' : 'text-red-400'}`}>
-                  {up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                  {t.change_pct != null ? `${up ? '+' : ''}${t.change_pct}%` : '—'}
-                </p>
+        {/* Mission */}
+        <div className="rounded-xl p-4 border" style={{ background: 'rgba(245,158,11,0.06)', borderColor: 'rgba(245,158,11,0.2)' }}>
+          <div className="flex items-center gap-2 mb-2">
+            <Target className="w-3.5 h-3.5 text-amber-400" />
+            <span className="text-xs font-bold text-amber-300 uppercase tracking-wider">Mission</span>
+          </div>
+          <p className="text-white/85 text-sm leading-relaxed">
+            La Bourse de Tunis est le marché officiel des valeurs mobilières en Tunisie. Elle organise et développe le marché financier tunisien, assure la liquidité des titres cotés et contribue au financement de l&apos;économie nationale. Triple certifiée ISO, elle s&apos;engage pour la transparence et l&apos;excellence.
+          </p>
+        </div>
+
+        {/* Vision */}
+        <div className="rounded-xl p-4 border" style={{ background: 'rgba(14,165,233,0.06)', borderColor: 'rgba(14,165,233,0.18)' }}>
+          <div className="flex items-center gap-2 mb-2">
+            <Eye className="w-3.5 h-3.5 text-sky-400" />
+            <span className="text-xs font-bold text-sky-300 uppercase tracking-wider">Vision & Objectifs</span>
+          </div>
+          <ul className="text-white/80 text-sm space-y-1.5 leading-relaxed">
+            {[
+              'Démocratiser l\'accès à l\'investissement boursier pour tous les Tunisiens',
+              'Renforcer la transparence et la confiance dans le marché financier',
+              'Attirer les investisseurs institutionnels locaux et étrangers',
+              'Promouvoir la gouvernance ESG des sociétés cotées',
+            ].map((v, i) => (
+              <li key={i} className="flex items-start gap-2">
+                <span className="text-amber-400 mt-0.5 shrink-0">•</span>{v}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Markets */}
+        <div className="rounded-xl p-4 border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.12)' }}>
+          <div className="flex items-center gap-2 mb-3">
+            <BarChart2 className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="text-xs font-bold text-emerald-300 uppercase tracking-wider">Marchés</span>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { name: 'Marché Principal', desc: 'Grandes capitalisations cotées' },
+              { name: 'Marché Alternatif', desc: 'PME et sociétés en croissance' },
+              { name: 'Marché Obligataire', desc: 'Obligations et titres de créance' },
+              { name: 'Sukuk', desc: 'Finance islamique certifiée' },
+              { name: 'Fonds (OPCVM)', desc: "Fonds d'investissement collectifs" },
+              { name: 'Marché de Blocs', desc: 'Transactions institutionnelles' },
+            ].map((m) => (
+              <div key={m.name} className="rounded-lg p-2.5 border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.08)' }}>
+                <p className="text-white text-[11px] font-semibold">{m.name}</p>
+                <p className="text-blue-300/55 text-[10px] mt-0.5">{m.desc}</p>
               </div>
-            );
-          })
-        )}
-      </div>
-
-      {/* Circle market-related posts */}
-      {marketPosts.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-[11px] text-blue-300/60 font-medium uppercase tracking-wider">From This Circle</p>
-          {marketPosts.map((p) => (
-            <div
-              key={p.id}
-              className="rounded-xl p-3 border"
-              style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.1)' }}
-            >
-              <p className="text-white/90 text-sm line-clamp-3">{p.content}</p>
-              <p className="text-blue-300/50 text-[10px] mt-1">{p.author_name} · {p.created_date ? new Date(p.created_date).toLocaleDateString() : ''}</p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      )}
 
-      {!isLoading && marketPosts.length === 0 && (
-        <p className="text-blue-300/40 text-sm text-center py-4">No market updates yet in this circle.</p>
-      )}
+        {/* Investor Benefits */}
+        <div className="rounded-xl p-4 border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.12)' }}>
+          <div className="flex items-center gap-2 mb-3">
+            <Star className="w-3.5 h-3.5 text-amber-400" />
+            <span className="text-xs font-bold text-amber-300 uppercase tracking-wider">Avantages Investisseur</span>
+          </div>
+          <ul className="text-white/80 text-sm space-y-2">
+            {[
+              'Placements liquides et rémunérateurs sur le long terme',
+              "Exonération d'impôt sur les plus-values (sous conditions de durée)",
+              "Dégrèvement fiscal via le Compte d'Épargne en Actions (CEA)",
+              'Statut d\'actionnaire et copropriétaire de sociétés cotées',
+              'Accès à une information financière réglementée et transparente',
+            ].map((adv, i) => (
+              <li key={i} className="flex items-start gap-2">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" />
+                <span>{adv}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Services */}
+        <div className="rounded-xl p-4 border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.12)' }}>
+          <div className="flex items-center gap-2 mb-3">
+            <Briefcase className="w-3.5 h-3.5 text-sky-400" />
+            <span className="text-xs font-bold text-sky-300 uppercase tracking-wider">Services & Initiatives</span>
+          </div>
+          <div className="space-y-2">
+            {[
+              { title: 'Tunis Bourse Academy', desc: "Portail d'initiation à la Bourse pour nouveaux investisseurs", link: 'https://tunis-stockexchange.com/bourse-academy' },
+              { title: 'Tunis Bourse Challenge', desc: 'Simulateur boursier en ligne — apprenez à investir sans risque', link: 'https://tunis-stockexchange.com/bourse-challenge' },
+              { title: "Compte Épargne Actions (CEA)", desc: 'Épargne fiscalement avantageuse investie en actions tunisiennes', link: 'https://tunis-stockexchange.com/cea' },
+              { title: 'Reporting ESG', desc: 'Suivi de la gouvernance et durabilité des sociétés cotées', link: 'https://tunis-stockexchange.com' },
+            ].map((s) => (
+              <a key={s.title} href={s.link} target="_blank" rel="noopener noreferrer"
+                className="flex items-start gap-3 rounded-lg p-2.5 border hover:bg-white/5 transition-colors group"
+                style={{ borderColor: 'rgba(100,180,255,0.08)' }}>
+                <BookOpen className="w-3.5 h-3.5 text-amber-400 mt-0.5 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-white text-[11px] font-semibold group-hover:text-amber-300 transition-colors">{s.title}</p>
+                  <p className="text-blue-300/55 text-[10px] mt-0.5">{s.desc}</p>
+                </div>
+                <ExternalLink className="w-3 h-3 text-blue-300/30 group-hover:text-blue-300/70 ml-auto mt-0.5 shrink-0 transition-colors" />
+              </a>
+            ))}
+          </div>
+        </div>
+
+        {/* Latest News */}
+        <div className="rounded-xl p-4 border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.12)' }}>
+          <div className="flex items-center gap-2 mb-3">
+            <Newspaper className="w-3.5 h-3.5 text-blue-400" />
+            <span className="text-xs font-bold text-blue-300 uppercase tracking-wider">Actualités Récentes</span>
+          </div>
+          <div className="space-y-1.5">
+            {[
+              { date: '11 Juin 2026', title: 'Renouvellement de la triple certification ISO de la Bourse de Tunis', link: 'https://tunis-stockexchange.com/node/90723' },
+              { date: '9 Juin 2026', title: 'Bourse du Coeur 3ème édition — collecte solidaire', link: 'https://tunis-stockexchange.com/node/90685' },
+              { date: '29 Mai 2026', title: 'Clôture de la 13ème édition du Challenge Myinvestia', link: 'https://tunis-stockexchange.com/node/90579' },
+              { date: '18 Mai 2026', title: 'Revenus des sociétés cotées au 31 mars 2026', link: 'https://tunis-stockexchange.com/node/90434' },
+            ].map((n) => (
+              <a key={n.link} href={n.link} target="_blank" rel="noopener noreferrer"
+                className="flex items-start gap-2 group hover:bg-white/5 rounded-lg p-2 -mx-2 transition-colors">
+                <span className="text-[10px] text-blue-300/50 mt-0.5 shrink-0 w-20">{n.date}</span>
+                <span className="text-white/80 text-[11px] group-hover:text-white transition-colors leading-relaxed">{n.title}</span>
+              </a>
+            ))}
+          </div>
+          <a href="https://tunis-stockexchange.com/actualites-bourse" target="_blank" rel="noopener noreferrer"
+            className="mt-3 flex items-center gap-1 text-[11px] text-amber-400 hover:text-amber-300 font-semibold">
+            Toutes les actualités <ExternalLink className="w-3 h-3" />
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  // Generic fallback
+  return (
+    <div className="p-5">
+      <div className="flex items-center gap-2 mb-4">
+        <BookOpen className="w-4 h-4 text-amber-400" />
+        <span className="text-sm font-bold text-white">About this Institution</span>
+      </div>
+      <div className="rounded-xl p-6 border text-center" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.12)' }}>
+        <BookOpen className="w-8 h-8 text-blue-300/20 mx-auto mb-2" />
+        <p className="text-blue-300/60 text-sm">Institutional profile information will appear here.</p>
+        <p className="text-blue-300/40 text-[11px] mt-1">Moderators can add details via Announcements.</p>
+      </div>
     </div>
   );
 }
@@ -262,7 +350,7 @@ function AnnouncementsTab({ circleId, isAdmin, isModerator, user }) {
 }
 
 const INST_TABS = [
-  { id: 'market',        label: 'Market',        Icon: BarChart2 },
+  { id: 'info',          label: 'Info',           Icon: BookOpen },
   { id: 'announcements', label: 'Announcements',  Icon: Megaphone },
   { id: 'discussion',    label: 'Discussion',     Icon: LayoutList },
   { id: 'feed',          label: 'Feed',           Icon: Newspaper },
@@ -277,7 +365,7 @@ export default function InstitutionalCircleLayout({
   newQuestion, setNewQuestion, showQuestionForm, setShowQuestionForm, createQuestion,
   allMemberIds,
 }) {
-  const [activeTab, setActiveTab] = useState('market');
+  const [activeTab, setActiveTab] = useState('info');
 
   // ── Fetch real market data from entity (updated daily via automation) ──
   const { data: marketData = [] } = useQuery({
@@ -351,7 +439,7 @@ export default function InstitutionalCircleLayout({
           exit={{ opacity: 0, y: -6 }}
           transition={{ duration: 0.18 }}
         >
-          {activeTab === 'market' && <MarketUpdatesTab circleId={circleId} marketData={marketData} />}
+          {activeTab === 'info' && <InfoTab circle={circle} />}
 
           {activeTab === 'announcements' && (
             <AnnouncementsTab
