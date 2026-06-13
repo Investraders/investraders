@@ -4,8 +4,9 @@ import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { X, Link2, Check, Search, UserPlus, Copy } from 'lucide-react';
+import { X, Link2, Check, Search, UserPlus, Copy, Upload } from 'lucide-react';
 import { getAppUrl } from '@/lib/app-url';
+import BulkInviteModal from '@/components/circles/BulkInviteModal';
 
 function generateToken() {
   return Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
@@ -18,6 +19,7 @@ export default function InviteToCircleModal({ circle, onClose }) {
   const [copiedLink, setCopiedLink] = useState(false);
   const [inviteLink, setInviteLink] = useState(null);
   const [sentTo, setSentTo] = useState([]); // user IDs already invited this session
+  const [showBulkInvite, setShowBulkInvite] = useState(false);
 
   // Fetch accepted connections
   const { data: sentConns = [] } = useQuery({
@@ -108,6 +110,14 @@ export default function InviteToCircleModal({ circle, onClose }) {
   };
 
   return (
+    <>
+    <BulkInviteModal
+      open={showBulkInvite}
+      onClose={() => setShowBulkInvite(false)}
+      circleId={circle.id}
+      circleName={circle.name}
+      currentUser={user}
+    />
     <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" onClick={onClose}>
       <div
         className="bg-card rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
@@ -125,6 +135,14 @@ export default function InviteToCircleModal({ circle, onClose }) {
         </div>
 
         <div className="p-5 space-y-4">
+          {/* Bulk invite */}
+          <button
+            onClick={() => setShowBulkInvite(true)}
+            className="w-full flex items-center justify-center gap-2 border border-dashed border-primary/50 text-primary text-sm font-medium rounded-xl py-2.5 hover:bg-primary/5 transition-colors"
+          >
+            <Upload className="w-4 h-4" /> Bulk invite via CSV / email list
+          </button>
+
           {/* Invite link section */}
           <div className="border rounded-xl p-3 bg-muted/30 space-y-2">
             <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
@@ -209,5 +227,6 @@ export default function InviteToCircleModal({ circle, onClose }) {
         </div>
       </div>
     </div>
+    </>
   );
 }

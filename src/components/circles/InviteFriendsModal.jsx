@@ -4,11 +4,13 @@ import { base44 } from '@/api/base44Client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Check } from 'lucide-react';
+import { Search, Check, Upload } from 'lucide-react';
+import BulkInviteModal from '@/components/circles/BulkInviteModal';
 
 export default function InviteFriendsModal({ open, onClose, circleId, circleName, currentUser }) {
   const [search, setSearch] = useState('');
   const [invited, setInvited] = useState(new Set());
+  const [showBulkInvite, setShowBulkInvite] = useState(false);
 
   const { data: users = [] } = useQuery({
     queryKey: ['users-for-invite'],
@@ -39,13 +41,28 @@ export default function InviteFriendsModal({ open, onClose, circleId, circleName
   };
 
   return (
+    <>
+    <BulkInviteModal
+      open={showBulkInvite}
+      onClose={() => setShowBulkInvite(false)}
+      circleId={circleId}
+      circleName={circleName}
+      currentUser={currentUser}
+    />
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-md w-full rounded-2xl p-6">
         <DialogHeader>
           <DialogTitle className="text-center text-lg font-semibold text-gray-700">Invite friends</DialogTitle>
         </DialogHeader>
 
-        <div className="relative mt-2 mb-4">
+        <button
+          onClick={() => setShowBulkInvite(true)}
+          className="w-full flex items-center justify-center gap-2 border border-dashed border-primary/50 text-primary text-sm font-medium rounded-xl py-2.5 mb-4 hover:bg-primary/5 transition-colors"
+        >
+          <Upload className="w-4 h-4" /> Bulk invite via CSV / email list
+        </button>
+
+        <div className="relative mb-4">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Search"
@@ -89,5 +106,6 @@ export default function InviteFriendsModal({ open, onClose, circleId, circleName
         </Button>
       </DialogContent>
     </Dialog>
+    </>
   );
 }
