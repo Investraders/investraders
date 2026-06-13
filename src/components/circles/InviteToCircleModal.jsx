@@ -18,7 +18,7 @@ export default function InviteToCircleModal({ circle, onClose }) {
   const [search, setSearch] = useState('');
   const [copiedLink, setCopiedLink] = useState(false);
   const [inviteLink, setInviteLink] = useState(null);
-  const [sentTo, setSentTo] = useState([]); // user IDs already invited this session
+  const [sentTo, setSentTo] = useState([]);
   const [showBulkInvite, setShowBulkInvite] = useState(false);
 
   // Fetch accepted connections
@@ -215,7 +215,7 @@ export default function InviteToCircleModal({ circle, onClose }) {
                           disabled={alreadySent || sendInvite.isPending}
                           onClick={() => sendInvite.mutate({ inviteeId: u.id, inviteeName: u.full_name })}
                         >
-                          {alreadySent ? <><Check className="w-3 h-3 mr-1" /> Sent</> : 'Invite'}
+                          {alreadySent ? <span className="flex items-center gap-1"><Check className="w-3 h-3" /> Sent</span> : 'Invite'}
                         </Button>
                       </div>
                     );
