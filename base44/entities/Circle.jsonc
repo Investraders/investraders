@@ -14,15 +14,14 @@
     "category": {
       "type": "string",
       "enum": [
-        "chamber_of_commerce",
-        "stock_market",
-        "university",
         "institution",
-        "small_business",
-        "individual",
-        "topics"
+        "individual"
       ],
-      "default": "topics"
+      "default": "individual"
+    },
+    "website_url": {
+      "type": "string",
+      "description": "Official website URL (required for Institution circles)"
     },
     "tags": {
       "type": "array",

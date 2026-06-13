@@ -12,13 +12,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { motion } from 'framer-motion';
 
 const CATEGORY_COLORS = {
-  chamber_of_commerce: 'bg-amber-100 text-amber-800',
-  stock_market: 'bg-green-100 text-green-700',
-  university: 'bg-purple-100 text-purple-700',
-  institution: 'bg-cyan-100 text-cyan-700',
-  small_business: 'bg-orange-100 text-orange-700',
+  institution: 'bg-amber-100 text-amber-800',
   individual: 'bg-blue-100 text-blue-700',
-  topics: 'bg-gray-100 text-gray-700',
 };
 
 export default function MyCircles() {
@@ -100,8 +95,8 @@ export default function MyCircles() {
                       {circle.description || 'No description'}
                     </p>
                     <div className="flex flex-wrap items-center gap-2">
-                      <Badge className={`capitalize ${CATEGORY_COLORS[circle.category] || CATEGORY_COLORS.topics}`}>
-                        {circle.category?.replace(/_/g, ' ') || 'Topics'}
+                      <Badge className={`capitalize ${CATEGORY_COLORS[circle.category] || 'bg-gray-100 text-gray-700'}`}>
+                        {circle.category?.replace(/_/g, ' ') || 'Individual'}
                       </Badge>
                       {(circle.tags || []).map((tag) => (
                         <TagBadge key={tag} tag={tag} />
