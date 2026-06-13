@@ -102,26 +102,6 @@ function InfoTab({ circle }) {
           </p>
         </div>
 
-        {/* Vision */}
-        <div className="rounded-xl p-4 border" style={{ background: 'rgba(14,165,233,0.06)', borderColor: 'rgba(14,165,233,0.18)' }}>
-          <div className="flex items-center gap-2 mb-2">
-            <Eye className="w-3.5 h-3.5 text-sky-400" />
-            <span className="text-xs font-bold text-sky-300 uppercase tracking-wider">Vision & Objectifs</span>
-          </div>
-          <ul className="text-white/80 text-sm space-y-1.5 leading-relaxed">
-            {[
-              'Démocratiser l\'accès à l\'investissement boursier pour tous les Tunisiens',
-              'Renforcer la transparence et la confiance dans le marché financier',
-              'Attirer les investisseurs institutionnels locaux et étrangers',
-              'Promouvoir la gouvernance ESG des sociétés cotées',
-            ].map((v, i) => (
-              <li key={i} className="flex items-start gap-2">
-                <span className="text-amber-400 mt-0.5 shrink-0">•</span>{v}
-              </li>
-            ))}
-          </ul>
-        </div>
-
         {/* Markets */}
         <div className="rounded-xl p-4 border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.12)' }}>
           <div className="flex items-center gap-2 mb-3">
@@ -145,28 +125,6 @@ function InfoTab({ circle }) {
           </div>
         </div>
 
-        {/* Investor Benefits */}
-        <div className="rounded-xl p-4 border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.12)' }}>
-          <div className="flex items-center gap-2 mb-3">
-            <Star className="w-3.5 h-3.5 text-amber-400" />
-            <span className="text-xs font-bold text-amber-300 uppercase tracking-wider">Avantages Investisseur</span>
-          </div>
-          <ul className="text-white/80 text-sm space-y-2">
-            {[
-              'Placements liquides et rémunérateurs sur le long terme',
-              "Exonération d'impôt sur les plus-values (sous conditions de durée)",
-              "Dégrèvement fiscal via le Compte d'Épargne en Actions (CEA)",
-              'Statut d\'actionnaire et copropriétaire de sociétés cotées',
-              'Accès à une information financière réglementée et transparente',
-            ].map((adv, i) => (
-              <li key={i} className="flex items-start gap-2">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" />
-                <span>{adv}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
         {/* Services */}
         <div className="rounded-xl p-4 border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.12)' }}>
           <div className="flex items-center gap-2 mb-3">
@@ -177,8 +135,10 @@ function InfoTab({ circle }) {
             {[
               { title: 'Tunis Bourse Academy', desc: "Portail d'initiation à la Bourse pour nouveaux investisseurs", link: 'https://tunis-stockexchange.com/bourse-academy' },
               { title: 'Tunis Bourse Challenge', desc: 'Simulateur boursier en ligne — apprenez à investir sans risque', link: 'https://tunis-stockexchange.com/bourse-challenge' },
-              { title: "Compte Épargne Actions (CEA)", desc: 'Épargne fiscalement avantageuse investie en actions tunisiennes', link: 'https://tunis-stockexchange.com/cea' },
+              { title: 'Compte Épargne Actions (CEA)', desc: 'Épargne fiscalement avantageuse investie en actions tunisiennes', link: 'https://tunis-stockexchange.com/cea' },
               { title: 'Reporting ESG', desc: 'Suivi de la gouvernance et durabilité des sociétés cotées', link: 'https://tunis-stockexchange.com' },
+              { title: 'Guide de l\'investisseur', desc: 'Familiarisez-vous avec les mécanismes boursiers', link: 'https://tunis-stockexchange.com/investir-en-bourse' },
+              { title: 'S\'introduire en Bourse', desc: 'Guide complet du parcours d\'introduction en Bourse', link: 'https://tunis-stockexchange.com/introduire-bourse' },
             ].map((s) => (
               <a key={s.title} href={s.link} target="_blank" rel="noopener noreferrer"
                 className="flex items-start gap-3 rounded-lg p-2.5 border hover:bg-white/5 transition-colors group"
@@ -194,18 +154,92 @@ function InfoTab({ circle }) {
           </div>
         </div>
 
-        {/* Latest News */}
+        {/* Latest Publications from companies */}
         <div className="rounded-xl p-4 border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.12)' }}>
           <div className="flex items-center gap-2 mb-3">
             <Newspaper className="w-3.5 h-3.5 text-blue-400" />
+            <span className="text-xs font-bold text-blue-300 uppercase tracking-wider">Publications des Sociétés</span>
+          </div>
+          <div className="space-y-1.5">
+            {[
+              { date: '12/06/2026', title: 'ATELIER MEUBLE INTERIEURS — Etats Financiers Annuels Consolidés du 31/12/2025', link: 'https://tunis-stockexchange.com/node/90747' },
+              { date: '12/06/2026', title: 'ATELIER MEUBLE INTERIEURS — Etats Financiers Annuels Individuels du 31/12/2025', link: 'https://tunis-stockexchange.com/node/90746' },
+              { date: '12/06/2026', title: 'ATELIER MEUBLE INTERIEURS — Communiqué de presse', link: 'https://tunis-stockexchange.com/node/90745' },
+            ].map((n) => (
+              <a key={n.link} href={n.link} target="_blank" rel="noopener noreferrer"
+                className="flex items-start gap-2 group hover:bg-white/5 rounded-lg p-2 -mx-2 transition-colors">
+                <span className="text-[10px] text-blue-300/50 mt-0.5 shrink-0 w-20">{n.date}</span>
+                <span className="text-white/80 text-[11px] group-hover:text-white transition-colors leading-relaxed">{n.title}</span>
+              </a>
+            ))}
+          </div>
+          <a href="https://tunis-stockexchange.com/publications-societes" target="_blank" rel="noopener noreferrer"
+            className="mt-3 flex items-center gap-1 text-[11px] text-amber-400 hover:text-amber-300 font-semibold">
+            Toutes les publications <ExternalLink className="w-3 h-3" />
+          </a>
+        </div>
+
+        {/* Financial Calendar */}
+        <div className="rounded-xl p-4 border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.12)' }}>
+          <div className="flex items-center gap-2 mb-3">
+            <Star className="w-3.5 h-3.5 text-amber-400" />
+            <span className="text-xs font-bold text-amber-300 uppercase tracking-wider">Calendrier Financier</span>
+          </div>
+          <div className="space-y-1.5">
+            {[
+              { date: '13 Juil 2026', title: 'Détachement du Dividende — DELICE HOLDING', link: 'https://tunis-stockexchange.com/node/90742' },
+              { date: '28 Juil 2026', title: 'Détachement du Dividende — SOTRAPIL', link: 'https://tunis-stockexchange.com/node/90737' },
+              { date: '27 Août 2026', title: 'Détachement du Dividende — Industries Chimiques du Fluor', link: 'https://tunis-stockexchange.com/node/90634' },
+            ].map((n) => (
+              <a key={n.link} href={n.link} target="_blank" rel="noopener noreferrer"
+                className="flex items-start gap-2 group hover:bg-white/5 rounded-lg p-2 -mx-2 transition-colors">
+                <span className="text-[10px] text-amber-400/70 mt-0.5 shrink-0 w-20">{n.date}</span>
+                <span className="text-white/80 text-[11px] group-hover:text-white transition-colors leading-relaxed">{n.title}</span>
+              </a>
+            ))}
+          </div>
+          <a href="https://tunis-stockexchange.com/calendrier-financier" target="_blank" rel="noopener noreferrer"
+            className="mt-3 flex items-center gap-1 text-[11px] text-amber-400 hover:text-amber-300 font-semibold">
+            Tous les événements <ExternalLink className="w-3 h-3" />
+          </a>
+        </div>
+
+        {/* Avis & Décisions */}
+        <div className="rounded-xl p-4 border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.12)' }}>
+          <div className="flex items-center gap-2 mb-3">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="text-xs font-bold text-emerald-300 uppercase tracking-wider">Avis & Décisions</span>
+          </div>
+          <div className="space-y-1.5">
+            {[
+              { date: '11/06/2026', title: 'ASSURANCES MAGHREBIA — Cotation en Bourse suite à l\'augmentation de capital', link: 'https://tunis-stockexchange.com/node/90722' },
+              { date: '10/06/2026', title: 'Jours ouvrables — Nouvel an Hégire', link: 'https://tunis-stockexchange.com/node/90703' },
+              { date: '08/06/2026', title: 'SOTIPAPIER — Cotation en Bourse suite à la réduction du capital', link: 'https://tunis-stockexchange.com/node/90670' },
+            ].map((n) => (
+              <a key={n.link} href={n.link} target="_blank" rel="noopener noreferrer"
+                className="flex items-start gap-2 group hover:bg-white/5 rounded-lg p-2 -mx-2 transition-colors">
+                <span className="text-[10px] text-blue-300/50 mt-0.5 shrink-0 w-20">{n.date}</span>
+                <span className="text-white/80 text-[11px] group-hover:text-white transition-colors leading-relaxed">{n.title}</span>
+              </a>
+            ))}
+          </div>
+          <a href="https://tunis-stockexchange.com/avis-decisions" target="_blank" rel="noopener noreferrer"
+            className="mt-3 flex items-center gap-1 text-[11px] text-amber-400 hover:text-amber-300 font-semibold">
+            Tous les avis et décisions <ExternalLink className="w-3 h-3" />
+          </a>
+        </div>
+
+        {/* Latest News */}
+        <div className="rounded-xl p-4 border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.12)' }}>
+          <div className="flex items-center gap-2 mb-3">
+            <Megaphone className="w-3.5 h-3.5 text-blue-400" />
             <span className="text-xs font-bold text-blue-300 uppercase tracking-wider">Actualités Récentes</span>
           </div>
           <div className="space-y-1.5">
             {[
-              { date: '11 Juin 2026', title: 'Renouvellement de la triple certification ISO de la Bourse de Tunis', link: 'https://tunis-stockexchange.com/node/90723' },
-              { date: '9 Juin 2026', title: 'Bourse du Coeur 3ème édition — collecte solidaire', link: 'https://tunis-stockexchange.com/node/90685' },
-              { date: '29 Mai 2026', title: 'Clôture de la 13ème édition du Challenge Myinvestia', link: 'https://tunis-stockexchange.com/node/90579' },
-              { date: '18 Mai 2026', title: 'Revenus des sociétés cotées au 31 mars 2026', link: 'https://tunis-stockexchange.com/node/90434' },
+              { date: '11/06/2026', title: 'Renouvellement de la triple certification ISO de la Bourse de Tunis', link: 'https://tunis-stockexchange.com/node/90723' },
+              { date: '09/06/2026', title: 'Bourse du Coeur 3ème édition', link: 'https://tunis-stockexchange.com/node/90685' },
+              { date: '29/05/2026', title: 'Clôture de la 13ème édition du Challenge Myinvestia — ouverture de la 14ème', link: 'https://tunis-stockexchange.com/node/90579' },
             ].map((n) => (
               <a key={n.link} href={n.link} target="_blank" rel="noopener noreferrer"
                 className="flex items-start gap-2 group hover:bg-white/5 rounded-lg p-2 -mx-2 transition-colors">
@@ -230,6 +264,12 @@ function InfoTab({ circle }) {
         <BookOpen className="w-4 h-4 text-amber-400" />
         <span className="text-sm font-bold text-white">About this Institution</span>
       </div>
+      {circle?.website_url && (
+        <a href={circle.website_url} target="_blank" rel="noopener noreferrer"
+          className="flex items-center gap-2 mb-4 text-[11px] text-blue-300/60 hover:text-blue-200">
+          <Globe className="w-3.5 h-3.5" /> {circle.website_url}
+        </a>
+      )}
       <div className="rounded-xl p-6 border text-center" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.12)' }}>
         <BookOpen className="w-8 h-8 text-blue-300/20 mx-auto mb-2" />
         <p className="text-blue-300/60 text-sm">Institutional profile information will appear here.</p>
