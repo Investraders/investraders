@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Users, ArrowLeft, Landmark, User, Globe } from 'lucide-react';
+import { Users, ArrowLeft, Landmark, User, Globe, AlertCircle } from 'lucide-react';
 import TagPicker from '@/components/circles/TagPicker';
 import InviteFriendsModal from '@/components/circles/InviteFriendsModal';
 
@@ -42,6 +42,7 @@ export default function CreateCircle() {
   const [loading, setLoading] = useState(false);
   const [inviteModal, setInviteModal] = useState({ open: false, circleId: null, circleName: '' });
   const [currentUser, setCurrentUser] = useState(null);
+  const [error, setError] = useState('');
 
   const isInstitution = category === 'institution';
   const activeMeta = CATEGORIES.find(c => c.value === category);
@@ -50,20 +51,26 @@ export default function CreateCircle() {
     e.preventDefault();
     if (!name.trim()) return;
     if (isInstitution && !websiteUrl.trim()) return;
+    setError('');
     setLoading(true);
-    const user = await base44.auth.me();
-    const circle = await base44.entities.Circle.create({
-      name,
-      description,
-      category,
-      privacy,
-      tags,
-      member_ids: [user.id],
-      ...(isInstitution && websiteUrl.trim() ? { website_url: websiteUrl.trim() } : {}),
-    });
-    setCurrentUser(user);
-    setLoading(false);
-    setInviteModal({ open: true, circleId: circle.id, circleName: circle.name });
+    try {
+      const user = await base44.auth.me();
+      const circle = await base44.entities.Circle.create({
+        name,
+        description,
+        category,
+        privacy,
+        tags,
+        member_ids: [user.id],
+        ...(isInstitution && websiteUrl.trim() ? { website_url: websiteUrl.trim() } : {}),
+      });
+      setCurrentUser(user);
+      setInviteModal({ open: true, circleId: circle.id, circleName: circle.name });
+    } catch (err) {
+      setError(err?.message || 'Failed to create circle. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -179,6 +186,12 @@ export default function CreateCircle() {
               </RadioGroup>
             </div>
 
+            {error && (
+              <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                {error}
+              </div>
+            )}
             <Button
               type="submit"
               disabled={loading || !name.trim() || (isInstitution && !websiteUrl.trim())}
