@@ -224,7 +224,7 @@ export default function CircleDetail() {
     );
   }
 
-  const isInstitutional = ['chamber_of_commerce', 'institution', 'university', 'stock_market'].includes(circle?.category);
+  const isInstitutional = circle?.category === 'institution';
 
   // Shared institutional layout props
   const institutionalProps = {
