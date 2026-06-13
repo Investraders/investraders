@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   TrendingUp, TrendingDown, Megaphone, Newspaper, LayoutList,
   BarChart2, Globe, Users, Plus, Send, MessageCircle,
-  ChevronUp, ChevronDown, RefreshCw, Landmark, Sparkles,
-  Target, Eye, BookOpen, ShieldCheck, ExternalLink, Briefcase, Star
+  ChevronUp, ChevronDown, Landmark, Sparkles,
+  Target, Eye, BookOpen, Briefcase
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -76,207 +76,171 @@ function MarketTicker({ marketData }) {
 }
 
 function InfoTab({ circle }) {
-  const isBvmt = (circle?.name || '').toLowerCase().match(/tunis|bvmt|bourse/);
+  const websiteUrl = circle?.website_url;
+  const [info, setInfo] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  if (isBvmt) {
+  useEffect(() => {
+    if (!websiteUrl) return;
+    setLoading(true);
+    base44.integrations.Core.InvokeLLM({
+      prompt: `Visit the website at ${websiteUrl} and extract the following structured information about the organization. Return ONLY in the exact JSON format specified — no extra text.`,
+      add_context_from_internet: true,
+      response_json_schema: {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+          mission: { type: 'string' },
+          vision: { type: 'string' },
+          goals: { type: 'array', items: { type: 'string' } },
+          services: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                title: { type: 'string' },
+                description: { type: 'string' },
+              },
+            },
+          },
+          news: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                date: { type: 'string' },
+                title: { type: 'string' },
+              },
+            },
+          },
+        },
+      },
+    }).then((result) => {
+      setInfo(result);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, [websiteUrl]);
+
+  if (!websiteUrl && !circle?.description) {
     return (
-      <div className="p-5 space-y-4 overflow-y-auto max-h-[70vh]">
-        {/* Header */}
-        <div className="flex items-center gap-2 mb-1">
-          <Landmark className="w-4 h-4 text-amber-400" />
-          <span className="text-sm font-bold text-white">La Bourse de Tunis</span>
-          <a href="https://tunis-stockexchange.com" target="_blank" rel="noopener noreferrer"
-            className="ml-auto flex items-center gap-1 text-[10px] text-blue-300/60 hover:text-blue-200">
-            <ExternalLink className="w-3 h-3" /> tunis-stockexchange.com
-          </a>
-        </div>
-
-        {/* Mission */}
-        <div className="rounded-xl p-4 border" style={{ background: 'rgba(245,158,11,0.06)', borderColor: 'rgba(245,158,11,0.2)' }}>
-          <div className="flex items-center gap-2 mb-2">
-            <Target className="w-3.5 h-3.5 text-amber-400" />
-            <span className="text-xs font-bold text-amber-300 uppercase tracking-wider">Mission</span>
-          </div>
-          <p className="text-white/85 text-sm leading-relaxed">
-            La Bourse de Tunis est le marché officiel des valeurs mobilières en Tunisie. Elle organise et développe le marché financier tunisien, assure la liquidité des titres cotés et contribue au financement de l&apos;économie nationale. Triple certifiée ISO, elle s&apos;engage pour la transparence et l&apos;excellence.
-          </p>
-        </div>
-
-        {/* Markets */}
-        <div className="rounded-xl p-4 border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.12)' }}>
-          <div className="flex items-center gap-2 mb-3">
-            <BarChart2 className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="text-xs font-bold text-emerald-300 uppercase tracking-wider">Marchés</span>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            {[
-              { name: 'Marché Principal', desc: 'Grandes capitalisations cotées' },
-              { name: 'Marché Alternatif', desc: 'PME et sociétés en croissance' },
-              { name: 'Marché Obligataire', desc: 'Obligations et titres de créance' },
-              { name: 'Sukuk', desc: 'Finance islamique certifiée' },
-              { name: 'Fonds (OPCVM)', desc: "Fonds d'investissement collectifs" },
-              { name: 'Marché de Blocs', desc: 'Transactions institutionnelles' },
-            ].map((m) => (
-              <div key={m.name} className="rounded-lg p-2.5 border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.08)' }}>
-                <p className="text-white text-[11px] font-semibold">{m.name}</p>
-                <p className="text-blue-300/55 text-[10px] mt-0.5">{m.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Services */}
-        <div className="rounded-xl p-4 border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.12)' }}>
-          <div className="flex items-center gap-2 mb-3">
-            <Briefcase className="w-3.5 h-3.5 text-sky-400" />
-            <span className="text-xs font-bold text-sky-300 uppercase tracking-wider">Services & Initiatives</span>
-          </div>
-          <div className="space-y-2">
-            {[
-              { title: 'Tunis Bourse Academy', desc: "Portail d'initiation à la Bourse pour nouveaux investisseurs", link: 'https://tunis-stockexchange.com/bourse-academy' },
-              { title: 'Tunis Bourse Challenge', desc: 'Simulateur boursier en ligne — apprenez à investir sans risque', link: 'https://tunis-stockexchange.com/bourse-challenge' },
-              { title: 'Compte Épargne Actions (CEA)', desc: 'Épargne fiscalement avantageuse investie en actions tunisiennes', link: 'https://tunis-stockexchange.com/cea' },
-              { title: 'Reporting ESG', desc: 'Suivi de la gouvernance et durabilité des sociétés cotées', link: 'https://tunis-stockexchange.com' },
-              { title: 'Guide de l\'investisseur', desc: 'Familiarisez-vous avec les mécanismes boursiers', link: 'https://tunis-stockexchange.com/investir-en-bourse' },
-              { title: 'S\'introduire en Bourse', desc: 'Guide complet du parcours d\'introduction en Bourse', link: 'https://tunis-stockexchange.com/introduire-bourse' },
-            ].map((s) => (
-              <a key={s.title} href={s.link} target="_blank" rel="noopener noreferrer"
-                className="flex items-start gap-3 rounded-lg p-2.5 border hover:bg-white/5 transition-colors group"
-                style={{ borderColor: 'rgba(100,180,255,0.08)' }}>
-                <BookOpen className="w-3.5 h-3.5 text-amber-400 mt-0.5 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-white text-[11px] font-semibold group-hover:text-amber-300 transition-colors">{s.title}</p>
-                  <p className="text-blue-300/55 text-[10px] mt-0.5">{s.desc}</p>
-                </div>
-                <ExternalLink className="w-3 h-3 text-blue-300/30 group-hover:text-blue-300/70 ml-auto mt-0.5 shrink-0 transition-colors" />
-              </a>
-            ))}
-          </div>
-        </div>
-
-        {/* Latest Publications from companies */}
-        <div className="rounded-xl p-4 border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.12)' }}>
-          <div className="flex items-center gap-2 mb-3">
-            <Newspaper className="w-3.5 h-3.5 text-blue-400" />
-            <span className="text-xs font-bold text-blue-300 uppercase tracking-wider">Publications des Sociétés</span>
-          </div>
-          <div className="space-y-1.5">
-            {[
-              { date: '12/06/2026', title: 'ATELIER MEUBLE INTERIEURS — Etats Financiers Annuels Consolidés du 31/12/2025', link: 'https://tunis-stockexchange.com/node/90747' },
-              { date: '12/06/2026', title: 'ATELIER MEUBLE INTERIEURS — Etats Financiers Annuels Individuels du 31/12/2025', link: 'https://tunis-stockexchange.com/node/90746' },
-              { date: '12/06/2026', title: 'ATELIER MEUBLE INTERIEURS — Communiqué de presse', link: 'https://tunis-stockexchange.com/node/90745' },
-            ].map((n) => (
-              <a key={n.link} href={n.link} target="_blank" rel="noopener noreferrer"
-                className="flex items-start gap-2 group hover:bg-white/5 rounded-lg p-2 -mx-2 transition-colors">
-                <span className="text-[10px] text-blue-300/50 mt-0.5 shrink-0 w-20">{n.date}</span>
-                <span className="text-white/80 text-[11px] group-hover:text-white transition-colors leading-relaxed">{n.title}</span>
-              </a>
-            ))}
-          </div>
-          <a href="https://tunis-stockexchange.com/publications-societes" target="_blank" rel="noopener noreferrer"
-            className="mt-3 flex items-center gap-1 text-[11px] text-amber-400 hover:text-amber-300 font-semibold">
-            Toutes les publications <ExternalLink className="w-3 h-3" />
-          </a>
-        </div>
-
-        {/* Financial Calendar */}
-        <div className="rounded-xl p-4 border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.12)' }}>
-          <div className="flex items-center gap-2 mb-3">
-            <Star className="w-3.5 h-3.5 text-amber-400" />
-            <span className="text-xs font-bold text-amber-300 uppercase tracking-wider">Calendrier Financier</span>
-          </div>
-          <div className="space-y-1.5">
-            {[
-              { date: '13 Juil 2026', title: 'Détachement du Dividende — DELICE HOLDING', link: 'https://tunis-stockexchange.com/node/90742' },
-              { date: '28 Juil 2026', title: 'Détachement du Dividende — SOTRAPIL', link: 'https://tunis-stockexchange.com/node/90737' },
-              { date: '27 Août 2026', title: 'Détachement du Dividende — Industries Chimiques du Fluor', link: 'https://tunis-stockexchange.com/node/90634' },
-            ].map((n) => (
-              <a key={n.link} href={n.link} target="_blank" rel="noopener noreferrer"
-                className="flex items-start gap-2 group hover:bg-white/5 rounded-lg p-2 -mx-2 transition-colors">
-                <span className="text-[10px] text-amber-400/70 mt-0.5 shrink-0 w-20">{n.date}</span>
-                <span className="text-white/80 text-[11px] group-hover:text-white transition-colors leading-relaxed">{n.title}</span>
-              </a>
-            ))}
-          </div>
-          <a href="https://tunis-stockexchange.com/calendrier-financier" target="_blank" rel="noopener noreferrer"
-            className="mt-3 flex items-center gap-1 text-[11px] text-amber-400 hover:text-amber-300 font-semibold">
-            Tous les événements <ExternalLink className="w-3 h-3" />
-          </a>
-        </div>
-
-        {/* Avis & Décisions */}
-        <div className="rounded-xl p-4 border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.12)' }}>
-          <div className="flex items-center gap-2 mb-3">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="text-xs font-bold text-emerald-300 uppercase tracking-wider">Avis & Décisions</span>
-          </div>
-          <div className="space-y-1.5">
-            {[
-              { date: '11/06/2026', title: 'ASSURANCES MAGHREBIA — Cotation en Bourse suite à l\'augmentation de capital', link: 'https://tunis-stockexchange.com/node/90722' },
-              { date: '10/06/2026', title: 'Jours ouvrables — Nouvel an Hégire', link: 'https://tunis-stockexchange.com/node/90703' },
-              { date: '08/06/2026', title: 'SOTIPAPIER — Cotation en Bourse suite à la réduction du capital', link: 'https://tunis-stockexchange.com/node/90670' },
-            ].map((n) => (
-              <a key={n.link} href={n.link} target="_blank" rel="noopener noreferrer"
-                className="flex items-start gap-2 group hover:bg-white/5 rounded-lg p-2 -mx-2 transition-colors">
-                <span className="text-[10px] text-blue-300/50 mt-0.5 shrink-0 w-20">{n.date}</span>
-                <span className="text-white/80 text-[11px] group-hover:text-white transition-colors leading-relaxed">{n.title}</span>
-              </a>
-            ))}
-          </div>
-          <a href="https://tunis-stockexchange.com/avis-decisions" target="_blank" rel="noopener noreferrer"
-            className="mt-3 flex items-center gap-1 text-[11px] text-amber-400 hover:text-amber-300 font-semibold">
-            Tous les avis et décisions <ExternalLink className="w-3 h-3" />
-          </a>
-        </div>
-
-        {/* Latest News */}
-        <div className="rounded-xl p-4 border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.12)' }}>
-          <div className="flex items-center gap-2 mb-3">
-            <Megaphone className="w-3.5 h-3.5 text-blue-400" />
-            <span className="text-xs font-bold text-blue-300 uppercase tracking-wider">Actualités Récentes</span>
-          </div>
-          <div className="space-y-1.5">
-            {[
-              { date: '11/06/2026', title: 'Renouvellement de la triple certification ISO de la Bourse de Tunis', link: 'https://tunis-stockexchange.com/node/90723' },
-              { date: '09/06/2026', title: 'Bourse du Coeur 3ème édition', link: 'https://tunis-stockexchange.com/node/90685' },
-              { date: '29/05/2026', title: 'Clôture de la 13ème édition du Challenge Myinvestia — ouverture de la 14ème', link: 'https://tunis-stockexchange.com/node/90579' },
-            ].map((n) => (
-              <a key={n.link} href={n.link} target="_blank" rel="noopener noreferrer"
-                className="flex items-start gap-2 group hover:bg-white/5 rounded-lg p-2 -mx-2 transition-colors">
-                <span className="text-[10px] text-blue-300/50 mt-0.5 shrink-0 w-20">{n.date}</span>
-                <span className="text-white/80 text-[11px] group-hover:text-white transition-colors leading-relaxed">{n.title}</span>
-              </a>
-            ))}
-          </div>
-          <a href="https://tunis-stockexchange.com/actualites-bourse" target="_blank" rel="noopener noreferrer"
-            className="mt-3 flex items-center gap-1 text-[11px] text-amber-400 hover:text-amber-300 font-semibold">
-            Toutes les actualités <ExternalLink className="w-3 h-3" />
-          </a>
+      <div className="p-5">
+        <div className="rounded-xl p-6 border text-center" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.12)' }}>
+          <BookOpen className="w-8 h-8 text-blue-300/20 mx-auto mb-2" />
+          <p className="text-blue-300/60 text-sm">No website configured for this institution.</p>
         </div>
       </div>
     );
   }
 
-  // Generic fallback
+  if (loading) {
+    return (
+      <div className="p-5 space-y-4">
+        {[1,2,3].map(i => (
+          <div key={i} className="rounded-xl p-4 border animate-pulse" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.08)', height: 80 }} />
+        ))}
+        <p className="text-blue-300/40 text-xs text-center">Extracting institutional info...</p>
+      </div>
+    );
+  }
+
+  if (!info) {
+    return (
+      <div className="p-5">
+        <div className="rounded-xl p-6 border text-center" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.12)' }}>
+          <BookOpen className="w-8 h-8 text-blue-300/20 mx-auto mb-2" />
+          <p className="text-blue-300/60 text-sm">Institutional profile information will appear here.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-5">
-      <div className="flex items-center gap-2 mb-4">
-        <BookOpen className="w-4 h-4 text-amber-400" />
-        <span className="text-sm font-bold text-white">About this Institution</span>
+    <div className="p-5 space-y-4 overflow-y-auto max-h-[70vh]">
+      {/* Header */}
+      <div className="flex items-center gap-2 mb-1">
+        <Landmark className="w-4 h-4 text-amber-400" />
+        <span className="text-sm font-bold text-white">{info.name || circle?.name}</span>
       </div>
-      {circle?.website_url && (
-        <a href={circle.website_url} target="_blank" rel="noopener noreferrer"
-          className="flex items-center gap-2 mb-4 text-[11px] text-blue-300/60 hover:text-blue-200">
-          <Globe className="w-3.5 h-3.5" /> {circle.website_url}
-        </a>
-      )}
-      <div className="rounded-xl p-6 border text-center" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.12)' }}>
-        <BookOpen className="w-8 h-8 text-blue-300/20 mx-auto mb-2" />
-        <p className="text-blue-300/60 text-sm">Institutional profile information will appear here.</p>
-        <p className="text-blue-300/40 text-[11px] mt-1">Moderators can add details via Announcements.</p>
+
+        {/* Mission */}
+        {info.mission && (
+          <div className="rounded-xl p-4 border" style={{ background: 'rgba(245,158,11,0.06)', borderColor: 'rgba(245,158,11,0.2)' }}>
+            <div className="flex items-center gap-2 mb-2">
+              <Target className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-xs font-bold text-amber-300 uppercase tracking-wider">Mission</span>
+            </div>
+            <p className="text-white/85 text-sm leading-relaxed">{info.mission}</p>
+          </div>
+        )}
+
+        {/* Vision */}
+        {info.vision && (
+          <div className="rounded-xl p-4 border" style={{ background: 'rgba(14,165,233,0.06)', borderColor: 'rgba(14,165,233,0.18)' }}>
+            <div className="flex items-center gap-2 mb-2">
+              <Eye className="w-3.5 h-3.5 text-sky-400" />
+              <span className="text-xs font-bold text-sky-300 uppercase tracking-wider">Vision</span>
+            </div>
+            <p className="text-white/85 text-sm leading-relaxed">{info.vision}</p>
+          </div>
+        )}
+
+        {/* Goals */}
+        {info.goals?.length > 0 && (
+          <div className="rounded-xl p-4 border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.12)' }}>
+            <div className="flex items-center gap-2 mb-3">
+              <BarChart2 className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="text-xs font-bold text-emerald-300 uppercase tracking-wider">Goals & Objectives</span>
+            </div>
+            <ul className="space-y-2">
+              {info.goals.map((g, i) => (
+                <li key={i} className="flex items-start gap-2 text-white/80 text-sm">
+                  <span className="text-amber-400 mt-0.5 shrink-0">•</span>{g}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Services */}
+        {info.services?.length > 0 && (
+          <div className="rounded-xl p-4 border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.12)' }}>
+            <div className="flex items-center gap-2 mb-3">
+              <Briefcase className="w-3.5 h-3.5 text-sky-400" />
+              <span className="text-xs font-bold text-sky-300 uppercase tracking-wider">Services & Initiatives</span>
+            </div>
+            <div className="space-y-2">
+              {info.services.map((s, i) => (
+                <div key={i} className="flex items-start gap-3 rounded-lg p-2.5 border" style={{ borderColor: 'rgba(100,180,255,0.08)' }}>
+                  <BookOpen className="w-3.5 h-3.5 text-amber-400 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-white text-[11px] font-semibold">{s.title}</p>
+                    <p className="text-blue-300/55 text-[10px] mt-0.5">{s.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Latest News */}
+        {info.news?.length > 0 && (
+          <div className="rounded-xl p-4 border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.12)' }}>
+            <div className="flex items-center gap-2 mb-3">
+              <Newspaper className="w-3.5 h-3.5 text-blue-400" />
+              <span className="text-xs font-bold text-blue-300 uppercase tracking-wider">Latest News</span>
+            </div>
+            <div className="space-y-1.5">
+              {info.news.map((n, i) => (
+                <div key={i} className="flex items-start gap-2 rounded-lg p-2 -mx-2">
+                  {n.date && <span className="text-[10px] text-blue-300/50 mt-0.5 shrink-0 w-20">{n.date}</span>}
+                  <span className="text-white/80 text-[11px] leading-relaxed">{n.title}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
-    </div>
-  );
+    );
 }
 
 function AnnouncementsTab({ circleId, isAdmin, isModerator, user }) {
