@@ -82,7 +82,7 @@ export default function MyCircles() {
               >
                 <div className="flex items-start gap-3">
                   <div className="relative shrink-0">
-                    <CircleIcon category={circle.category} size="xl" />
+                    <CircleIcon category={circle.category} size="xl" websiteUrl={circle.website_url} />
                     <span className="absolute -bottom-1 -right-1 flex items-center gap-0.5 bg-primary text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
                       <Users className="w-2.5 h-2.5" />{Array.from(new Set([...(circle.member_ids || []), ...(circle.created_by_id ? [circle.created_by_id] : [])])).length}
                     </span>

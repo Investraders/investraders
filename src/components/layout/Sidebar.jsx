@@ -61,7 +61,7 @@ export default function Sidebar() {
               to={`/circle/${circle.id}`}
               className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-muted transition-colors group"
             >
-              <CircleIcon category={circle.category} size="md" />
+              <CircleIcon category={circle.category} size="md" websiteUrl={circle.website_url} />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground truncate flex items-center gap-1">
                   {circle.name}
