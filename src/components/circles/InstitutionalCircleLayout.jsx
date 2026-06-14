@@ -6,12 +6,13 @@ import {
   TrendingUp, TrendingDown, Megaphone, Newspaper, LayoutList,
   BarChart2, Globe, Users, Plus, Send, MessageCircle,
   ChevronUp, ChevronDown, Landmark, Sparkles,
-  Target, Eye, BookOpen, Briefcase, ShoppingBag, Tag, Star
+  Target, Eye, BookOpen, Briefcase, ShoppingBag
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import VerifiedBadge from '@/components/circles/VerifiedBadge';
+import ProductGallery from '@/components/circles/ProductGallery';
 import CircleFeed from '@/components/circles/CircleFeed';
 import CircleLeaderboard from '@/components/circles/CircleLeaderboard';
 import CircleEventCalendar from '@/components/circles/CircleEventCalendar';
@@ -109,6 +110,7 @@ Return ONLY in the exact JSON format specified — no extra text.`,
                 description: { type: 'string', description: 'Brief description of this product line' },
                 featured_items: { type: 'array', items: { type: 'string' }, description: 'Notable product names in this category' },
                 price_range: { type: 'string', description: 'Approx price range if known e.g. $40–$120' },
+                image_url: { type: 'string', description: 'A direct URL to a real product image from the website for this category (must be an actual image URL ending in .jpg .png .webp etc.)' },
               },
             },
           },
@@ -191,41 +193,14 @@ Return ONLY in the exact JSON format specified — no extra text.`,
         <p className="text-amber-300/70 text-sm italic px-1">"{info.tagline}"</p>
       )}
 
-      {/* ── PRODUCTS (shown first for product brands) ── */}
+      {/* ── PRODUCTS visual gallery (shown first for product brands) ── */}
       {info.is_product_brand && info.products?.length > 0 && (
-        <div className="rounded-xl p-4 border" style={{ background: 'rgba(251,146,60,0.07)', borderColor: 'rgba(251,146,60,0.25)' }}>
-          <div className="flex items-center gap-2 mb-3">
-            <ShoppingBag className="w-3.5 h-3.5 text-orange-400" />
-            <span className="text-xs font-bold text-orange-300 uppercase tracking-wider">Product Catalogue</span>
-          </div>
-          <div className="space-y-3">
-            {info.products.map((p, i) => (
-              <div key={i} className="rounded-lg p-3 border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(251,146,60,0.15)' }}>
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-2">
-                    <Tag className="w-3 h-3 text-amber-400 shrink-0" />
-                    <span className="text-white text-sm font-semibold">{p.category}</span>
-                  </div>
-                  {p.price_range && (
-                    <span className="text-[10px] text-emerald-400 font-bold border border-emerald-400/20 rounded-full px-2 py-0.5">{p.price_range}</span>
-                  )}
-                </div>
-                {p.description && (
-                  <p className="text-blue-300/60 text-[11px] ml-5 mb-1.5">{p.description}</p>
-                )}
-                {p.featured_items?.length > 0 && (
-                  <div className="ml-5 flex flex-wrap gap-1.5">
-                    {p.featured_items.map((item, j) => (
-                      <span key={j} className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border" style={{ background: 'rgba(245,158,11,0.08)', borderColor: 'rgba(245,158,11,0.2)', color: '#fcd34d' }}>
-                        <Star className="w-2 h-2" />{item}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
+        <ProductGallery
+          products={info.products}
+          websiteUrl={circle?.website_url}
+          brandName={info.name || circle?.name}
+          tagline={info.tagline}
+        />
       )}
 
       {/* Mission */}
