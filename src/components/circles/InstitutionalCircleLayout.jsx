@@ -76,7 +76,7 @@ function MarketTicker({ marketData }) {
   );
 }
 
-function InfoTab({ circle }) {
+function InfoTab({ circle, user }) {
   const websiteUrl = circle?.website_url;
   const [info, setInfo] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -200,6 +200,8 @@ Return ONLY in the exact JSON format specified — no extra text.`,
           websiteUrl={circle?.website_url}
           brandName={info.name || circle?.name}
           tagline={info.tagline}
+          circleId={circle?.id}
+          userId={user?.id}
         />
       )}
 
@@ -484,7 +486,7 @@ export default function InstitutionalCircleLayout({
           exit={{ opacity: 0, y: -6 }}
           transition={{ duration: 0.18 }}
         >
-          {activeTab === 'info' && <InfoTab circle={circle} />}
+          {activeTab === 'info' && <InfoTab circle={circle} user={user} />}
 
           {activeTab === 'announcements' && (
             <AnnouncementsTab

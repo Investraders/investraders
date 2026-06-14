@@ -1,11 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, Tag, Star, ChevronLeft, ChevronRight, X, ExternalLink } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { ShoppingBag, Tag, Star, ChevronLeft, ChevronRight, X, ExternalLink, Flame, BarChart2 } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
-function ProductCard({ product, websiteUrl, onClick }) {
+// Track a product click — fire-and-forget, no await needed in UI
+function trackClick(circleId, productCategory, brandName, userId) {
+  base44.entities.ProductClick.create({
+    circle_id: circleId,
+    product_category: productCategory,
+    brand_name: brandName,
+    user_id: userId || null,
+  }).catch(() => {});
+  base44.analytics.track({
+    eventName: 'product_gallery_click',
+    properties: { circle_id: circleId, product_category: productCategory },
+  });
+}
+
+function HotBadge() {
+  return (
+    <span className="inline-flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/30">
+      <Flame className="w-2.5 h-2.5" /> HOT
+    </span>
+  );
+}
+
+function ProductCard({ product, websiteUrl, onClick, clickCount, isHot }) {
   const [imgFailed, setImgFailed] = useState(false);
 
-  // Generate a deterministic gradient based on category name
   const gradients = [
     'linear-gradient(135deg,#1e3a5f,#0f1e3a)',
     'linear-gradient(135deg,#2d1b4e,#0f1e3a)',
@@ -22,7 +45,12 @@ function ProductCard({ product, websiteUrl, onClick }) {
       whileTap={{ scale: 0.98 }}
       onClick={() => onClick(product)}
       className="cursor-pointer rounded-xl overflow-hidden border flex flex-col"
-      style={{ background: bg, borderColor: 'rgba(251,146,60,0.2)', minHeight: 180 }}
+      style={{
+        background: bg,
+        borderColor: isHot ? 'rgba(251,146,60,0.5)' : 'rgba(251,146,60,0.2)',
+        minHeight: 180,
+        boxShadow: isHot ? '0 0 12px rgba(251,146,60,0.15)' : undefined,
+      }}
     >
       {/* Image area */}
       <div className="relative flex-1 flex items-center justify-center overflow-hidden" style={{ minHeight: 110 }}>
@@ -40,9 +68,17 @@ function ProductCard({ product, websiteUrl, onClick }) {
             <span className="text-orange-300/30 text-[10px] font-semibold uppercase tracking-wider">{product.category}</span>
           </div>
         )}
+        <div className="absolute top-2 left-2 flex items-center gap-1">
+          {isHot && <HotBadge />}
+        </div>
         {product.price_range && (
           <span className="absolute top-2 right-2 text-[10px] text-emerald-400 font-bold border border-emerald-400/30 rounded-full px-1.5 py-0.5 bg-black/40 backdrop-blur-sm">
             {product.price_range}
+          </span>
+        )}
+        {clickCount > 0 && (
+          <span className="absolute bottom-2 right-2 text-[9px] text-white/40 font-semibold">
+            {clickCount} view{clickCount !== 1 ? 's' : ''}
           </span>
         )}
       </div>
@@ -81,7 +117,6 @@ function ProductModal({ product, websiteUrl, onClose }) {
           className="rounded-2xl overflow-hidden shadow-2xl w-full max-w-sm"
           style={{ background: 'linear-gradient(160deg,#0a0f1e,#0f1e3a)', border: '1px solid rgba(251,146,60,0.3)' }}
         >
-          {/* Header image / placeholder */}
           <div className="relative h-48 flex items-center justify-center overflow-hidden" style={{ background: 'linear-gradient(135deg,#1e3a5f,#0f1e3a)' }}>
             {product.image_url ? (
               <img src={product.image_url} alt={product.category} className="w-full h-full object-cover" />
@@ -97,7 +132,6 @@ function ProductModal({ product, websiteUrl, onClose }) {
             <div className="absolute inset-0 bg-gradient-to-t from-[#0a0f1e] to-transparent" />
           </div>
 
-          {/* Content */}
           <div className="p-5 space-y-3">
             <div className="flex items-start justify-between gap-2">
               <h3 className="text-white font-bold text-lg leading-tight">{product.category}</h3>
@@ -148,12 +182,96 @@ function ProductModal({ product, websiteUrl, onClose }) {
   );
 }
 
-export default function ProductGallery({ products, websiteUrl, brandName, tagline }) {
+function ClickLeaderboard({ clickMap, products }) {
+  const [open, setOpen] = useState(false);
+
+  const ranked = useMemo(() => {
+    return [...products]
+      .map(p => ({ category: p.category, count: clickMap[p.category] || 0 }))
+      .filter(p => p.count > 0)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+  }, [clickMap, products]);
+
+  if (ranked.length === 0) return null;
+
+  const max = ranked[0]?.count || 1;
+
+  return (
+    <div className="border-t" style={{ borderColor: 'rgba(251,146,60,0.12)' }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="flex items-center gap-2 w-full px-4 py-2.5 text-left hover:bg-white/5 transition-colors"
+      >
+        <BarChart2 className="w-3.5 h-3.5 text-orange-400" />
+        <span className="text-xs font-bold text-orange-300 uppercase tracking-wider">Most Viewed Products</span>
+        <span className="ml-auto text-[10px] text-blue-300/40">{open ? '▲' : '▼'}</span>
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pb-4 space-y-2">
+              {ranked.map((item, i) => (
+                <div key={item.category} className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold text-amber-400/70 w-4 shrink-0">#{i + 1}</span>
+                  <span className="text-white/80 text-[11px] w-28 truncate shrink-0">{item.category}</span>
+                  <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${(item.count / max) * 100}%` }}
+                      transition={{ duration: 0.6, delay: i * 0.08 }}
+                      className="h-full rounded-full"
+                      style={{ background: i === 0 ? 'linear-gradient(90deg,#f59e0b,#fb923c)' : 'rgba(251,146,60,0.5)' }}
+                    />
+                  </div>
+                  <span className="text-[10px] text-orange-400/70 font-bold w-6 text-right shrink-0">{item.count}</span>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+export default function ProductGallery({ products, websiteUrl, brandName, tagline, circleId, userId }) {
   const [selected, setSelected] = useState(null);
   const [page, setPage] = useState(0);
   const PER_PAGE = 4;
   const totalPages = Math.ceil(products.length / PER_PAGE);
   const visible = products.slice(page * PER_PAGE, page * PER_PAGE + PER_PAGE);
+
+  // Fetch click counts for this circle
+  const { data: clicks = [] } = useQuery({
+    queryKey: ['product-clicks', circleId],
+    queryFn: () => base44.entities.ProductClick.filter({ circle_id: circleId }),
+    staleTime: 30 * 1000,
+    enabled: !!circleId,
+  });
+
+  // Build a map of category -> count
+  const clickMap = useMemo(() => {
+    const map = {};
+    clicks.forEach(c => {
+      map[c.product_category] = (map[c.product_category] || 0) + 1;
+    });
+    return map;
+  }, [clicks]);
+
+  const maxClicks = Math.max(...Object.values(clickMap), 0);
+  const hotThreshold = maxClicks > 0 ? maxClicks * 0.6 : Infinity;
+
+  function handleCardClick(product) {
+    if (circleId) trackClick(circleId, product.category, brandName, userId);
+    setSelected(product);
+  }
 
   return (
     <div className="rounded-xl border overflow-hidden" style={{ background: 'rgba(251,146,60,0.05)', borderColor: 'rgba(251,146,60,0.2)' }}>
@@ -176,16 +294,26 @@ export default function ProductGallery({ products, websiteUrl, brandName, taglin
         )}
       </div>
 
-      {/* Tagline */}
       {tagline && (
         <p className="px-4 pt-3 pb-0 text-amber-300/60 text-xs italic">"{tagline}"</p>
       )}
 
       {/* Grid */}
       <div className="p-4 grid grid-cols-2 gap-3">
-        {visible.map((product, i) => (
-          <ProductCard key={i} product={product} websiteUrl={websiteUrl} onClick={setSelected} />
-        ))}
+        {visible.map((product, i) => {
+          const count = clickMap[product.category] || 0;
+          const isHot = count >= hotThreshold && count > 0;
+          return (
+            <ProductCard
+              key={i}
+              product={product}
+              websiteUrl={websiteUrl}
+              onClick={handleCardClick}
+              clickCount={count}
+              isHot={isHot}
+            />
+          );
+        })}
       </div>
 
       {/* Pagination */}
@@ -208,6 +336,9 @@ export default function ProductGallery({ products, websiteUrl, brandName, taglin
           </button>
         </div>
       )}
+
+      {/* Click leaderboard */}
+      <ClickLeaderboard clickMap={clickMap} products={products} />
 
       {/* Product Detail Modal */}
       {selected && (
