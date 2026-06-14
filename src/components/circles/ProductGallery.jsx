@@ -116,33 +116,42 @@ function ProductModal({ product, websiteUrl, onClose, circleId, currentUser, bra
           animate={{ scale: 1, y: 0 }}
           exit={{ scale: 0.9, y: 20 }}
           onClick={(e) => e.stopPropagation()}
-          className="rounded-2xl overflow-hidden shadow-2xl w-full max-w-sm"
-          style={{ background: 'linear-gradient(160deg,#0a0f1e,#0f1e3a)', border: '1px solid rgba(251,146,60,0.3)' }}
+          className="rounded-2xl overflow-hidden shadow-2xl w-full max-w-sm flex flex-col"
+          style={{
+            background: 'linear-gradient(160deg,#0a0f1e,#0f1e3a)',
+            border: '1px solid rgba(251,146,60,0.3)',
+            maxHeight: '90vh',
+          }}
         >
-          <div className="relative h-48 flex items-center justify-center overflow-hidden" style={{ background: 'linear-gradient(135deg,#1e3a5f,#0f1e3a)' }}>
+          {/* Header with close button */}
+          <div className="flex items-center justify-between px-4 py-3 border-b shrink-0" style={{ borderColor: 'rgba(251,146,60,0.15)' }}>
+            <span className="text-white font-bold text-base truncate pr-2">{product.category}</span>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors shrink-0"
+              style={{ border: '1px solid rgba(255,255,255,0.15)' }}
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="relative h-40 flex items-center justify-center overflow-hidden shrink-0" style={{ background: 'linear-gradient(135deg,#1e3a5f,#0f1e3a)' }}>
             {product.image_url ? (
               <img src={product.image_url} alt={product.category} className="w-full h-full object-cover" />
             ) : (
               <ShoppingBag className="w-16 h-16 text-orange-400/30" />
             )}
-            <button
-              onClick={onClose}
-              className="absolute top-3 right-3 w-7 h-7 rounded-full bg-black/50 flex items-center justify-center text-white/70 hover:text-white"
-            >
-              <X className="w-4 h-4" />
-            </button>
             <div className="absolute inset-0 bg-gradient-to-t from-[#0a0f1e] to-transparent" />
           </div>
 
-          <div className="p-5 space-y-3">
-            <div className="flex items-start justify-between gap-2">
-              <h3 className="text-white font-bold text-lg leading-tight">{product.category}</h3>
-              {product.price_range && (
-                <span className="shrink-0 text-emerald-400 font-bold text-sm border border-emerald-400/30 rounded-full px-3 py-1 bg-emerald-400/10">
+          <div className="p-5 space-y-3 overflow-y-auto flex-1">
+            {product.price_range && (
+              <div>
+                <span className="text-emerald-400 font-bold text-sm border border-emerald-400/30 rounded-full px-3 py-1 bg-emerald-400/10">
                   {product.price_range}
                 </span>
-              )}
-            </div>
+              </div>
+            )}
 
             {product.description && (
               <p className="text-blue-300/70 text-sm leading-relaxed">{product.description}</p>
