@@ -244,9 +244,18 @@ function ClickLeaderboard({ clickMap, products }) {
 export default function ProductGallery({ products, websiteUrl, brandName, tagline, circleId, userId }) {
   const [selected, setSelected] = useState(null);
   const [page, setPage] = useState(0);
+  const [activeFilter, setActiveFilter] = useState('All');
   const PER_PAGE = 4;
-  const totalPages = Math.ceil(products.length / PER_PAGE);
-  const visible = products.slice(page * PER_PAGE, page * PER_PAGE + PER_PAGE);
+
+  const categories = useMemo(() => ['All', ...Array.from(new Set(products.map(p => p.category).filter(Boolean)))], [products]);
+
+  const filtered = useMemo(() =>
+    activeFilter === 'All' ? products : products.filter(p => p.category === activeFilter),
+    [products, activeFilter]
+  );
+
+  const totalPages = Math.ceil(filtered.length / PER_PAGE);
+  const visible = filtered.slice(page * PER_PAGE, page * PER_PAGE + PER_PAGE);
 
   // Fetch click counts for this circle
   const { data: clicks = [] } = useQuery({
@@ -267,6 +276,11 @@ export default function ProductGallery({ products, websiteUrl, brandName, taglin
 
   const maxClicks = Math.max(...Object.values(clickMap), 0);
   const hotThreshold = maxClicks > 0 ? maxClicks * 0.6 : Infinity;
+
+  function handleFilterChange(cat) {
+    setActiveFilter(cat);
+    setPage(0);
+  }
 
   function handleCardClick(product) {
     if (circleId) trackClick(circleId, product.category, brandName, userId);
@@ -296,6 +310,25 @@ export default function ProductGallery({ products, websiteUrl, brandName, taglin
 
       {tagline && (
         <p className="px-4 pt-3 pb-0 text-amber-300/60 text-xs italic">"{tagline}"</p>
+      )}
+
+      {/* Category Filter */}
+      {categories.length > 2 && (
+        <div className="px-4 pt-3 pb-1 flex gap-2 overflow-x-auto scrollbar-none">
+          {categories.map(cat => (
+            <button
+              key={cat}
+              onClick={() => handleFilterChange(cat)}
+              className="shrink-0 text-[11px] font-semibold px-3 py-1 rounded-full border transition-all"
+              style={activeFilter === cat
+                ? { background: 'rgba(245,158,11,0.2)', borderColor: 'rgba(245,158,11,0.5)', color: '#fbbf24' }
+                : { background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.1)', color: 'rgba(147,197,253,0.6)' }
+              }
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
       )}
 
       {/* Grid */}
