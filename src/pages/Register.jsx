@@ -139,7 +139,7 @@ export default function Register() {
               <TrendingUp className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-3xl font-bold text-white mb-2">Investraders</h1>
-            <p className="text-white/80 text-sm mb-10">Make Money Meanwhile -</p>
+            <p className="text-white/80 text-sm mb-10">Make Money Meanwhile -3M</p>
             <div className="w-px h-8 bg-white/30 mx-auto mb-8" />
             <p className="text-white/90 font-medium mb-2">Already have an account?</p>
             <Link
