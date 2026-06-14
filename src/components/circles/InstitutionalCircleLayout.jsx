@@ -6,7 +6,7 @@ import {
   TrendingUp, TrendingDown, Megaphone, Newspaper, LayoutList,
   BarChart2, Globe, Users, Plus, Send, MessageCircle,
   ChevronUp, ChevronDown, Landmark, Sparkles,
-  Target, Eye, BookOpen, Briefcase
+  Target, Eye, BookOpen, Briefcase, ShoppingBag, Tag, Star
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -84,15 +84,34 @@ function InfoTab({ circle }) {
     if (!websiteUrl) return;
     setLoading(true);
     base44.integrations.Core.InvokeLLM({
-      prompt: `Visit the website at ${websiteUrl} and extract the following structured information about the organization. Return ONLY in the exact JSON format specified — no extra text.`,
+      prompt: `Visit the website at ${websiteUrl} and extract structured information about the organization.
+      
+IMPORTANT: First determine if this organization primarily SELLS PRODUCTS (e.g. sportswear, shoes, apparel, electronics, goods, retail merchandise). If yes, set is_product_brand=true and fill the products array with their main product categories and featured products. If they offer services instead (e.g. financial, consulting, education), set is_product_brand=false and fill services instead.
+
+Return ONLY in the exact JSON format specified — no extra text.`,
       add_context_from_internet: true,
       response_json_schema: {
         type: 'object',
         properties: {
           name: { type: 'string' },
+          is_product_brand: { type: 'boolean', description: 'true if org sells physical products/retail goods' },
+          tagline: { type: 'string', description: 'Brand slogan or tagline if any' },
           mission: { type: 'string' },
           vision: { type: 'string' },
           goals: { type: 'array', items: { type: 'string' } },
+          products: {
+            type: 'array',
+            description: 'Main product categories or featured products if this is a product brand',
+            items: {
+              type: 'object',
+              properties: {
+                category: { type: 'string', description: 'Product category name e.g. Running Shoes, Basketball Footwear, Shorts' },
+                description: { type: 'string', description: 'Brief description of this product line' },
+                featured_items: { type: 'array', items: { type: 'string' }, description: 'Notable product names in this category' },
+                price_range: { type: 'string', description: 'Approx price range if known e.g. $40–$120' },
+              },
+            },
+          },
           services: {
             type: 'array',
             items: {
@@ -160,87 +179,134 @@ function InfoTab({ circle }) {
       <div className="flex items-center gap-2 mb-1">
         <Landmark className="w-4 h-4 text-amber-400" />
         <span className="text-sm font-bold text-white">{info.name || circle?.name}</span>
+        {info.is_product_brand && (
+          <span className="ml-auto inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-400/15 text-orange-300 border border-orange-400/30">
+            <ShoppingBag className="w-2.5 h-2.5" /> Brand
+          </span>
+        )}
       </div>
 
-        {/* Mission */}
-        {info.mission && (
-          <div className="rounded-xl p-4 border" style={{ background: 'rgba(245,158,11,0.06)', borderColor: 'rgba(245,158,11,0.2)' }}>
-            <div className="flex items-center gap-2 mb-2">
-              <Target className="w-3.5 h-3.5 text-amber-400" />
-              <span className="text-xs font-bold text-amber-300 uppercase tracking-wider">Mission</span>
-            </div>
-            <p className="text-white/85 text-sm leading-relaxed">{info.mission}</p>
-          </div>
-        )}
+      {/* Tagline */}
+      {info.tagline && (
+        <p className="text-amber-300/70 text-sm italic px-1">"{info.tagline}"</p>
+      )}
 
-        {/* Vision */}
-        {info.vision && (
-          <div className="rounded-xl p-4 border" style={{ background: 'rgba(14,165,233,0.06)', borderColor: 'rgba(14,165,233,0.18)' }}>
-            <div className="flex items-center gap-2 mb-2">
-              <Eye className="w-3.5 h-3.5 text-sky-400" />
-              <span className="text-xs font-bold text-sky-300 uppercase tracking-wider">Vision</span>
-            </div>
-            <p className="text-white/85 text-sm leading-relaxed">{info.vision}</p>
+      {/* ── PRODUCTS (shown first for product brands) ── */}
+      {info.is_product_brand && info.products?.length > 0 && (
+        <div className="rounded-xl p-4 border" style={{ background: 'rgba(251,146,60,0.07)', borderColor: 'rgba(251,146,60,0.25)' }}>
+          <div className="flex items-center gap-2 mb-3">
+            <ShoppingBag className="w-3.5 h-3.5 text-orange-400" />
+            <span className="text-xs font-bold text-orange-300 uppercase tracking-wider">Product Catalogue</span>
           </div>
-        )}
-
-        {/* Goals */}
-        {info.goals?.length > 0 && (
-          <div className="rounded-xl p-4 border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.12)' }}>
-            <div className="flex items-center gap-2 mb-3">
-              <BarChart2 className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="text-xs font-bold text-emerald-300 uppercase tracking-wider">Goals & Objectives</span>
-            </div>
-            <ul className="space-y-2">
-              {info.goals.map((g, i) => (
-                <li key={i} className="flex items-start gap-2 text-white/80 text-sm">
-                  <span className="text-amber-400 mt-0.5 shrink-0">•</span>{g}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Services */}
-        {info.services?.length > 0 && (
-          <div className="rounded-xl p-4 border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.12)' }}>
-            <div className="flex items-center gap-2 mb-3">
-              <Briefcase className="w-3.5 h-3.5 text-sky-400" />
-              <span className="text-xs font-bold text-sky-300 uppercase tracking-wider">Services & Initiatives</span>
-            </div>
-            <div className="space-y-2">
-              {info.services.map((s, i) => (
-                <div key={i} className="flex items-start gap-3 rounded-lg p-2.5 border" style={{ borderColor: 'rgba(100,180,255,0.08)' }}>
-                  <BookOpen className="w-3.5 h-3.5 text-amber-400 mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-white text-[11px] font-semibold">{s.title}</p>
-                    <p className="text-blue-300/55 text-[10px] mt-0.5">{s.description}</p>
+          <div className="space-y-3">
+            {info.products.map((p, i) => (
+              <div key={i} className="rounded-lg p-3 border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(251,146,60,0.15)' }}>
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <Tag className="w-3 h-3 text-amber-400 shrink-0" />
+                    <span className="text-white text-sm font-semibold">{p.category}</span>
                   </div>
+                  {p.price_range && (
+                    <span className="text-[10px] text-emerald-400 font-bold border border-emerald-400/20 rounded-full px-2 py-0.5">{p.price_range}</span>
+                  )}
                 </div>
-              ))}
-            </div>
+                {p.description && (
+                  <p className="text-blue-300/60 text-[11px] ml-5 mb-1.5">{p.description}</p>
+                )}
+                {p.featured_items?.length > 0 && (
+                  <div className="ml-5 flex flex-wrap gap-1.5">
+                    {p.featured_items.map((item, j) => (
+                      <span key={j} className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border" style={{ background: 'rgba(245,158,11,0.08)', borderColor: 'rgba(245,158,11,0.2)', color: '#fcd34d' }}>
+                        <Star className="w-2 h-2" />{item}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Latest News */}
-        {info.news?.length > 0 && (
-          <div className="rounded-xl p-4 border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.12)' }}>
-            <div className="flex items-center gap-2 mb-3">
-              <Newspaper className="w-3.5 h-3.5 text-blue-400" />
-              <span className="text-xs font-bold text-blue-300 uppercase tracking-wider">Latest News</span>
-            </div>
-            <div className="space-y-1.5">
-              {info.news.map((n, i) => (
-                <div key={i} className="flex items-start gap-2 rounded-lg p-2 -mx-2">
-                  {n.date && <span className="text-[10px] text-blue-300/50 mt-0.5 shrink-0 w-20">{n.date}</span>}
-                  <span className="text-white/80 text-[11px] leading-relaxed">{n.title}</span>
-                </div>
-              ))}
-            </div>
+      {/* Mission */}
+      {info.mission && (
+        <div className="rounded-xl p-4 border" style={{ background: 'rgba(245,158,11,0.06)', borderColor: 'rgba(245,158,11,0.2)' }}>
+          <div className="flex items-center gap-2 mb-2">
+            <Target className="w-3.5 h-3.5 text-amber-400" />
+            <span className="text-xs font-bold text-amber-300 uppercase tracking-wider">Mission</span>
           </div>
-        )}
-      </div>
-    );
+          <p className="text-white/85 text-sm leading-relaxed">{info.mission}</p>
+        </div>
+      )}
+
+      {/* Vision */}
+      {info.vision && (
+        <div className="rounded-xl p-4 border" style={{ background: 'rgba(14,165,233,0.06)', borderColor: 'rgba(14,165,233,0.18)' }}>
+          <div className="flex items-center gap-2 mb-2">
+            <Eye className="w-3.5 h-3.5 text-sky-400" />
+            <span className="text-xs font-bold text-sky-300 uppercase tracking-wider">Vision</span>
+          </div>
+          <p className="text-white/85 text-sm leading-relaxed">{info.vision}</p>
+        </div>
+      )}
+
+      {/* Goals */}
+      {info.goals?.length > 0 && (
+        <div className="rounded-xl p-4 border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.12)' }}>
+          <div className="flex items-center gap-2 mb-3">
+            <BarChart2 className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="text-xs font-bold text-emerald-300 uppercase tracking-wider">Goals & Objectives</span>
+          </div>
+          <ul className="space-y-2">
+            {info.goals.map((g, i) => (
+              <li key={i} className="flex items-start gap-2 text-white/80 text-sm">
+                <span className="text-amber-400 mt-0.5 shrink-0">•</span>{g}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Services (only for non-product brands) */}
+      {!info.is_product_brand && info.services?.length > 0 && (
+        <div className="rounded-xl p-4 border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.12)' }}>
+          <div className="flex items-center gap-2 mb-3">
+            <Briefcase className="w-3.5 h-3.5 text-sky-400" />
+            <span className="text-xs font-bold text-sky-300 uppercase tracking-wider">Services & Initiatives</span>
+          </div>
+          <div className="space-y-2">
+            {info.services.map((s, i) => (
+              <div key={i} className="flex items-start gap-3 rounded-lg p-2.5 border" style={{ borderColor: 'rgba(100,180,255,0.08)' }}>
+                <BookOpen className="w-3.5 h-3.5 text-amber-400 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-white text-[11px] font-semibold">{s.title}</p>
+                  <p className="text-blue-300/55 text-[10px] mt-0.5">{s.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Latest News */}
+      {info.news?.length > 0 && (
+        <div className="rounded-xl p-4 border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(100,180,255,0.12)' }}>
+          <div className="flex items-center gap-2 mb-3">
+            <Newspaper className="w-3.5 h-3.5 text-blue-400" />
+            <span className="text-xs font-bold text-blue-300 uppercase tracking-wider">Latest News</span>
+          </div>
+          <div className="space-y-1.5">
+            {info.news.map((n, i) => (
+              <div key={i} className="flex items-start gap-2 rounded-lg p-2 -mx-2">
+                {n.date && <span className="text-[10px] text-blue-300/50 mt-0.5 shrink-0 w-20">{n.date}</span>}
+                <span className="text-white/80 text-[11px] leading-relaxed">{n.title}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function AnnouncementsTab({ circleId, isAdmin, isModerator, user }) {
