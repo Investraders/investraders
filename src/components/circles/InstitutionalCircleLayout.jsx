@@ -438,7 +438,7 @@ export default function InstitutionalCircleLayout({
               <VerifiedBadge label={circle.verified_label || 'Official'} size="sm" dark={true} />
             )}
             <span className="ml-auto inline-flex items-center gap-1 text-[10px] font-semibold text-sky-300/70 bg-sky-400/10 px-2 py-0.5 rounded-full border border-sky-400/15">
-              <Sparkles className="w-2.5 h-2.5" /> AI Finance
+              <Sparkles className="w-2.5 h-2.5" /> AI Analytics
             </span>
           </div>
           <h1 className="text-2xl font-bold text-white mb-1">{circle?.name}</h1>
