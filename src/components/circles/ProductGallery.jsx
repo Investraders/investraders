@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ShoppingBag, Tag, Star, ChevronLeft, ChevronRight, X, ExternalLink, Flame, BarChart2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import ProductSentiment from '@/components/circles/ProductSentiment';
+import SaveProductButton from '@/components/circles/SaveProductButton';
 
 // Track a product click — fire-and-forget, no await needed in UI
 function trackClick(circleId, productCategory, brandName, userId) {
@@ -98,7 +99,7 @@ function ProductCard({ product, websiteUrl, onClick, clickCount, isHot }) {
   );
 }
 
-function ProductModal({ product, websiteUrl, onClose, circleId, currentUser }) {
+function ProductModal({ product, websiteUrl, onClose, circleId, currentUser, brandName }) {
   if (!product) return null;
   return (
     <AnimatePresence>
@@ -164,18 +165,27 @@ function ProductModal({ product, websiteUrl, onClose, circleId, currentUser }) {
               </div>
             )}
 
-            {websiteUrl && (
-              <a
-                href={websiteUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 w-full mt-1 py-2.5 rounded-full text-sm font-semibold transition-colors"
-                style={{ background: 'rgba(245,158,11,0.15)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.3)' }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <ExternalLink className="w-4 h-4" /> Shop on Website
-              </a>
-            )}
+            <div className="flex gap-2">
+              {websiteUrl && (
+                <a
+                  href={websiteUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-full text-sm font-semibold transition-colors"
+                  style={{ background: 'rgba(245,158,11,0.15)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.3)' }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <ExternalLink className="w-4 h-4" /> Shop
+                </a>
+              )}
+              <SaveProductButton
+                userId={currentUser?.id}
+                circleId={circleId}
+                productCategory={product.category}
+                brandName={brandName}
+                priceRange={product.price_range}
+              />
+            </div>
 
             {/* Sentiment comments */}
             <div className="border-t pt-3" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
@@ -391,6 +401,7 @@ export default function ProductGallery({ products, websiteUrl, brandName, taglin
           onClose={() => setSelected(null)}
           circleId={circleId}
           currentUser={user || { id: userId }}
+          brandName={brandName}
         />
       )}
     </div>
