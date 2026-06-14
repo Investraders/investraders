@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { ShoppingBag, Tag, Star, ChevronLeft, ChevronRight, X, ExternalLink, Flame, BarChart2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import ProductSentiment from '@/components/circles/ProductSentiment';
 
 // Track a product click — fire-and-forget, no await needed in UI
 function trackClick(circleId, productCategory, brandName, userId) {
@@ -97,7 +98,7 @@ function ProductCard({ product, websiteUrl, onClick, clickCount, isHot }) {
   );
 }
 
-function ProductModal({ product, websiteUrl, onClose }) {
+function ProductModal({ product, websiteUrl, onClose, circleId, currentUser }) {
   if (!product) return null;
   return (
     <AnimatePresence>
@@ -175,6 +176,15 @@ function ProductModal({ product, websiteUrl, onClose }) {
                 <ExternalLink className="w-4 h-4" /> Shop on Website
               </a>
             )}
+
+            {/* Sentiment comments */}
+            <div className="border-t pt-3" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+              <ProductSentiment
+                circleId={circleId}
+                productCategory={product.category}
+                currentUser={currentUser}
+              />
+            </div>
           </div>
         </motion.div>
       </motion.div>
@@ -241,7 +251,7 @@ function ClickLeaderboard({ clickMap, products }) {
   );
 }
 
-export default function ProductGallery({ products, websiteUrl, brandName, tagline, circleId, userId }) {
+export default function ProductGallery({ products, websiteUrl, brandName, tagline, circleId, userId, user }) {
   const [selected, setSelected] = useState(null);
   const [page, setPage] = useState(0);
   const [activeFilter, setActiveFilter] = useState('All');
@@ -375,7 +385,13 @@ export default function ProductGallery({ products, websiteUrl, brandName, taglin
 
       {/* Product Detail Modal */}
       {selected && (
-        <ProductModal product={selected} websiteUrl={websiteUrl} onClose={() => setSelected(null)} />
+        <ProductModal
+          product={selected}
+          websiteUrl={websiteUrl}
+          onClose={() => setSelected(null)}
+          circleId={circleId}
+          currentUser={user || { id: userId }}
+        />
       )}
     </div>
   );

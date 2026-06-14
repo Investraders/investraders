@@ -202,6 +202,7 @@ Return ONLY in the exact JSON format specified — no extra text.`,
           tagline={info.tagline}
           circleId={circle?.id}
           userId={user?.id}
+          user={user}
         />
       )}
 
