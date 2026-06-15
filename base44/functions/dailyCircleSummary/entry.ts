@@ -3,6 +3,16 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+
+    // If called directly by a user (not via scheduled automation), require admin
+    const isAuthed = await base44.auth.isAuthenticated();
+    if (isAuthed) {
+      const user = await base44.auth.me();
+      if (!user || user.role !== 'admin') {
+        return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+      }
+    }
+
     const APP_URL = Deno.env.get('APP_URL') || 'https://investraders.base44.app';
 
     // This runs as a scheduled job — use service role for all data access

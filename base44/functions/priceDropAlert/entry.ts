@@ -11,6 +11,15 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
+    // If called directly by a user (not via scheduled automation), require admin
+    const isAuthed = await base44.auth.isAuthenticated();
+    if (isAuthed) {
+      const user = await base44.auth.me();
+      if (!user || user.role !== 'admin') {
+        return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+      }
+    }
+
     // Fetch all saved products and all institution circles
     const [savedProducts, circles] = await Promise.all([
       base44.asServiceRole.entities.SavedProduct.list(),

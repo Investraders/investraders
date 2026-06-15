@@ -4,6 +4,15 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
+    // If called directly by a user (not via scheduled automation), require admin
+    const isAuthed = await base44.auth.isAuthenticated();
+    if (isAuthed) {
+      const user = await base44.auth.me();
+      if (!user || user.role !== 'admin') {
+        return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+      }
+    }
+
     // Use service role to clean up expired stories
     const allStories = await base44.asServiceRole.entities.Story.list();
     const now = new Date();
