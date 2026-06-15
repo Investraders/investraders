@@ -27,9 +27,7 @@
     "create": {
       "$or": [
         {
-          "user_condition": {
-            "role": "user"
-          }
+          "data.user_id": "{{user.id}}"
         },
         {
           "user_condition": {
@@ -41,9 +39,7 @@
     "read": {
       "$or": [
         {
-          "user_condition": {
-            "role": "user"
-          }
+          "data.user_id": "{{user.id}}"
         },
         {
           "user_condition": {
