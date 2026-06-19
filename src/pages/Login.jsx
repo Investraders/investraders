@@ -27,7 +27,7 @@ export default function Login() {
     }
     try {
       await base44.auth.loginViaEmailPassword(email, password);
-      window.location.href = '/';
+      window.location.href = '/home';
     } catch (err) {
       setError(err.message || 'Login failed. Please check your credentials.');
     } finally {
@@ -36,7 +36,7 @@ export default function Login() {
   };
 
   const handleGoogleLogin = () => {
-    base44.auth.loginWithProvider('google', '/');
+    base44.auth.loginWithProvider('google', '/home');
   };
 
   return (

@@ -4,7 +4,7 @@ import { X, Home, PlusCircle, Users, MessageCircle, Bookmark, User, Globe, Shiel
 import { motion, AnimatePresence } from 'framer-motion';
 
 const shortcuts = [
-  { label: 'Home', icon: Home, path: '/', color: 'bg-blue-500' },
+  { label: 'Home', icon: Home, path: '/home', color: 'bg-blue-500' },
   { label: 'Create Circle', icon: PlusCircle, path: '/create-circle', color: 'bg-emerald-500' },
   { label: 'My Circles', icon: Users, path: '/my-circles', color: 'bg-purple-500' },
   { label: 'All Circles', icon: Globe, path: '/all-circles', color: 'bg-orange-500' },

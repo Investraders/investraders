@@ -51,7 +51,7 @@ export default function Register() {
   };
 
   const handleGoogleSignUp = () => {
-    base44.auth.loginWithProvider('google', '/');
+    base44.auth.loginWithProvider('google', '/home');
   };
 
   const handleStep1 = (e) => {
@@ -107,7 +107,7 @@ export default function Register() {
         business_type: businessType || undefined,
         interests
       });
-      window.location.href = '/';
+      window.location.href = '/home';
     } catch (err) {
       setError(err.message || 'Verification failed');
     } finally {

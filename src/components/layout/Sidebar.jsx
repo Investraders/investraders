@@ -7,7 +7,7 @@ import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 
 const NAV_ITEMS = [
-  { label: 'Home', icon: Home, path: '/' },
+  { label: 'Home', icon: Home, path: '/home' },
   { label: 'Create Circle', icon: PlusCircle, path: '/create-circle' },
   { label: 'My Circles', icon: Users, path: '/my-circles' },
   { label: 'All Circles', icon: Globe, path: '/all-circles' },
