@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Award, Globe2 } from 'lucide-react';
+import PartnerLogos from '@/components/wisdomnet/PartnerLogos';
 
 export default function InternationalRecognition() {
   return (
@@ -40,6 +41,8 @@ export default function InternationalRecognition() {
               <Globe2 className="w-5 h-5" style={{ color: '#4ade80' }} />
               <span className="text-sm font-medium" style={{ color: 'rgba(245,240,230,0.7)' }}>Advancing AI Trust, responsible AI governance, and inclusive economic growth.</span>
             </div>
+
+            <PartnerLogos />
           </div>
         </motion.div>
       </div>
