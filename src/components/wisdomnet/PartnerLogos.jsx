@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ExternalLink } from 'lucide-react';
 
-/* AI Hub pinwheel — 12 colored segments around a black center */
+/* AI Hub pinwheel — 12 colored segments around a white center */
 const SEGMENT_COLORS = [
   '#FF0000', '#FF8C00', '#FFD700', '#9ACD32', '#32CD32', '#228B22',
   '#008080', '#00BFFF', '#1E90FF', '#4B0082', '#FF00FF', '#FF1493',
@@ -14,17 +14,13 @@ function AIHubPinwheel({ size = 38 }) {
     <svg width={size} height={size} viewBox="0 0 30 30" style={{ overflow: 'visible' }}>
       <g>
         {SEGMENT_COLORS.map((color, i) => {
-          const angle = (i * 30 - 90) * (Math.PI / 180); // start at top
+          const angle = (i * 30 - 90) * (Math.PI / 180);
           const x = cx + Math.cos(angle) * r;
           const y = cy + Math.sin(angle) * r;
           return (
             <motion.rect
               key={i}
-              x={-1.1}
-              y={-4}
-              width={2.2}
-              height={4}
-              rx={1}
+              x={-1.1} y={-4} width={2.2} height={4} rx={1}
               fill={color}
               style={{ transformOrigin: `${x}px ${y}px` }}
               animate={{ rotate: [0, 360] }}
@@ -33,7 +29,7 @@ function AIHubPinwheel({ size = 38 }) {
           );
         })}
       </g>
-      <circle cx="15" cy="15" r="3.4" fill="#040713" />
+      <circle cx="15" cy="15" r="3.4" fill="#0f172a" />
     </svg>
   );
 }
@@ -43,8 +39,8 @@ function AIHubLogo() {
     <div className="flex items-center gap-3">
       <AIHubPinwheel size={40} />
       <div className="flex flex-col leading-tight">
-        <span className="font-bold text-base" style={{ color: '#f5f0e6', fontFamily: 'Montserrat, Inter, sans-serif' }}>AI Hub</span>
-        <span className="text-[10px] font-medium" style={{ color: 'rgba(245,240,230,0.5)', fontFamily: 'Montserrat, Inter, sans-serif' }}>for Sustainable Development</span>
+        <span className="font-bold text-base" style={{ color: '#0f172a', fontFamily: 'Montserrat, Inter, sans-serif' }}>AI Hub</span>
+        <span className="text-[10px] font-medium" style={{ color: 'rgba(15,23,42,0.5)', fontFamily: 'Montserrat, Inter, sans-serif' }}>for Sustainable Development</span>
       </div>
     </div>
   );
@@ -59,7 +55,7 @@ function MicrosoftLogo() {
         <rect x="1" y="14" width="11" height="11" fill="#00A4EF" />
         <rect x="14" y="14" width="11" height="11" fill="#FFB900" />
       </svg>
-      <span className="font-semibold text-lg tracking-tight" style={{ color: '#f5f0e6', fontFamily: 'Segoe UI, Inter, sans-serif' }}>Microsoft</span>
+      <span className="font-semibold text-lg tracking-tight" style={{ color: '#0f172a', fontFamily: 'Segoe UI, Inter, sans-serif' }}>Microsoft</span>
     </div>
   );
 }
@@ -67,7 +63,7 @@ function MicrosoftLogo() {
 function AWSLogo() {
   return (
     <div className="flex flex-col items-start">
-      <span className="font-bold text-xl" style={{ color: '#f5f0e6', fontFamily: 'Amazon Ember, Inter, sans-serif', letterSpacing: '-0.02em' }}>aws</span>
+      <span className="font-bold text-xl" style={{ color: '#0f172a', fontFamily: 'Amazon Ember, Inter, sans-serif', letterSpacing: '-0.02em' }}>aws</span>
       <svg width="60" height="18" viewBox="0 0 60 18" className="-mt-0.5">
         <motion.path
           d="M2 8 C 15 16, 30 16, 44 6"
@@ -96,7 +92,7 @@ function CinecaLogo() {
 }
 
 const PARTNERS = [
-  { Comp: AIHubLogo, label: 'UNDP Initiative', url: 'https://www.undp.org/romecentre/ai-hub-sustainable-development', accent: '#4ade80' },
+  { Comp: AIHubLogo, label: 'UNDP Initiative', url: 'https://www.undp.org/romecentre/ai-hub-sustainable-development', accent: '#16a34a' },
   { Comp: MicrosoftLogo, label: 'Technical Partner', url: 'https://www.microsoft.com', accent: '#00A4EF' },
   { Comp: AWSLogo, label: 'Technical Partner', url: 'https://aws.amazon.com', accent: '#FF9900' },
   { Comp: CinecaLogo, label: 'Technical Partner', url: 'https://www.cineca.it', accent: '#0093DD' },
@@ -128,13 +124,12 @@ function FlipLogoCard({ Comp, label, url, accent, index }) {
         {/* Front face — the logo */}
         <div
           className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl px-8 py-7 border"
-          style={{ background: 'rgba(255,255,255,0.025)', borderColor: 'rgba(255,255,255,0.08)', backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
+          style={{ background: '#ffffff', borderColor: 'rgba(15,23,42,0.1)', boxShadow: '0 4px 24px rgba(15,23,42,0.06)', backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
         >
           <div className="relative">
             <Comp />
           </div>
-          <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'rgba(245,240,230,0.4)' }}>{label}</span>
-          {/* hover glow */}
+          <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'rgba(15,23,42,0.4)' }}>{label}</span>
           <motion.div
             className="absolute inset-0 rounded-2xl pointer-events-none"
             style={{ background: `radial-gradient(circle at 50% 50%, ${accent}1a, transparent 70%)` }}
@@ -148,13 +143,14 @@ function FlipLogoCard({ Comp, label, url, accent, index }) {
           style={{
             background: `linear-gradient(135deg, ${accent}22, ${accent}08)`,
             borderColor: `${accent}66`,
+            boxShadow: '0 4px 24px rgba(15,23,42,0.06)',
             backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden',
             transform: 'rotateY(180deg)',
           }}
         >
           <ExternalLink className="w-6 h-6" style={{ color: accent }} />
           <span className="text-sm font-semibold" style={{ color: accent }}>Visit Website</span>
-          <span className="text-[10px] truncate max-w-full" style={{ color: 'rgba(245,240,230,0.5)' }}>
+          <span className="text-[10px] truncate max-w-full" style={{ color: 'rgba(15,23,42,0.5)' }}>
             {url.replace(/^https?:\/\//, '').replace(/\/$/, '')}
           </span>
         </div>
@@ -171,7 +167,7 @@ export default function PartnerLogos() {
       <motion.p
         initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.5 }}
         className="text-center text-sm font-semibold uppercase tracking-[0.25em] mb-8"
-        style={{ color: 'rgba(245,240,230,0.45)' }}
+        style={{ color: 'rgba(15,23,42,0.45)' }}
       >
         In Partnership With
       </motion.p>
@@ -200,10 +196,10 @@ export default function PartnerLogos() {
 
       {/* Animated connection beam */}
       <div className="relative mt-10 h-px max-w-2xl mx-auto">
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(90deg, transparent, rgba(74,222,128,0.3), rgba(34,211,238,0.3), transparent)' }} />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(90deg, transparent, rgba(22,163,74,0.3), rgba(34,211,238,0.3), transparent)' }} />
         <motion.div
           className="absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full"
-          style={{ background: '#4ade80', boxShadow: '0 0 12px #4ade80' }}
+          style={{ background: '#16a34a', boxShadow: '0 0 12px #16a34a' }}
           animate={{ left: ['0%', '100%'] }}
           transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
         />
@@ -212,7 +208,7 @@ export default function PartnerLogos() {
       <motion.p
         initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.3 }}
         className="text-center text-xs mt-4"
-        style={{ color: 'rgba(245,240,230,0.35)' }}
+        style={{ color: 'rgba(15,23,42,0.4)' }}
       >
         Hover to flip · Click to visit the official website
       </motion.p>
