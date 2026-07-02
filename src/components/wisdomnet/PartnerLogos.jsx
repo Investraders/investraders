@@ -1,7 +1,54 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { ExternalLink } from 'lucide-react';
 
-/* Stylized brand logos built as SVG/markup — reliable, no broken image links */
+/* AI Hub pinwheel — 12 colored segments around a black center */
+const SEGMENT_COLORS = [
+  '#FF0000', '#FF8C00', '#FFD700', '#9ACD32', '#32CD32', '#228B22',
+  '#008080', '#00BFFF', '#1E90FF', '#4B0082', '#FF00FF', '#FF1493',
+];
+
+function AIHubPinwheel({ size = 38 }) {
+  const cx = 15, cy = 15, r = 9;
+  return (
+    <svg width={size} height={size} viewBox="0 0 30 30" style={{ overflow: 'visible' }}>
+      <g>
+        {SEGMENT_COLORS.map((color, i) => {
+          const angle = (i * 30 - 90) * (Math.PI / 180); // start at top
+          const x = cx + Math.cos(angle) * r;
+          const y = cy + Math.sin(angle) * r;
+          return (
+            <motion.rect
+              key={i}
+              x={-1.1}
+              y={-4}
+              width={2.2}
+              height={4}
+              rx={1}
+              fill={color}
+              style={{ transformOrigin: `${x}px ${y}px` }}
+              animate={{ rotate: [0, 360] }}
+              transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
+            />
+          );
+        })}
+      </g>
+      <circle cx="15" cy="15" r="3.4" fill="#040713" />
+    </svg>
+  );
+}
+
+function AIHubLogo() {
+  return (
+    <div className="flex items-center gap-3">
+      <AIHubPinwheel size={40} />
+      <div className="flex flex-col leading-tight">
+        <span className="font-bold text-base" style={{ color: '#f5f0e6', fontFamily: 'Montserrat, Inter, sans-serif' }}>AI Hub</span>
+        <span className="text-[10px] font-medium" style={{ color: 'rgba(245,240,230,0.5)', fontFamily: 'Montserrat, Inter, sans-serif' }}>for Sustainable Development</span>
+      </div>
+    </div>
+  );
+}
 
 function MicrosoftLogo() {
   return (
@@ -20,32 +67,17 @@ function MicrosoftLogo() {
 function AWSLogo() {
   return (
     <div className="flex flex-col items-start">
-      <span className="font-bold text-xl" style={{ color: '#f5f0e6', fontFamily: 'Amazon Ember, Inter, sans-serif', letterSpacing: '-0.02em' }}>
-        aws
-      </span>
+      <span className="font-bold text-xl" style={{ color: '#f5f0e6', fontFamily: 'Amazon Ember, Inter, sans-serif', letterSpacing: '-0.02em' }}>aws</span>
       <svg width="60" height="18" viewBox="0 0 60 18" className="-mt-0.5">
         <motion.path
           d="M2 8 C 15 16, 30 16, 44 6"
-          stroke="#FF9900"
-          strokeWidth="2.5"
-          fill="none"
-          strokeLinecap="round"
-          initial={{ pathLength: 0 }}
-          whileInView={{ pathLength: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1.2 }}
+          stroke="#FF9900" strokeWidth="2.5" fill="none" strokeLinecap="round"
+          initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true }} transition={{ duration: 1.2 }}
         />
         <motion.path
           d="M40 4 L 46 7 L 42 12"
-          stroke="#FF9900"
-          strokeWidth="2.5"
-          fill="none"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.9 }}
+          stroke="#FF9900" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"
+          initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.9 }}
         />
       </svg>
     </div>
@@ -63,82 +95,91 @@ function CinecaLogo() {
   );
 }
 
-function AIHubLogo() {
-  return (
-    <div className="flex items-center gap-2.5">
-      <div className="relative">
-        <svg width="30" height="30" viewBox="0 0 30 30">
-          <circle cx="15" cy="15" r="12" fill="none" stroke="#4ade80" strokeWidth="2" />
-          {Array.from({ length: 6 }).map((_, i) => {
-            const a = (i * 60 * Math.PI) / 180;
-            const x = 15 + Math.cos(a) * 8;
-            const y = 15 + Math.sin(a) * 8;
-            return <circle key={i} cx={x} cy={y} r="1.6" fill="#4ade80" />;
-          })}
-          <circle cx="15" cy="15" r="3" fill="#4ade80" />
-        </svg>
-      </div>
-      <div className="flex flex-col leading-tight">
-        <span className="font-bold text-sm" style={{ color: '#4ade80', fontFamily: 'Inter, sans-serif' }}>AI Hub</span>
-        <span className="text-[10px] font-medium" style={{ color: 'rgba(245,240,230,0.5)' }}>for Sustainable Development</span>
-      </div>
-    </div>
-  );
-}
-
-const LOGOS = [
-  { Comp: AIHubLogo, label: 'UNDP Initiative' },
-  { Comp: MicrosoftLogo, label: 'Technical Partner' },
-  { Comp: AWSLogo, label: 'Technical Partner' },
-  { Comp: CinecaLogo, label: 'Technical Partner' },
+const PARTNERS = [
+  { Comp: AIHubLogo, label: 'UNDP Initiative', url: 'https://www.undp.org/romecentre/ai-hub-sustainable-development', accent: '#4ade80' },
+  { Comp: MicrosoftLogo, label: 'Technical Partner', url: 'https://www.microsoft.com', accent: '#00A4EF' },
+  { Comp: AWSLogo, label: 'Technical Partner', url: 'https://aws.amazon.com', accent: '#FF9900' },
+  { Comp: CinecaLogo, label: 'Technical Partner', url: 'https://www.cineca.it', accent: '#0093DD' },
 ];
 
-function LogoCard({ Comp, label, index }) {
+function FlipLogoCard({ Comp, label, url, accent, index }) {
+  const [hovered, setHovered] = useState(false);
+
   return (
-    <motion.div
+    <motion.a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.12 }}
-      whileHover={{ y: -8, scale: 1.05 }}
-      className="relative flex flex-col items-center justify-center gap-3 rounded-2xl px-8 py-7 border min-w-[200px]"
-      style={{ background: 'rgba(255,255,255,0.025)', borderColor: 'rgba(255,255,255,0.08)' }}
+      onHoverStart={() => setHovered(true)}
+      onHoverEnd={() => setHovered(false)}
+      className="relative block cursor-pointer"
+      style={{ perspective: 1000, minHeight: 130 }}
     >
-      {/* Hover glow */}
       <motion.div
-        className="absolute inset-0 rounded-2xl opacity-0 pointer-events-none"
-        style={{ background: 'radial-gradient(circle at 50% 50%, rgba(74,222,128,0.12), transparent 70%)' }}
-        whileHover={{ opacity: 1 }}
-      />
-      <div className="relative">
-        <Comp />
-      </div>
-      <span className="relative text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'rgba(245,240,230,0.4)' }}>{label}</span>
-    </motion.div>
+        className="relative w-full h-full"
+        style={{ transformStyle: 'preserve-3d', minHeight: 130 }}
+        animate={{ rotateY: hovered ? 180 : 0 }}
+        transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+      >
+        {/* Front face — the logo */}
+        <div
+          className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl px-8 py-7 border"
+          style={{ background: 'rgba(255,255,255,0.025)', borderColor: 'rgba(255,255,255,0.08)', backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
+        >
+          <div className="relative">
+            <Comp />
+          </div>
+          <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'rgba(245,240,230,0.4)' }}>{label}</span>
+          {/* hover glow */}
+          <motion.div
+            className="absolute inset-0 rounded-2xl pointer-events-none"
+            style={{ background: `radial-gradient(circle at 50% 50%, ${accent}1a, transparent 70%)` }}
+            animate={{ opacity: hovered ? 1 : 0 }}
+          />
+        </div>
+
+        {/* Back face — visit website */}
+        <div
+          className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-2xl px-8 py-7 border"
+          style={{
+            background: `linear-gradient(135deg, ${accent}22, ${accent}08)`,
+            borderColor: `${accent}66`,
+            backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden',
+            transform: 'rotateY(180deg)',
+          }}
+        >
+          <ExternalLink className="w-6 h-6" style={{ color: accent }} />
+          <span className="text-sm font-semibold" style={{ color: accent }}>Visit Website</span>
+          <span className="text-[10px] truncate max-w-full" style={{ color: 'rgba(245,240,230,0.5)' }}>
+            {url.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+          </span>
+        </div>
+      </motion.div>
+    </motion.a>
   );
 }
 
 export default function PartnerLogos() {
-  // Duplicate for seamless marquee on small screens
-  const marqueeLogos = [...LOGOS, ...LOGOS];
+  const marqueePartners = [...PARTNERS, ...PARTNERS];
 
   return (
     <div className="mt-12">
       <motion.p
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.5 }}
+        initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.5 }}
         className="text-center text-sm font-semibold uppercase tracking-[0.25em] mb-8"
         style={{ color: 'rgba(245,240,230,0.45)' }}
       >
         In Partnership With
       </motion.p>
 
-      {/* Desktop: grid with connection lines */}
+      {/* Desktop: flip cards grid */}
       <div className="hidden sm:grid grid-cols-2 lg:grid-cols-4 gap-5">
-        {LOGOS.map((l, i) => (
-          <LogoCard key={i} Comp={l.Comp} label={l.label} index={i} />
+        {PARTNERS.map((p, i) => (
+          <FlipLogoCard key={i} Comp={p.Comp} label={p.label} url={p.url} accent={p.accent} index={i} />
         ))}
       </div>
 
@@ -147,11 +188,11 @@ export default function PartnerLogos() {
         <motion.div
           className="flex gap-4"
           animate={{ x: ['0%', '-50%'] }}
-          transition={{ duration: 16, repeat: Infinity, ease: 'linear' }}
+          transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
         >
-          {marqueeLogos.map((l, i) => (
-            <div key={i} className="flex-shrink-0">
-              <LogoCard Comp={l.Comp} label={l.label} index={0} />
+          {marqueePartners.map((p, i) => (
+            <div key={i} className="flex-shrink-0 w-[200px]">
+              <FlipLogoCard Comp={p.Comp} label={p.label} url={p.url} accent={p.accent} index={0} />
             </div>
           ))}
         </motion.div>
@@ -167,6 +208,14 @@ export default function PartnerLogos() {
           transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
         />
       </div>
+
+      <motion.p
+        initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.3 }}
+        className="text-center text-xs mt-4"
+        style={{ color: 'rgba(245,240,230,0.35)' }}
+      >
+        Hover to flip · Click to visit the official website
+      </motion.p>
     </div>
   );
 }
