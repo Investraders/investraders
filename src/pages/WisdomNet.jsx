@@ -15,7 +15,7 @@ import WisdomFooter from '@/components/wisdomnet/WisdomFooter';
 
 export default function WisdomNet() {
   return (
-    <div className="min-h-screen overflow-x-hidden" style={{ background: '#050816' }}>
+    <div className="min-h-screen overflow-x-hidden" style={{ background: '#ffffff' }}>
       <WisdomNavbar />
       <WisdomHero />
       <HumanMachineCoexistence />

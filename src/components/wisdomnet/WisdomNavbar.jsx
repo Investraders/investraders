@@ -30,26 +30,24 @@ export default function WisdomNavbar() {
     <header
       className="fixed top-0 inset-x-0 z-50 transition-all duration-500"
       style={{
-        background: scrolled ? 'rgba(6,10,24,0.85)' : 'transparent',
+        background: scrolled ? 'rgba(255,255,255,0.85)' : 'transparent',
         backdropFilter: scrolled ? 'blur(16px)' : 'none',
-        borderBottom: scrolled ? '1px solid rgba(212,175,55,0.15)' : '1px solid transparent',
+        borderBottom: scrolled ? '1px solid rgba(15,23,42,0.08)' : '1px solid transparent',
       }}
     >
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        {/* Brand */}
         <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #22d3ee, #a78bfa)', boxShadow: '0 0 20px rgba(34,211,238,0.4)' }}>
-            <BrainCircuit className="w-4 h-4 text-[#050816]" />
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #22d3ee, #a78bfa)', boxShadow: '0 0 20px rgba(34,211,238,0.35)' }}>
+            <BrainCircuit className="w-4 h-4 text-white" />
           </div>
-          <span className="font-display text-lg font-bold tracking-wide" style={{ color: '#f5f0e6' }}>
-            WISDOM<span style={{ color: '#22d3ee' }}>NET</span>
+          <span className="font-display text-lg font-bold tracking-wide" style={{ color: '#0f172a' }}>
+            WISDOM<span style={{ color: '#0891b2' }}>NET</span>
           </span>
         </button>
 
-        {/* Desktop links */}
         <div className="hidden md:flex items-center gap-7">
           {LINKS.map(l => (
-            <button key={l.href} onClick={() => handleScroll(l.href)} className="text-sm font-medium text-slate-300 hover:text-amber-300 transition-colors">
+            <button key={l.href} onClick={() => handleScroll(l.href)} className="text-sm font-medium text-slate-600 hover:text-amber-600 transition-colors">
               {l.label}
             </button>
           ))}
@@ -58,15 +56,14 @@ export default function WisdomNavbar() {
         <div className="hidden md:block">
           <button
             onClick={() => handleScroll('#join')}
-            className="px-5 py-2 rounded-lg text-sm font-semibold text-[#0d1330] transition-transform hover:scale-105"
-            style={{ background: 'linear-gradient(135deg, #f5d77a, #d4af37)', boxShadow: '0 4px 20px rgba(212,175,55,0.3)' }}
+            className="px-5 py-2 rounded-lg text-sm font-semibold text-white transition-transform hover:scale-105"
+            style={{ background: 'linear-gradient(135deg, #f5d77a, #d4af37)', boxShadow: '0 4px 20px rgba(212,175,55,0.35)' }}
           >
             Join the Movement
           </button>
         </div>
 
-        {/* Mobile toggle */}
-        <button className="md:hidden text-amber-300" onClick={() => setOpen(v => !v)}>
+        <button className="md:hidden text-amber-600" onClick={() => setOpen(v => !v)}>
           {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
       </nav>
@@ -78,17 +75,17 @@ export default function WisdomNavbar() {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             className="md:hidden overflow-hidden"
-            style={{ background: 'rgba(6,10,24,0.95)', backdropFilter: 'blur(16px)', borderTop: '1px solid rgba(212,175,55,0.15)' }}
+            style={{ background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(16px)', borderTop: '1px solid rgba(15,23,42,0.08)' }}
           >
             <div className="px-4 py-4 flex flex-col gap-1">
               {LINKS.map(l => (
-                <button key={l.href} onClick={() => handleScroll(l.href)} className="text-left py-2.5 text-slate-300 hover:text-amber-300 transition-colors">
+                <button key={l.href} onClick={() => handleScroll(l.href)} className="text-left py-2.5 text-slate-600 hover:text-amber-600 transition-colors">
                   {l.label}
                 </button>
               ))}
               <button
                 onClick={() => handleScroll('#join')}
-                className="mt-2 py-2.5 rounded-lg text-sm font-semibold text-[#0d1330]"
+                className="mt-2 py-2.5 rounded-lg text-sm font-semibold text-white"
                 style={{ background: 'linear-gradient(135deg, #f5d77a, #d4af37)' }}
               >
                 Join the Movement
