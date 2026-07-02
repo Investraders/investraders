@@ -25,6 +25,7 @@ import SavedPosts from '@/pages/SavedPosts';
 import PostDetail from '@/pages/PostDetail';
 import AdminDashboard from '@/pages/AdminDashboard';
 import AllCircles from '@/pages/AllCircles';
+import WisdomNet from '@/pages/WisdomNet';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -49,6 +50,7 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
+      <Route path="/wisdomnet" element={<WisdomNet />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
