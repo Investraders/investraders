@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Lightbulb } from 'lucide-react';
+import { Menu, X, BrainCircuit } from 'lucide-react';
 
 const LINKS = [
   { label: 'Wisdom Economy', href: '#wisdom-economy' },
@@ -38,11 +38,11 @@ export default function WisdomNavbar() {
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand */}
         <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #f5d77a, #d4af37)', boxShadow: '0 0 20px rgba(212,175,55,0.4)' }}>
-            <Lightbulb className="w-4 h-4 text-[#0d1330]" />
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #22d3ee, #a78bfa)', boxShadow: '0 0 20px rgba(34,211,238,0.4)' }}>
+            <BrainCircuit className="w-4 h-4 text-[#050816]" />
           </div>
           <span className="font-display text-lg font-bold tracking-wide" style={{ color: '#f5f0e6' }}>
-            WISDOM<span style={{ color: '#d4af37' }}>NET</span>
+            WISDOM<span style={{ color: '#22d3ee' }}>NET</span>
           </span>
         </button>
 

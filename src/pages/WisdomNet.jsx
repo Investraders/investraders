@@ -1,6 +1,7 @@
 import React from 'react';
 import WisdomNavbar from '@/components/wisdomnet/WisdomNavbar';
 import WisdomHero from '@/components/wisdomnet/WisdomHero';
+import HumanMachineCoexistence from '@/components/wisdomnet/HumanMachineCoexistence';
 import WisdomEconomy from '@/components/wisdomnet/WisdomEconomy';
 import VisionMission from '@/components/wisdomnet/VisionMission';
 import AreasOfExcellence from '@/components/wisdomnet/AreasOfExcellence';
@@ -14,9 +15,10 @@ import WisdomFooter from '@/components/wisdomnet/WisdomFooter';
 
 export default function WisdomNet() {
   return (
-    <div className="min-h-screen overflow-x-hidden" style={{ background: '#060a18' }}>
+    <div className="min-h-screen overflow-x-hidden" style={{ background: '#050816' }}>
       <WisdomNavbar />
       <WisdomHero />
+      <HumanMachineCoexistence />
       <WisdomEconomy />
       <VisionMission />
       <AreasOfExcellence />
