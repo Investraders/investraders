@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { User, Bot, Sparkles, Users, BrainCircuit, Shield } from 'lucide-react';
+import { Users, BrainCircuit, Shield } from 'lucide-react';
 
 const PILLARS = [
   { icon: Users, title: 'Collaboration', desc: 'Humans and AI working side by side, each amplifying the other\'s strengths to solve challenges no single mind can solve alone.', color: '#0891b2' },
@@ -27,66 +27,20 @@ export default function HumanMachineCoexistence() {
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7 }}
-          className="flex items-center justify-center gap-4 sm:gap-8 my-16 flex-wrap"
+          className="relative my-16 mx-auto max-w-3xl"
         >
-          <div className="flex flex-col items-center gap-2">
-            <motion.div
-              className="rounded-2xl flex items-center justify-center"
-              style={{ width: 72, height: 72, background: 'linear-gradient(135deg, rgba(8,145,178,0.15), rgba(37,99,235,0.08))', border: '1.5px solid rgba(8,145,178,0.45)', boxShadow: '0 6px 24px rgba(8,145,178,0.2)' }}
-              animate={{ y: [0, -6, 0] }}
-              transition={{ duration: 3, repeat: Infinity }}
-            >
-              <User className="w-9 h-9" style={{ color: '#0891b2' }} strokeWidth={1.8} />
-            </motion.div>
-            <span className="text-xs font-semibold tracking-wider" style={{ color: '#0891b2' }}>HUMAN</span>
-          </div>
-
-          <div className="relative flex items-center" style={{ width: 80 }}>
-            <div className="h-px w-full" style={{ background: 'linear-gradient(90deg, rgba(8,145,178,0.4), rgba(212,175,55,0.4), rgba(124,58,237,0.4))' }} />
-            <motion.div
-              className="absolute rounded-full"
-              style={{ width: 8, height: 8, background: '#d4af37', boxShadow: '0 0 12px #d4af37', top: -4 }}
-              animate={{ x: [0, 72, 0] }}
-              transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+          <div className="absolute pointer-events-none" style={{ inset: '-20px', background: 'radial-gradient(ellipse at 50% 50%, rgba(8,145,178,0.18), rgba(124,58,237,0.12), transparent 70%)', filter: 'blur(30px)' }} />
+          <div className="relative rounded-3xl overflow-hidden border" style={{ borderColor: 'rgba(15,23,42,0.1)', boxShadow: '0 20px 60px rgba(15,23,42,0.18)' }}>
+            <img
+              src="https://media.base44.com/images/public/6a24647fa35a48a782a639ea/fa31a32f1_generated_image.png"
+              alt="A human and a robot smiling warmly and shaking hands — the future of human-machine coexistence"
+              className="w-full h-auto block"
+              loading="lazy"
             />
-          </div>
-
-          <div className="flex flex-col items-center gap-2">
-            <motion.div
-              className="rounded-full flex items-center justify-center"
-              style={{ width: 64, height: 64, background: 'radial-gradient(circle at 40% 35%, #fff4cf, #f5d77a 45%, #d4af37 75%)', boxShadow: '0 8px 40px rgba(212,175,55,0.4)' }}
-              animate={{ scale: [1, 1.1, 1] }}
-              transition={{ duration: 3, repeat: Infinity }}
-            >
-              <Sparkles className="w-8 h-8 text-[#0f172a]" />
-            </motion.div>
-            <span className="text-xs font-semibold tracking-wider" style={{ color: '#b8860b' }}>WISDOM</span>
-          </div>
-
-          <div className="relative flex items-center" style={{ width: 80 }}>
-            <div className="h-px w-full" style={{ background: 'linear-gradient(90deg, rgba(124,58,237,0.4), rgba(212,175,55,0.4), rgba(124,58,237,0.4))' }} />
-            <motion.div
-              className="absolute rounded-full"
-              style={{ width: 8, height: 8, background: '#7c3aed', boxShadow: '0 0 12px #7c3aed', top: -4 }}
-              animate={{ x: [72, 0, 72] }}
-              transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-            />
-          </div>
-
-          <div className="flex flex-col items-center gap-2">
-            <motion.div
-              className="rounded-2xl flex items-center justify-center"
-              style={{ width: 72, height: 72, background: 'linear-gradient(135deg, rgba(124,58,237,0.15), rgba(184,134,11,0.08))', border: '1.5px solid rgba(124,58,237,0.45)', boxShadow: '0 6px 24px rgba(124,58,237,0.2)' }}
-              animate={{ y: [0, -6, 0] }}
-              transition={{ duration: 3, repeat: Infinity, delay: 1.5 }}
-            >
-              <Bot className="w-9 h-9" style={{ color: '#7c3aed' }} strokeWidth={1.8} />
-            </motion.div>
-            <span className="text-xs font-semibold tracking-wider" style={{ color: '#7c3aed' }}>MACHINE</span>
           </div>
         </motion.div>
 
