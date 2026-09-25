@@ -1,0 +1,118 @@
+{
+  "name": "InvestorProfile",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "investor_type": {
+      "type": "string",
+      "enum": [
+        "INDIVIDUAL",
+        "FAMILY_OFFICE",
+        "FUND",
+        "CORPORATE",
+        "INSTITUTION",
+        "DEVELOPMENT_FINANCE",
+        "ANGEL"
+      ],
+      "default": "INDIVIDUAL"
+    },
+    "country": {
+      "type": "string"
+    },
+    "organization": {
+      "type": "string"
+    },
+    "sectors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "geographies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "minimum_ticket": {
+      "type": "number"
+    },
+    "maximum_ticket": {
+      "type": "number"
+    },
+    "investment_stages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "preferred_project_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "investment_horizon": {
+      "type": "string"
+    },
+    "risk_profile": {
+      "type": "string",
+      "enum": [
+        "CONSERVATIVE",
+        "BALANCED",
+        "GROWTH"
+      ],
+      "default": "BALANCED"
+    },
+    "verified_status": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "user_id"
+  ],
+  "rls": {
+    "create": {
+      "data.user_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

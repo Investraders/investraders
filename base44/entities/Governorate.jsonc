@@ -1,0 +1,64 @@
+{
+  "name": "Governorate",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "name_fr": {
+      "type": "string"
+    },
+    "name_ar": {
+      "type": "string"
+    },
+    "code": {
+      "type": "string",
+      "description": "Official code e.g. TN-11"
+    },
+    "region": {
+      "type": "string",
+      "description": "Macro-region e.g. Nord-Est"
+    },
+    "latitude": {
+      "type": "number"
+    },
+    "longitude": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "name",
+    "code"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "user"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

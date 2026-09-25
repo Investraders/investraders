@@ -1,0 +1,56 @@
+{
+  "name": "ProjectView",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string"
+    },
+    "governorate_id": {
+      "type": "string"
+    },
+    "sector_id": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "VIEW",
+        "SAVE",
+        "SHARE",
+        "DOWNLOAD",
+        "CONTACT",
+        "INTEREST",
+        "REQUEST_DOCUMENTS"
+      ],
+      "default": "VIEW"
+    }
+  },
+  "required": [
+    "project_id"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "isAuthenticated": true
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

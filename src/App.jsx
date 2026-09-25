@@ -25,6 +25,8 @@ import PostDetail from '@/pages/PostDetail';
 import AdminDashboard from '@/pages/AdminDashboard';
 import AllCircles from '@/pages/AllCircles';
 import WisdomNet from '@/pages/WisdomNet';
+import InvestmentMap from '@/pages/InvestmentMap';
+import ProjectDetail from '@/pages/ProjectDetail';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -69,6 +71,8 @@ const AuthenticatedApp = () => {
           <Route path="/post/:id" element={<PostDetail />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/all-circles" element={<AllCircles />} />
+          <Route path="/investment-map" element={<InvestmentMap />} />
+          <Route path="/project/:id" element={<ProjectDetail />} />
         </Route>
       </Route>
 

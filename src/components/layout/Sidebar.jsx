@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, PlusCircle, Globe, Eye, Pencil, Users } from 'lucide-react';
+import { Home, PlusCircle, Globe, Eye, Pencil, Users, Map } from 'lucide-react';
 import CircleIcon from '@/components/circles/CircleIcon';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/AuthContext';
 
 const NAV_ITEMS = [
   { label: 'Home', icon: Home, path: '/home' },
+  { label: 'Investment Map', icon: Map, path: '/investment-map' },
   { label: 'Create Circle', icon: PlusCircle, path: '/create-circle' },
   { label: 'My Circles', icon: Users, path: '/my-circles' },
   { label: 'All Circles', icon: Globe, path: '/all-circles' },

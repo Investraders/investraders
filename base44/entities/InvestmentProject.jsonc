@@ -1,0 +1,215 @@
+{
+  "name": "InvestmentProject",
+  "type": "object",
+  "properties": {
+    "project_code": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "short_description": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "governorate_id": {
+      "type": "string"
+    },
+    "sector_id": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "latitude": {
+      "type": "number"
+    },
+    "longitude": {
+      "type": "number"
+    },
+    "project_type": {
+      "type": "string",
+      "enum": [
+        "GREENFIELD",
+        "EXPANSION",
+        "JOINT_VENTURE",
+        "PRIVATIZATION",
+        "ACQUISITION",
+        "INFRASTRUCTURE",
+        "PUBLIC_PRIVATE_PARTNERSHIP",
+        "STARTUP",
+        "SME",
+        "REAL_ESTATE"
+      ],
+      "default": "GREENFIELD"
+    },
+    "investment_stage": {
+      "type": "string",
+      "enum": [
+        "IDEA",
+        "PRE_FEASIBILITY",
+        "FEASIBILITY",
+        "READY_FOR_INVESTMENT",
+        "FUNDING_OPEN",
+        "UNDER_NEGOTIATION",
+        "FUNDED",
+        "CLOSED"
+      ],
+      "default": "READY_FOR_INVESTMENT"
+    },
+    "investment_required": {
+      "type": "number",
+      "description": "Total investment required in MTND"
+    },
+    "equity_required": {
+      "type": "number"
+    },
+    "debt_required": {
+      "type": "number"
+    },
+    "minimum_ticket": {
+      "type": "number"
+    },
+    "maximum_ticket": {
+      "type": "number"
+    },
+    "expected_roi": {
+      "type": "number",
+      "description": "Expected annual ROI %"
+    },
+    "project_duration": {
+      "type": "number",
+      "description": "Months to completion"
+    },
+    "jobs_created": {
+      "type": "number"
+    },
+    "export_potential": {
+      "type": "string",
+      "enum": [
+        "LOW",
+        "MEDIUM",
+        "HIGH"
+      ],
+      "default": "MEDIUM"
+    },
+    "target_markets": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "strategic_value": {
+      "type": "string"
+    },
+    "infrastructure_available": {
+      "type": "boolean",
+      "default": false
+    },
+    "land_available": {
+      "type": "boolean",
+      "default": false
+    },
+    "company_name": {
+      "type": "string"
+    },
+    "promoter_name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "website": {
+      "type": "string"
+    },
+    "seeking": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "EQUITY_INVESTOR",
+          "STRATEGIC_PARTNER",
+          "DEBT_FINANCING",
+          "JOINT_VENTURE"
+        ]
+      }
+    },
+    "project_status": {
+      "type": "string",
+      "enum": [
+        "DRAFT",
+        "SUBMITTED",
+        "UNDER_REVIEW",
+        "PUBLISHED",
+        "UNDER_NEGOTIATION",
+        "FUNDED",
+        "CLOSED"
+      ],
+      "default": "PUBLISHED"
+    },
+    "is_verified": {
+      "type": "boolean",
+      "default": false
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "title",
+    "governorate_id",
+    "sector_id"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.project_status": "PUBLISHED"
+        },
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "user_condition": {
+        "isAuthenticated": true
+      }
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
