@@ -1,9 +1,10 @@
-import React, { useMemo, useState, useRef } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { Map, Sparkles, TrendingUp, Layers, Coins, Star } from 'lucide-react';
+import { Map, Sparkles, TrendingUp, Layers, Coins, Star, X, ArrowRight } from 'lucide-react';
 import TunisiaMap from '@/components/investment/TunisiaMap';
+import WorldMap from '@/components/investment/WorldMap';
 import GovernoratePanel from '@/components/investment/GovernoratePanel';
 import FilterBar from '@/components/investment/FilterBar';
 import ProjectCard from '@/components/investment/ProjectCard';
@@ -12,6 +13,7 @@ import { inBand, formatMTND, formatNumber, DEMO_NOTICE } from '@/lib/investment'
 export default function InvestmentMap() {
   const opportunitiesRef = useRef(null);
   const [selectedGovId, setSelectedGovId] = useState(null);
+  const [tunisiaOpen, setTunisiaOpen] = useState(false);
   const [filters, setFilters] = useState({
     search: '', governorateId: 'all', sectorId: 'all', sizeBand: 'all', stage: 'all', type: 'all', verifiedOnly: false,
   });
@@ -34,6 +36,13 @@ export default function InvestmentMap() {
     queryKey: ['investment-projects'],
     queryFn: () => base44.entities.InvestmentProject.filter({ project_status: 'PUBLISHED' }, '-created_date', 500),
   });
+
+  useEffect(() => {
+    if (!tunisiaOpen) return;
+    const onKey = (e) => { if (e.key === 'Escape') setTunisiaOpen(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [tunisiaOpen]);
 
   const govById = useMemo(() => Object.fromEntries(governorates.map((g) => [g.id, g])), [governorates]);
   const sectorById = useMemo(() => Object.fromEntries(sectors.map((s) => [s.id, s])), [sectors]);
@@ -127,12 +136,7 @@ export default function InvestmentMap() {
       {/* Map + panel */}
       <div className="grid lg:grid-cols-3 gap-6 mt-6">
         <div className="lg:col-span-2">
-          <TunisiaMap
-            governorates={governorates}
-            stats={stats}
-            selectedId={selectedGovId}
-            onSelect={setSelectedGovId}
-          />
+          <WorldMap onOpen={() => setTunisiaOpen(true)} />
         </div>
         <div className="lg:col-span-1">
           <GovernoratePanel
@@ -195,6 +199,69 @@ export default function InvestmentMap() {
           <p className="text-center text-sm text-muted-foreground mt-6">Showing 60 of {filtered.length} projects. Refine your filters to narrow the results.</p>
         )}
       </div>
+
+      {/* Fullscreen Tunisia map */}
+      {tunisiaOpen && (
+        <div className="fixed inset-0 z-50 bg-background flex flex-col">
+          <div className="flex items-center justify-between gap-3 px-4 py-3 border-b bg-card">
+            <div className="flex items-center gap-2 min-w-0">
+              <Map className="w-4 h-4 text-primary flex-shrink-0" />
+              <span className="font-semibold truncate">Tunisia — Governorates & Opportunities</span>
+              <span className="hidden sm:inline text-xs text-muted-foreground">
+                {formatNumber(filtered.length)} projects · {governorates.length} governorates
+              </span>
+            </div>
+            <button
+              onClick={() => setTunisiaOpen(false)}
+              className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium hover:bg-muted transition-colors flex-shrink-0"
+            >
+              <X className="w-4 h-4" /> Close
+            </button>
+          </div>
+
+          <div className="relative flex-1 min-h-0 p-3 sm:p-4">
+            <TunisiaMap
+              governorates={governorates}
+              stats={stats}
+              projects={filtered}
+              selectedId={selectedGovId}
+              onSelect={setSelectedGovId}
+              alwaysShowLabels
+              showHint={false}
+              fullHeight
+              heightClass="h-full"
+            />
+
+            {selectedGov && (
+              <div className="absolute bottom-6 left-6 right-6 sm:left-auto sm:right-6 sm:w-80 rounded-2xl border bg-card/95 backdrop-blur p-4 shadow-xl">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-[11px] font-semibold uppercase tracking-widest text-primary">{selectedGov.region}</div>
+                    <div className="text-lg font-bold leading-tight">{selectedGov.name}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      {formatNumber(selectedGovProjects.length)} projects ·{' '}
+                      {formatMTND(Math.round(selectedGovProjects.reduce((s, p) => s + (p.investment_required || 0), 0)))}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setSelectedGovId(null)}
+                    className="p-1.5 rounded-lg hover:bg-muted transition-colors"
+                    aria-label="Clear selection"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                <button
+                  onClick={() => { setTunisiaOpen(false); exploreGov(selectedGov.id); }}
+                  className="mt-3 w-full inline-flex items-center justify-center gap-2 rounded-lg bg-primary text-primary-foreground font-semibold py-2.5 hover:opacity-90 transition-opacity"
+                >
+                  Explore {selectedGovProjects.length} projects <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

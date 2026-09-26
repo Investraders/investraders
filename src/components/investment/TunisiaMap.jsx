@@ -31,7 +31,7 @@ const densityColor = (t) => {
   return `rgb(${lerp(c1[0], c2[0], t)},${lerp(c1[1], c2[1], t)},${lerp(c1[2], c2[2], t)})`;
 };
 
-export default function TunisiaMap({ governorates = [], stats = {}, selectedId, onSelect }) {
+export default function TunisiaMap({ governorates = [], stats = {}, selectedId, onSelect, projects = [], alwaysShowLabels = false, showHint = true, heightClass = 'h-[460px] sm:h-[600px] lg:h-[680px]', fullHeight = false }) {
   const svgRef = useRef(null);
   const [view, setView] = useState({ x: 0, y: 0, w: W, h: H });
   const [hovered, setHovered] = useState(null);
@@ -79,11 +79,11 @@ export default function TunisiaMap({ governorates = [], stats = {}, selectedId, 
   const hoveredStats = hovered ? stats[hovered] : null;
 
   return (
-    <div className="relative w-full">
+    <div className={fullHeight ? 'relative w-full h-full' : 'relative w-full'}>
       <svg
         ref={svgRef}
         viewBox={`${view.x} ${view.y} ${view.w} ${view.h}`}
-        className="w-full h-[460px] sm:h-[600px] lg:h-[680px] rounded-2xl select-none cursor-grab active:cursor-grabbing"
+        className={`w-full ${heightClass} rounded-2xl select-none cursor-grab active:cursor-grabbing`}
         style={{ background: 'radial-gradient(ellipse at 55% 35%, #ecfeff 0%, #f8fafc 55%, #eef2f7 100%)' }}
         onWheel={onWheel}
         onMouseDown={onMouseDown}
@@ -112,7 +112,7 @@ export default function TunisiaMap({ governorates = [], stats = {}, selectedId, 
           const r = 7 + Math.min(20, Math.sqrt(s.count) * 2.4);
           const sel = selectedId === g.id;
           const hov = hovered === g.id;
-          const showLabel = zoom > 1.25 || sel || hov;
+          const showLabel = alwaysShowLabels || zoom > 1.25 || sel || hov;
           return (
             <g
               key={g.id}
@@ -129,6 +129,17 @@ export default function TunisiaMap({ governorates = [], stats = {}, selectedId, 
                   {g.name}
                 </text>
               )}
+            </g>
+          );
+        })}
+
+        {/* Project spots */}
+        {projects.map((p) => {
+          if (p.latitude == null || p.longitude == null) return null;
+          const pt = project(p.latitude, p.longitude);
+          return (
+            <g key={p.id} transform={`translate(${pt.x},${pt.y}) scale(${1 / zoom})`} className="pointer-events-none">
+              <circle r="4" fill="#d4af37" stroke="#ffffff" strokeWidth="1.2" opacity="0.95" />
             </g>
           );
         })}
@@ -171,9 +182,11 @@ export default function TunisiaMap({ governorates = [], stats = {}, selectedId, 
       </div>
 
       {/* Hint */}
-      <div className="absolute bottom-3 right-3 flex items-center gap-1.5 text-[11px] text-muted-foreground bg-card/95 backdrop-blur rounded-lg px-2.5 py-1.5 border">
-        <Info className="w-3.5 h-3.5" /> Scroll to zoom · Drag to pan · Click to explore
-      </div>
+      {showHint && (
+        <div className="absolute bottom-3 right-3 flex items-center gap-1.5 text-[11px] text-muted-foreground bg-card/95 backdrop-blur rounded-lg px-2.5 py-1.5 border">
+          <Info className="w-3.5 h-3.5" /> Scroll to zoom · Drag to pan · Click to explore
+        </div>
+      )}
     </div>
   );
 }

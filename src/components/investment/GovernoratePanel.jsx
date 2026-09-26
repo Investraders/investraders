@@ -22,7 +22,7 @@ export default function GovernoratePanel({ governorate, projects = [], sectors =
         </div>
         <h3 className="font-semibold mb-1">Select a governorate</h3>
         <p className="text-sm text-muted-foreground max-w-xs">
-          Hover the map to preview project density, then click a governorate to explore its investment opportunities.
+          Open the Tunisia map to see project density by governorate, then click a governorate to explore its investment opportunities.
         </p>
       </div>
     );
