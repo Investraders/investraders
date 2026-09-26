@@ -1,28 +1,33 @@
 import React, { useRef, useState } from 'react';
 import { ZoomIn, ZoomOut, RotateCcw, Info } from 'lucide-react';
 import { formatMTND, formatNumber } from '@/lib/investment';
+import GEO from '@/data/tunisia-governorates.json';
 
-const MIN_LAT = 30.2, MAX_LAT = 37.6, MIN_LNG = 7.4, MAX_LNG = 11.7;
-const W = 760, H = 1000;
+const { W, H, MIN_LAT, MAX_LAT, MIN_LNG, MAX_LNG, regions: REGIONS } = GEO;
 
 const project = (lat, lng) => ({
   x: ((lng - MIN_LNG) / (MAX_LNG - MIN_LNG)) * W,
   y: ((MAX_LAT - lat) / (MAX_LAT - MIN_LAT)) * H,
 });
 
-const OUTLINE = [
-  [37.35, 9.55], [37.10, 8.95], [36.90, 8.55], [36.50, 8.25], [35.60, 8.30],
-  [34.80, 8.10], [34.00, 7.55], [32.60, 7.50], [31.60, 7.80], [30.85, 8.20],
-  [30.24, 9.55], [31.30, 10.10], [32.15, 11.30], [33.10, 11.55], [33.55, 11.00],
-  [33.85, 10.35], [34.65, 10.75], [35.45, 10.55], [36.10, 10.55], [36.50, 10.75],
-  [36.85, 10.45], [37.30, 9.95],
-];
+const norm = (s) =>
+  (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z]/g, '');
+const ALIAS = { elkef: 'lekef' };
+const geoKey = (s) => {
+  const k = norm(s);
+  return ALIAS[k] || k;
+};
 
-const outlinePath =
-  OUTLINE.map(([la, ln], i) => {
-    const p = project(la, ln);
-    return `${i ? 'L' : 'M'}${p.x.toFixed(1)},${p.y.toFixed(1)}`;
-  }).join(' ') + ' Z';
+const GEO_BY_NAME = Object.fromEntries(REGIONS.map((r) => [geoKey(r.name), r]));
+const LAND_PATH = REGIONS.map((r) => r.path).join('');
+
+// Small northern governorates need their labels pushed outward so they stay readable.
+const LABEL_ADJ = {
+  Tunis: { dx: 34, dy: -2, anchor: 'start' },
+  Ariana: { dx: 0, dy: -14, anchor: 'middle' },
+  'Ben Arous': { dx: 34, dy: 18, anchor: 'start' },
+  Manouba: { dx: -34, dy: -2, anchor: 'end' },
+};
 
 const lerp = (a, b, f) => Math.round(a + (b - a) * f);
 const densityColor = (t) => {
@@ -39,6 +44,8 @@ export default function TunisiaMap({ governorates = [], stats = {}, selectedId, 
 
   const zoom = W / view.w;
   const maxCount = Math.max(1, ...governorates.map((g) => stats[g.id]?.count || 0));
+
+  const geoFor = (g) => GEO_BY_NAME[geoKey(g.name)] || GEO_BY_NAME[geoKey(g.name_fr)];
 
   const zoomBy = (factor, focus) => {
     setView((v) => {
@@ -103,32 +110,73 @@ export default function TunisiaMap({ governorates = [], stats = {}, selectedId, 
 
         <rect x={view.x} y={view.y} width={view.w} height={view.h} fill="url(#grid)" />
 
-        <path d={outlinePath} fill="url(#landGrad)" stroke="#0e7490" strokeWidth={2 / zoom} strokeLinejoin="round" />
+        {/* National landmass — drawn first so shared borders have no seams */}
+        <path d={LAND_PATH} fillRule="evenodd" fill="url(#landGrad)" stroke="#0e7490" strokeWidth={2 / zoom} strokeLinejoin="round" />
 
+        {/* The 24 governorates */}
         {governorates.map((g) => {
-          const p = project(g.latitude, g.longitude);
+          const geo = geoFor(g);
+          if (!geo) return null;
           const s = stats[g.id] || { count: 0, investment: 0 };
           const t = s.count / maxCount;
-          const r = 7 + Math.min(20, Math.sqrt(s.count) * 2.4);
           const sel = selectedId === g.id;
           const hov = hovered === g.id;
-          const showLabel = alwaysShowLabels || zoom > 1.25 || sel || hov;
           return (
-            <g
+            <path
               key={g.id}
-              transform={`translate(${p.x},${p.y}) scale(${1 / zoom})`}
+              d={geo.path}
+              fillRule="evenodd"
+              fill={sel ? '#fcd34d' : densityColor(t)}
+              fillOpacity={sel ? 0.95 : 0.92}
+              stroke={sel ? '#b8860b' : hov ? '#0891b2' : '#ffffff'}
+              strokeWidth={(sel ? 3 : hov ? 2.2 : 0.8) / zoom}
+              strokeLinejoin="round"
               style={{ cursor: 'pointer' }}
               onMouseEnter={() => setHovered(g.id)}
               onClick={(e) => { e.stopPropagation(); onSelect && onSelect(g.id); }}
+            />
+          );
+        })}
+
+        {/* Leader lines for offset labels */}
+        {governorates.map((g) => {
+          const geo = geoFor(g);
+          const adj = geo && LABEL_ADJ[geo.name];
+          if (!adj) return null;
+          return (
+            <line
+              key={`lead-${g.id}`}
+              x1={geo.cx} y1={geo.cy} x2={geo.cx + adj.dx} y2={geo.cy + adj.dy}
+              stroke="#94a3b8" strokeWidth={1 / zoom}
+              className="pointer-events-none"
+            />
+          );
+        })}
+
+        {/* Governorate labels */}
+        {governorates.map((g) => {
+          const geo = geoFor(g);
+          if (!geo) return null;
+          const sel = selectedId === g.id;
+          const hov = hovered === g.id;
+          const showLabel = alwaysShowLabels || zoom > 1.25 || sel || hov;
+          if (!showLabel) return null;
+          const adj = LABEL_ADJ[geo.name] || { dx: 0, dy: 0, anchor: 'middle' };
+          return (
+            <g
+              key={`label-${g.id}`}
+              transform={`translate(${geo.cx + adj.dx},${geo.cy + adj.dy}) scale(${1 / zoom})`}
+              className="pointer-events-none"
             >
-              {(sel || hov) && <circle r={r + 7} fill="none" stroke={sel ? '#d4af37' : '#0891b2'} strokeWidth={2} opacity={0.75} />}
-              <circle r={r} fill={densityColor(t)} stroke={sel ? '#d4af37' : '#ffffff'} strokeWidth={sel ? 3 : 1.5} />
-              {showLabel && (
-                <text y={r + 14} textAnchor="middle" fontSize="12" fontWeight="600" fill="#0f172a"
-                  style={{ paintOrder: 'stroke', stroke: '#ffffff', strokeWidth: 3.5 }}>
-                  {g.name}
-                </text>
-              )}
+              <text
+                textAnchor={adj.anchor}
+                fontSize="13"
+                fontWeight="700"
+                fill={sel ? '#78350f' : '#0f172a'}
+                style={{ paintOrder: 'stroke', stroke: '#ffffff', strokeWidth: 4, strokeLinejoin: 'round' }}
+              >
+                {g.name}
+              </text>
             </g>
           );
         })}
