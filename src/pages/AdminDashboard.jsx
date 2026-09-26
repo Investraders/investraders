@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { Navigate } from 'react-router-dom';
-import { Shield, Users, Trash2, FileText, Bell, CircleDot, BarChart2, MessageCircle, TrendingUp, UserCheck, Hash, ClipboardList, ShieldCheck } from 'lucide-react';
+import { Shield, Users, Trash2, FileText, Bell, CircleDot, BarChart2, MessageCircle, TrendingUp, UserCheck, Hash, ClipboardList, ShieldCheck, Check, X } from 'lucide-react';
 import VerifiedBadge from '@/components/circles/VerifiedBadge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,8 +12,9 @@ import { useRBAC } from '@/hooks/useRBAC';
 import { logger } from '@/lib/logger';
 import { CACHE } from '@/lib/query-client';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { formatMTND } from '@/lib/investment';
 
-const TABS = ['Overview', 'Users', 'Posts', 'Circles', 'Audit Log'];
+const TABS = ['Overview', 'Projects', 'Users', 'Posts', 'Circles', 'Audit Log'];
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -27,6 +28,21 @@ export default function AdminDashboard() {
   const { data: allCircles = [] } = useQuery({ queryKey: ['admin-circles'], queryFn: () => base44.entities.Circle.list(), staleTime: CACHE.medium });
   const { data: allComments = [] } = useQuery({ queryKey: ['admin-comments'], queryFn: () => base44.entities.Comment.list('-created_date', 200), staleTime: CACHE.short });
   const { data: allResponses = [] } = useQuery({ queryKey: ['admin-responses-all'], queryFn: () => base44.entities.CircleResponse.list('-created_date', 200), staleTime: CACHE.short });
+  const { data: pendingProjects = [] } = useQuery({
+    queryKey: ['admin-pending-projects'],
+    queryFn: () => base44.entities.InvestmentProject.filter({ project_status: 'SUBMITTED' }, '-created_date', 100),
+    staleTime: CACHE.short,
+  });
+  const { data: invGovernorates = [] } = useQuery({
+    queryKey: ['admin-inv-governorates'],
+    queryFn: () => base44.entities.Governorate.list('-created_date', 50),
+    staleTime: CACHE.medium,
+  });
+  const { data: invSectors = [] } = useQuery({
+    queryKey: ['admin-inv-sectors'],
+    queryFn: () => base44.entities.Sector.list('-created_date', 50),
+    staleTime: CACHE.medium,
+  });
 
   const addAuditLog = async (action, details) => {
     await base44.entities.AuditLog.create({
@@ -84,6 +100,16 @@ export default function AdminDashboard() {
     },
   });
 
+  const reviewProject = useMutation({
+    mutationFn: ({ id, status }) => base44.entities.InvestmentProject.update(id, { project_status: status }),
+    onSuccess: (_, vars) => {
+      const approved = vars.status === 'PUBLISHED';
+      addAuditLog(approved ? 'project_approved' : 'project_rejected', `${approved ? 'Approved' : 'Rejected'} investment project ${vars.id}`);
+      queryClient.invalidateQueries({ queryKey: ['admin-pending-projects'] });
+      queryClient.invalidateQueries({ queryKey: ['investment-projects'] });
+    },
+  });
+
   if (!isAdmin) return <Navigate to="/" replace />;
 
   const filteredUsers = allUsers.filter((u) =>
@@ -94,6 +120,9 @@ export default function AdminDashboard() {
   );
   const filteredCircles = allCircles.filter((c) =>
     (c.name || '').toLowerCase().includes(search.toLowerCase())
+  );
+  const filteredProjects = pendingProjects.filter((p) =>
+    `${p.title || ''} ${p.company_name || ''}`.toLowerCase().includes(search.toLowerCase())
   );
 
   // Computed stats
@@ -260,6 +289,50 @@ export default function AdminDashboard() {
               ))}
             </div>
           </div>
+        </div>
+      )}
+
+      {tab === 'Projects' && (
+        <div className="bg-card border rounded-2xl overflow-hidden">
+          <div className="px-5 py-3 border-b text-xs text-muted-foreground font-medium">
+            {filteredProjects.length} project{filteredProjects.length === 1 ? '' : 's'} awaiting approval
+          </div>
+          {filteredProjects.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-10">No projects awaiting approval</p>
+          ) : (
+            <div className="divide-y">
+              {filteredProjects.map((p) => {
+                const gov = invGovernorates.find((g) => g.id === p.governorate_id);
+                const sec = invSectors.find((s) => s.id === p.sector_id);
+                return (
+                  <div key={p.id} className="flex items-start gap-3 px-5 py-4">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{p.title}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {p.company_name || '—'} · {sec?.name || '—'} · {gov?.name || '—'} · {formatMTND(p.investment_required)}
+                      </p>
+                      {p.short_description && (
+                        <p className="text-xs text-muted-foreground/80 mt-1 line-clamp-2">{p.short_description}</p>
+                      )}
+                      <p className="text-[10px] text-muted-foreground/60 mt-1">
+                        submitted {p.created_date ? format(new Date(p.created_date), 'MMM d, yyyy HH:mm') : '—'}
+                      </p>
+                    </div>
+                    <div className="flex gap-2 shrink-0">
+                      <Button size="sm" className="h-7 text-xs gap-1" disabled={reviewProject.isPending}
+                        onClick={() => reviewProject.mutate({ id: p.id, status: 'PUBLISHED' })}>
+                        <Check className="w-3 h-3" /> Approve
+                      </Button>
+                      <Button size="sm" variant="outline" className="h-7 text-xs gap-1" disabled={reviewProject.isPending}
+                        onClick={() => reviewProject.mutate({ id: p.id, status: 'DRAFT' })}>
+                        <X className="w-3 h-3" /> Reject
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 

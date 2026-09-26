@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { X, MapPin, ArrowRight, Users, TrendingUp, Layers, Coins } from 'lucide-react';
+import { X, MapPin, ArrowRight, Users, TrendingUp, Layers, Coins, Plus } from 'lucide-react';
 import { formatMTND, formatNumber, sectorIcon } from '@/lib/investment';
+import ProjectSubmitForm from '@/components/investment/ProjectSubmitForm';
 
 function Stat({ icon: Icon, label, value }) {
   return (
@@ -14,6 +15,8 @@ function Stat({ icon: Icon, label, value }) {
 }
 
 export default function GovernoratePanel({ governorate, projects = [], sectors = [], onExplore, onClose }) {
+  const [showSubmit, setShowSubmit] = useState(false);
+
   if (!governorate) {
     return (
       <div className="rounded-2xl border bg-card p-6 h-full flex flex-col items-center justify-center text-center min-h-[280px]">
@@ -97,12 +100,27 @@ export default function GovernoratePanel({ governorate, projects = [], sectors =
         </div>
       </div>
 
-      <button
-        onClick={() => onExplore && onExplore(governorate.id)}
-        className="mt-auto w-full inline-flex items-center justify-center gap-2 rounded-lg bg-primary text-primary-foreground font-semibold py-3 hover:opacity-90 transition-opacity"
-      >
-        <Users className="w-4 h-4" /> Explore {total} projects <ArrowRight className="w-4 h-4" />
-      </button>
+      <div className="mt-auto space-y-2 pt-1">
+        <button
+          onClick={() => setShowSubmit(true)}
+          className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-primary/30 bg-primary/5 text-primary font-semibold py-3 hover:bg-primary/10 transition-colors"
+        >
+          <Plus className="w-4 h-4" /> Submit a project here
+        </button>
+        <button
+          onClick={() => onExplore && onExplore(governorate.id)}
+          className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-primary text-primary-foreground font-semibold py-3 hover:opacity-90 transition-opacity"
+        >
+          <Users className="w-4 h-4" /> Explore {total} projects <ArrowRight className="w-4 h-4" />
+        </button>
+      </div>
+
+      <ProjectSubmitForm
+        open={showSubmit}
+        onClose={() => setShowSubmit(false)}
+        governorate={governorate}
+        sectors={sectors}
+      />
     </motion.div>
   );
 }
