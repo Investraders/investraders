@@ -7,9 +7,10 @@ import { Button } from '@/components/ui/button';
 import {
   ArrowLeft, MapPin, ShieldCheck, Star, Building2, Coins, TrendingUp, Clock, Users,
   Globe, Target, Check, Lock, Mail, Phone, Bookmark, BookmarkCheck, Share2, Download,
-  Send, FileText, Loader2, Landmark,
+  Send, FileText, Loader2, Landmark, Plus,
 } from 'lucide-react';
 import InvestorInterestModal from '@/components/investment/InvestorInterestModal';
+import ProjectSubmitForm from '@/components/investment/ProjectSubmitForm';
 import {
   STAGE_LABELS, TYPE_LABELS, SEEKING_LABELS, DOCUMENT_TYPES, formatMTND, formatNumber, sectorIcon,
 } from '@/lib/investment';
@@ -43,6 +44,7 @@ export default function ProjectDetail() {
   const [saved, setSaved] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [modal, setModal] = useState(null); // 'interest' | 'info' | null
+  const [showSubmit, setShowSubmit] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -354,6 +356,17 @@ export default function ProjectDetail() {
             <p className="text-[11px] text-muted-foreground text-center pt-1">
               Demonstration data — not a real investment opportunity.
             </p>
+
+            {governorate && (
+              <div className="pt-4 border-t">
+                <p className="text-[11px] text-muted-foreground mb-2">
+                  Have a project in {sector?.name || 'this sector'}? Submit it for review.
+                </p>
+                <Button variant="outline" className="w-full" onClick={() => setShowSubmit(true)}>
+                  <Plus className="w-4 h-4 mr-2" /> Submit a New Opportunity
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -373,6 +386,13 @@ export default function ProjectDetail() {
         user={user}
         defaultType="INFORMATION_REQUEST"
         mode="info"
+      />
+
+      <ProjectSubmitForm
+        open={showSubmit}
+        onClose={() => setShowSubmit(false)}
+        governorate={governorate}
+        sector={sector}
       />
     </div>
   );

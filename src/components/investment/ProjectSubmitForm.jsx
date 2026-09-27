@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Send, MapPin, AlertCircle } from 'lucide-react';
+import { Loader2, Send, MapPin, AlertCircle, Link2 } from 'lucide-react';
 import { STAGE_LABELS, TYPE_LABELS } from '@/lib/investment';
 
 const EMPTY = {
@@ -37,7 +37,7 @@ function Field({ label, children }) {
   );
 }
 
-export default function ProjectSubmitForm({ open, onClose, governorate, sectors = [] }) {
+export default function ProjectSubmitForm({ open, onClose, governorate, sector = null, sectors = [] }) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [form, setForm] = useState(EMPTY);
@@ -46,17 +46,23 @@ export default function ProjectSubmitForm({ open, onClose, governorate, sectors 
 
   useEffect(() => {
     if (open) {
-      setForm({ ...EMPTY, promoter_name: user?.full_name || '', email: user?.email || '' });
+      setForm({
+        ...EMPTY,
+        sector_id: sector?.id || '',
+        promoter_name: user?.full_name || '',
+        email: user?.email || '',
+      });
       setError('');
     }
-  }, [open, user]);
+  }, [open, user, sector]);
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
   const setValue = (key) => (value) => setForm((f) => ({ ...f, [key]: value }));
 
   const submit = async () => {
+    if (!governorate) return setError('No governorate is linked to this page.');
     if (!form.title.trim()) return setError('Please enter a project title.');
-    if (!form.sector_id) return setError('Please choose a sector.');
+    if (!sector && !form.sector_id) return setError('Please choose a sector.');
     if (!form.investment_required || Number(form.investment_required) <= 0) {
       return setError('Please enter the investment amount required.');
     }
@@ -68,8 +74,8 @@ export default function ProjectSubmitForm({ open, onClose, governorate, sectors 
         title: form.title.trim(),
         short_description: form.short_description.trim(),
         description: form.description.trim(),
-        governorate_id: governorate.id,
-        sector_id: form.sector_id,
+        governorate_id: governorate?.id,
+        sector_id: sector?.id || form.sector_id,
         city: form.city.trim(),
         project_type: form.project_type,
         investment_stage: form.investment_stage,
@@ -104,7 +110,9 @@ export default function ProjectSubmitForm({ open, onClose, governorate, sectors 
         <DialogHeader>
           <DialogTitle>Submit a project</DialogTitle>
           <DialogDescription>
-            New projects are reviewed by an administrator before they appear on the map.
+            {governorate
+              ? `This opportunity will be linked to ${governorate.name}${sector ? ` and ${sector.name}` : ''}. It is reviewed by an administrator before it appears on the map.`
+              : 'New projects are reviewed by an administrator before they appear on the map.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -121,18 +129,27 @@ export default function ProjectSubmitForm({ open, onClose, governorate, sectors 
             </Field>
           </div>
 
-          <Field label="Sector *">
-            <Select value={form.sector_id} onValueChange={setValue('sector_id')}>
-              <SelectTrigger>
-                <SelectValue placeholder="Choose a sector" />
-              </SelectTrigger>
-              <SelectContent>
-                {sectors.map((s) => (
-                  <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
+          {sector ? (
+            <Field label="Sector">
+              <div className="flex items-center gap-2 h-9 rounded-md border bg-muted/40 px-3 text-sm">
+                <Link2 className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+                <span className="truncate">{sector.name}</span>
+              </div>
+            </Field>
+          ) : (
+            <Field label="Sector *">
+              <Select value={form.sector_id} onValueChange={setValue('sector_id')}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a sector" />
+                </SelectTrigger>
+                <SelectContent>
+                  {sectors.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          )}
 
           <Field label="City">
             <Input value={form.city} onChange={set('city')} placeholder="e.g. Sousse" />
