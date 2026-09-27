@@ -20,7 +20,10 @@ export default function AdminDashboard() {
   const { user } = useAuth();
   const { isAdmin } = useRBAC();
   const queryClient = useQueryClient();
-  const [tab, setTab] = useState('Overview');
+  const [tab, setTab] = useState(() => {
+    const requested = new URLSearchParams(window.location.search).get('tab');
+    return TABS.includes(requested) ? requested : 'Overview';
+  });
   const [search, setSearch] = useState('');
 
   const { data: allUsers = [] } = useQuery({ queryKey: ['admin-users'], queryFn: () => base44.entities.User.list(), staleTime: CACHE.short });

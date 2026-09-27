@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import NotificationBell from '@/components/layout/NotificationBell';
+import PendingReviewAlert from '@/components/admin/PendingReviewAlert';
 import ShortcutsModal from '@/components/layout/ShortcutsModal';
 
 export default function Navbar({ user }) {
@@ -81,6 +82,7 @@ export default function Navbar({ user }) {
             <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-blue-600" />
           )}
         </Link>
+        <PendingReviewAlert />
         <NotificationBell />
 
         <DropdownMenu>
