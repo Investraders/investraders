@@ -6,6 +6,7 @@ import { Map, Sparkles, TrendingUp, Layers, Coins, Star, X, ArrowRight } from 'l
 import TunisiaMap from '@/components/investment/TunisiaMap';
 import WorldMap from '@/components/investment/WorldMap';
 import GovernoratePanel from '@/components/investment/GovernoratePanel';
+import InvestmentDashboard from '@/components/investment/InvestmentDashboard';
 import FilterBar from '@/components/investment/FilterBar';
 import ProjectCard from '@/components/investment/ProjectCard';
 import { inBand, formatMTND, formatNumber, DEMO_NOTICE } from '@/lib/investment';
@@ -148,6 +149,9 @@ export default function InvestmentMap() {
           />
         </div>
       </div>
+
+      {/* Summary dashboard */}
+      <InvestmentDashboard governorates={governorates} sectors={sectors} projects={filtered} />
 
       {/* Featured */}
       {featured.length > 0 && (
