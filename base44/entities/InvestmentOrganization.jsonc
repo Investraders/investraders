@@ -1,0 +1,202 @@
+{
+  "name": "InvestmentOrganization",
+  "type": "object",
+  "properties": {
+    "legal_name": {
+      "type": "string"
+    },
+    "display_name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "organization_type": {
+      "type": "string",
+      "enum": [
+        "VENTURE_CAPITAL",
+        "PRIVATE_EQUITY",
+        "FAMILY_OFFICE",
+        "ANGEL_NETWORK",
+        "SOVEREIGN_WEALTH_FUND",
+        "DEVELOPMENT_FINANCE_INSTITUTION",
+        "IMPACT_INVESTOR",
+        "ASSET_MANAGER",
+        "PENSION_FUND",
+        "CORPORATE_VENTURE_CAPITAL",
+        "INFRASTRUCTURE_FUND",
+        "REAL_ESTATE_FUND",
+        "CLIMATE_FUND",
+        "ISLAMIC_FINANCE",
+        "INVESTMENT_HOLDING",
+        "BANK_INVESTMENT_ARM",
+        "MULTILATERAL_FUND",
+        "OTHER"
+      ],
+      "default": "OTHER"
+    },
+    "country": {
+      "type": "string"
+    },
+    "country_code": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "website": {
+      "type": "string"
+    },
+    "linkedin": {
+      "type": "string"
+    },
+    "year_founded": {
+      "type": "number"
+    },
+    "logo": {
+      "type": "string",
+      "description": "Uploaded logo file_uri or URL; null falls back to initials"
+    },
+    "investment_focus": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Sector names this investor targets"
+    },
+    "geographic_focus": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "investment_stages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "project_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "investment_structures": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "EQUITY, DEBT, JOINT_VENTURE, STRATEGIC_PARTNERSHIP"
+    },
+    "minimum_ticket": {
+      "type": "number",
+      "description": "Minimum ticket in millions"
+    },
+    "maximum_ticket": {
+      "type": "number",
+      "description": "Maximum ticket in millions"
+    },
+    "preferred_currencies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "investment_strategy": {
+      "type": "string"
+    },
+    "esg_preferences": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "UNVERIFIED",
+        "PENDING",
+        "VERIFIED",
+        "OFFICIAL",
+        "PARTNER"
+      ],
+      "default": "UNVERIFIED"
+    },
+    "official": {
+      "type": "boolean",
+      "default": false
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false
+    },
+    "partner": {
+      "type": "boolean",
+      "default": false
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "display_name",
+    "organization_type"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.active": true
+        },
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "user"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

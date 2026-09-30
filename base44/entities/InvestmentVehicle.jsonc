@@ -1,0 +1,142 @@
+{
+  "name": "InvestmentVehicle",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "InvestmentOrganization that manages this vehicle"
+    },
+    "organization_name": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "vehicle_type": {
+      "type": "string",
+      "enum": [
+        "FUND",
+        "FUND_OF_FUNDS",
+        "MANDATE",
+        "SEPARATE_ACCOUNT",
+        "OTHER"
+      ],
+      "default": "FUND"
+    },
+    "fund_category": {
+      "type": "string"
+    },
+    "fund_status": {
+      "type": "string",
+      "enum": [
+        "FUNDRAISING",
+        "ACTIVE",
+        "INVESTING",
+        "HARVESTING",
+        "CLOSED"
+      ],
+      "default": "ACTIVE"
+    },
+    "country": {
+      "type": "string"
+    },
+    "currency": {
+      "type": "string"
+    },
+    "target_size": {
+      "type": "number",
+      "description": "Target fund size in millions"
+    },
+    "current_size": {
+      "type": "number",
+      "description": "Current size in millions"
+    },
+    "minimum_ticket": {
+      "type": "number"
+    },
+    "maximum_ticket": {
+      "type": "number"
+    },
+    "investment_stages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "sector_focus": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "geographic_focus": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "investment_strategy": {
+      "type": "string"
+    },
+    "fund_start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "fund_end_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "fund_website": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "organization_id",
+    "name"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.active": true
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "user"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

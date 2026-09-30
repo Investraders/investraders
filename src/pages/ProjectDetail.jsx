@@ -14,6 +14,11 @@ import ProjectSubmitForm from '@/components/investment/ProjectSubmitForm';
 import {
   STAGE_LABELS, TYPE_LABELS, SEEKING_LABELS, DOCUMENT_TYPES, formatMTND, formatNumber, sectorIcon,
 } from '@/lib/investment';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { useQuery } from '@tanstack/react-query';
+import { Network as NetworkIcon } from 'lucide-react';
+import { InvestorMatches } from '@/components/investment/MatchResults';
+import { matchInvestorsToProject } from '@/lib/investmentNetwork';
 
 function Section({ title, children }) {
   return (
@@ -45,6 +50,12 @@ export default function ProjectDetail() {
   const [showContact, setShowContact] = useState(false);
   const [modal, setModal] = useState(null); // 'interest' | 'info' | null
   const [showSubmit, setShowSubmit] = useState(false);
+  const [showInvestors, setShowInvestors] = useState(false);
+
+  const { data: allOrgs = [] } = useQuery({
+    queryKey: ['investment-orgs'],
+    queryFn: () => base44.entities.InvestmentOrganization.list('-created_date', 300),
+  });
 
   useEffect(() => {
     let active = true;
@@ -334,6 +345,9 @@ export default function ProjectDetail() {
             </div>
 
             <div className="space-y-2 pt-2">
+              <Button variant="secondary" className="w-full" onClick={() => setShowInvestors(true)}>
+                <NetworkIcon className="w-4 h-4 mr-2" /> Find Matching Investors
+              </Button>
               <Button className="w-full" onClick={() => setModal('interest')}>
                 <Send className="w-4 h-4 mr-2" /> Express Investor Interest
               </Button>
@@ -394,6 +408,18 @@ export default function ProjectDetail() {
         governorate={governorate}
         sector={sector}
       />
+
+      <Dialog open={showInvestors} onOpenChange={setShowInvestors}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><NetworkIcon className="w-5 h-5 text-primary" /> Matching investors</DialogTitle>
+            <DialogDescription>
+              {project ? `${matchInvestorsToProject(allOrgs, project, sector?.name).length} investor profiles match this project. Scores reflect mandate compatibility, not investment advice.` : ''}
+            </DialogDescription>
+          </DialogHeader>
+          <InvestorMatches results={matchInvestorsToProject(allOrgs, project, sector?.name).slice(0, 30)} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

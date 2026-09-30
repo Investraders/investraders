@@ -26,6 +26,8 @@ import AdminDashboard from '@/pages/AdminDashboard';
 import AllCircles from '@/pages/AllCircles';
 import WisdomNet from '@/pages/WisdomNet';
 import InvestmentMap from '@/pages/InvestmentMap';
+import InvestmentNetwork from '@/pages/InvestmentNetwork';
+import InvestorDetail from '@/pages/InvestorDetail';
 import ProjectDetail from '@/pages/ProjectDetail';
 
 const AuthenticatedApp = () => {
@@ -72,6 +74,8 @@ const AuthenticatedApp = () => {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/all-circles" element={<AllCircles />} />
           <Route path="/investment-map" element={<InvestmentMap />} />
+          <Route path="/investment-network" element={<InvestmentNetwork />} />
+          <Route path="/investment-network/:id" element={<InvestorDetail />} />
           <Route path="/project/:id" element={<ProjectDetail />} />
         </Route>
       </Route>
