@@ -7,7 +7,6 @@ import { Building2, Globe, Layers, Map, Network, UserPlus, ArrowRight, Sparkles,
 import { Button } from '@/components/ui/button';
 import OrganizationCard from '@/components/investment/OrganizationCard';
 import InvestorFilters from '@/components/investment/InvestorFilters';
-import RegisterInvestorForm from '@/components/investment/RegisterInvestorForm';
 import { ORG_TYPES, ORG_TYPE_OPTIONS, matchInvestorsToProject } from '@/lib/investmentNetwork';
 import { CACHE } from '@/lib/query-client';
 
@@ -27,7 +26,6 @@ function Stat({ icon: Icon, value, label }) {
 
 export default function InvestmentNetwork() {
   const [filters, setFilters] = useState({ q: '', type: '', country: '', stage: '', verified: false, featured: false });
-  const [registerOpen, setRegisterOpen] = useState(false);
 
   const { data: orgs = [], isLoading: orgsLoading } = useQuery({
     queryKey: ['investment-orgs'],
@@ -112,7 +110,9 @@ export default function InvestmentNetwork() {
             <h3 className="font-semibold">Are you an investor?</h3>
             <p className="text-sm text-muted-foreground">Join the network and receive opportunities matching your mandate.</p>
           </div>
-          <Button onClick={() => setRegisterOpen(true)} className="shrink-0">Register</Button>
+          <Button asChild className="shrink-0">
+            <Link to="/investment-network/profile">Register</Link>
+          </Button>
         </div>
         <Link to="/investment-map" className="rounded-2xl border bg-card p-5 flex items-center gap-4 hover:shadow-md transition-all">
           <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
@@ -177,8 +177,6 @@ export default function InvestmentNetwork() {
           {filtered.map((o, i) => <OrganizationCard key={o.id} org={o} index={i} />)}
         </div>
       )}
-
-      <RegisterInvestorForm open={registerOpen} onClose={() => setRegisterOpen(false)} />
     </div>
   );
 }

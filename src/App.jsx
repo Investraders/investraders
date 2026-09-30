@@ -28,6 +28,7 @@ import WisdomNet from '@/pages/WisdomNet';
 import InvestmentMap from '@/pages/InvestmentMap';
 import InvestmentNetwork from '@/pages/InvestmentNetwork';
 import InvestorDetail from '@/pages/InvestorDetail';
+import InvestorProfileManage from '@/pages/InvestorProfileManage';
 import ProjectDetail from '@/pages/ProjectDetail';
 
 const AuthenticatedApp = () => {
@@ -75,6 +76,7 @@ const AuthenticatedApp = () => {
           <Route path="/all-circles" element={<AllCircles />} />
           <Route path="/investment-map" element={<InvestmentMap />} />
           <Route path="/investment-network" element={<InvestmentNetwork />} />
+          <Route path="/investment-network/profile" element={<InvestorProfileManage />} />
           <Route path="/investment-network/:id" element={<InvestorDetail />} />
           <Route path="/project/:id" element={<ProjectDetail />} />
         </Route>
