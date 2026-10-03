@@ -12,6 +12,7 @@ import AIIntelligencePanel from '@/components/investment/intel/AIIntelligencePan
 import OpportunityRadar from '@/components/investment/intel/OpportunityRadar';
 import OpportunityOfTheDay from '@/components/investment/intel/OpportunityOfTheDay';
 import MatchmakingWizard from '@/components/investment/intel/MatchmakingWizard';
+import MatchAlertsPanel from '@/components/investment/intel/MatchAlertsPanel';
 import { ORG_TYPES, ORG_TYPE_OPTIONS, matchProjectsToInvestor } from '@/lib/investmentNetwork';
 import { opportunityOfTheDay } from '@/lib/investmentIntel';
 import { CACHE } from '@/lib/query-client';
@@ -90,6 +91,8 @@ export default function InvestmentNetwork() {
       </div>
 
       <MatchmakingWizard orgs={orgs} projects={projects} sectors={sectors} governorates={governorates} />
+
+      <MatchAlertsPanel projects={projects} sectors={sectors} governorates={governorates} />
 
       {/* CTAs */}
       <div className="grid sm:grid-cols-2 gap-4 mb-10">
